@@ -4,26 +4,39 @@ namespace FashionCalendarModule;
 return [
     'controllers' => [
         'invokables' => [
-            'FashionCalendarModule\Controller\Index' => Controller\IndexController::class,
+            'FashionCalendarModule\Controller\Data' => Controller\DataController::class,
         ]
+    ],
+    'block_layouts' => [
+        'invokables' => [
+            'dataTable' => Site\BlockLayout\FashionCalendarData::class,
+        ],
     ],
     'router' => [
         'routes' => [
             'site' => [
                 'child_routes' => [
-                    'fc-search' => [
+                    'data-api' => [
                         'type' => 'Segment',
                         'options' => [
-                            'route' => '/fc-search',
+                            'route' => '/data-api/:action',
                             'defaults' => [
                                 '__NAMESPACE__' => 'FashionCalendarModule\Controller',
-                                'controller' => 'Index',
-                                'action' => 'search',
+                                'controller' => 'Data',
+                                'action' => 'events',
                             ],
+                        ],
+                        'constraints' => [
+                            'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
                         ],
                     ],
                 ],
             ],
+        ],
+    ],
+    'view_manager' => [
+        'template_path_stack' => [
+            dirname(__DIR__) . '/view',
         ],
     ],
 ];

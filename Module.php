@@ -35,6 +35,7 @@ class Module extends AbstractModule
         $form = new ConfigForm;
         $form->init();
         $form->setData([
+            'site' => $settings->get('fcm_site'),
             'mongo_connection' => $settings->get('fcm_mongo_connection'),
             'mongo_url' => $settings->get('fcm_mongo_url'),
             'mongo_user' => $settings->get('fcm_mongo_user'),
@@ -54,6 +55,7 @@ class Module extends AbstractModule
             return false;
         }
         $formData = $form->getData();
+        $settings->set('fcm_site', $formData['site']);
         $settings->set('fcm_mongo_connection', $formData['mongo_connection']);
         $settings->set('fcm_mongo_url', $formData['mongo_url']);
         $settings->set('fcm_mongo_user', $formData['mongo_user']);

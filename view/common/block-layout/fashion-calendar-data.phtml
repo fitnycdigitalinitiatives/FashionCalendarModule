@@ -1,0 +1,32 @@
+<?php
+$this->headLink()->appendStylesheet($this->assetUrl('css/fashion-calendar-data.css', 'FashionCalendarModule'));
+$this->headLink()->appendStylesheet('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', 'screen', null, ['integrity' => 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=', 'crossorigin' => '']);
+$this->headScript()->appendFile($this->assetUrl('js/fashion-calendar-data.js', 'FashionCalendarModule'));
+$this->headScript()->appendFile('https://cdn.jsdelivr.net/npm/openseadragon@2.4/build/openseadragon/openseadragon.min.js', 'text/javascript');
+$this->headScript()->appendFile('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', 'text/javascript', ['integrity' => 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=', 'crossorigin' => '']);
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+?>
+<div class="data-header">
+    <div class="row justify-content-end">
+        <div class="col-12 col-sm">
+            <h2>Data</h2>
+            <div id="results"></div>
+            <div id="query"></div>
+            <div id="facet-button"></div>
+        </div>
+        <div class="col-auto">
+            <form id="data-search">
+                <div class="input-group">
+                    <input type="search" class="form-control" aria-label="<?php echo $translate('Search'); ?>"
+                        autocomplete="off">
+                    <button class="btn btn-secondary" type="submit" aria-label="Search">
+                        <i class="fas fa-search" title="<?php echo $translate('Search'); ?>" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div id="data-container"></div>
+<div id="modal-container" class="p-0 m-0"></div>
