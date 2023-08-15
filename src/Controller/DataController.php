@@ -6,6 +6,7 @@ use Laminas\Mvc\Controller\AbstractActionController;
 use Exception;
 use MongoDB\Client;
 use MongoDB\Driver\ServerApi;
+use MongoDB\BSON\UTCDateTime;
 
 class DataController extends AbstractActionController
 {
@@ -31,18 +32,41 @@ class DataController extends AbstractActionController
             $sort = [];
             $match = [];
             $geoNear = [];
+            $text = false;
             if (array_key_exists('text', $params) && ($text = $params['text'])) {
-                $match['$match']['$text'] = ['$search' => $text, '$language' => 'en'];
+                $match['$match']['$and'][] = ['$text' => ['$search' => $text, '$language' => 'en']];
                 $sort['$sort'] = ['score' => ['$meta' => 'textScore'], '_id' => 1];
+                $text = true;
             }
             if (array_key_exists('names', $params) && ($names = $params['names'])) {
-                $match['$match']['names.label'] = $names;
+                $names = is_array($names) ? $names : [$names];
+                foreach ($names as $name) {
+                    $match['$match']['$and'][] = ['names.label' => $name];
+                }
             }
             if (array_key_exists('categories', $params) && ($categories = $params['categories'])) {
-                $match['$match']['names.categories.label'] = $categories;
+                $categories = is_array($categories) ? $categories : [$categories];
+                foreach ($categories as $category) {
+                    $match['$match']['$and'][] = ['names.categories.label' => $category];
+                }
             }
             if (array_key_exists('issue', $params) && ($issue = $params['issue'])) {
-                $match['$match']['appears_in.calendar_id'] = $issue;
+                $issue = is_array($issue) ? $issue : [$issue];
+                foreach ($issue as $this_issue) {
+                    $match['$match']['$and'][] = ['appears_in.calendar_id' => $this_issue];
+                }
+            }
+            if (array_key_exists('year_month', $params) && ($year_month = $params['year_month']) && (strlen($year_month) == 7) && (strpos($year_month, '-') == 4)) {
+                $year = explode("-", $year_month)[0];
+                $month = explode("-", $year_month)[1];
+                if (is_numeric($year) && is_numeric($month) && ($month <= 12)) {
+                    if ($month == '12') {
+                        $end_year_month = strval($year + 1) . "-01";
+                    } else {
+                        $end_year_month = $year . "-" . sprintf('%02d', strval($month + 1));
+                    }
+                    $match['$match']['$and'][] = ['start_date_iso' => ['$gte' => new UTCDateTime(strtotime($year_month) * 1000), '$lt' => new UTCDateTime(strtotime($end_year_month) * 1000)]];
+                }
             }
             if (array_key_exists('location', $params) && ($location = $params['location'])) {
                 $maxDistance = 0;
@@ -50,8 +74,8 @@ class DataController extends AbstractActionController
                     $maxDistance = floatval($max_distance);
                 }
                 // text and geoNear cannot be combined so need to do this workaround
-                if (array_key_exists('$match', $match) && array_key_exists('$text', $match['$match']) && $match['$match']['$text']) {
-                    $match['$match']['location'] = ['$geoWithin' => ['$centerSphere' => [json_decode('[' . $location . ']', true), $maxDistance]]];
+                if ($text) {
+                    $match['$match']['$and'][] = ['location' => ['$geoWithin' => ['$centerSphere' => [json_decode('[' . $location . ']', true), $maxDistance]]]];
                 } else {
                     $geoNear['$geoNear'] = ['near' => ['type' => 'Point', 'coordinates' => json_decode('[' . $location . ']', true)], 'maxDistance' => $maxDistance, 'key' => 'location', 'distanceField' => 'distance'];
                 }
@@ -60,7 +84,7 @@ class DataController extends AbstractActionController
             if ($geoNear) {
                 $aggregation[] = $geoNear;
             }
-            if ($match) {
+            if (array_key_exists('$match', $match) && array_key_exists('$and', $match['$match']) && $match['$match']['$and']) {
                 $aggregation[] = $match;
             }
             if ($sort) {
@@ -73,7 +97,7 @@ class DataController extends AbstractActionController
                         $limit
                     ],
                     'names' => [['$unwind' => ['path' => '$names']], ['$group' => ['_id' => '$names.label', 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$limit' => 25], ['$project' => ['_id' => 0, 'name' => '$_id', 'count' => 1]]],
-                    'categories' => [['$unwind' => ['path' => '$names']], ['$unwind' => ['path' => '$names.categories']], ['$group' => ['_id' => '$names.categories.label', 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$limit' => 25], ['$project' => ['_id' => 0, 'category' => '$_id', 'count' => 1]]],
+                    'categories' => [['$project' => ['categories' => ['$reduce' => ['input' => '$names.categories.label', 'initialValue' => [], 'in' => ['$setUnion' => ['$$this', '$$value']]]]]], ['$unwind' => ['path' => '$categories']], ['$group' => ['_id' => '$categories', 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$limit' => 25], ['$project' => ['_id' => 0, 'category' => '$_id', 'count' => 1]]],
                     'years' => [['$group' => ['_id' => ['$year' => '$start_date_iso'], 'count' => ['$sum' => 1]]], ['$sort' => ['_id' => 1]], ['$project' => ['_id' => 0, 'year' => '$_id', 'count' => 1]]],
                     'count' => [
                         [
@@ -123,9 +147,10 @@ class DataController extends AbstractActionController
                 //     ],
                 // ])->getContent();
                 // if ($item && ($media = $item->media()) && isset($media[$page])) {
+                //     $miradorViewer = $this->viewHelpers()->get('miradorViewer');
                 //     $media = $item->media();
                 //     $response->setContent(json_encode([
-                //         'html' => $media[$page]->render(),
+                //         'html' => $miradorViewer($item, $media[$page]->id()),
                 //         'item-link' => $item->siteUrl(),
                 //     ]));
                 //     $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
@@ -149,8 +174,9 @@ class DataController extends AbstractActionController
                     ],
                 ])->getContent();
                 if ($media) {
+                    $miradorViewer = $this->viewHelpers()->get('miradorViewer');
                     $response->setContent(json_encode([
-                        'html' => $media->render(),
+                        'html' => $miradorViewer($media->item(), $media->id()),
                         'item-link' => $media->item()->siteUrl(),
                     ]));
                     $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');

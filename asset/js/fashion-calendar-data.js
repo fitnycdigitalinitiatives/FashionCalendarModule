@@ -25,18 +25,22 @@ $(document).ready(function () {
         let categories = "";
         let issue = "";
         let location = "";
+        let year_month = "";
         if (queryParams.toString()) {
             if (queryParams.has('text')) {
                 text = queryParams.get('text');
             }
-            if (queryParams.has('names')) {
-                names = queryParams.get('names');
+            if (queryParams.has('names[]')) {
+                names = queryParams.getAll('names[]');
             }
-            if (queryParams.has('categories')) {
-                categories = queryParams.get('categories');
+            if (queryParams.has('categories[]')) {
+                categories = queryParams.getAll('categories[]');
             }
-            if (queryParams.has('issue')) {
-                issue = queryParams.get('issue');
+            if (queryParams.has('issue[]')) {
+                issue = queryParams.getAll('issue[]');
+            }
+            if (queryParams.has('year_month')) {
+                location = queryParams.get('year_month');
             }
             if (queryParams.has('location')) {
                 location = queryParams.get('location');
@@ -63,7 +67,7 @@ $(document).ready(function () {
             }
             $('#results').text(resultsText);
             let searchTerm = [];
-            [text, names, categories, issue, location].forEach(value => {
+            [text, names, categories, issue, year_month, location].forEach(value => {
                 if (value) {
                     searchTerm.push(value);
                 }
@@ -88,7 +92,7 @@ $(document).ready(function () {
                 let names = $(this).data("label");
                 // Update URL Query.
                 var queryParams = new URLSearchParams();
-                queryParams.set("names", names);
+                queryParams.set("names[]", names);
                 history.pushState(null, null, "?" + queryParams.toString());
                 listEvents(queryParams);
             });
@@ -97,7 +101,7 @@ $(document).ready(function () {
                 let issue = $(this).data("calendar_id");
                 // Update URL Query.
                 var queryParams = new URLSearchParams();
-                queryParams.set("issue", issue);
+                queryParams.set("issue[]", issue);
                 history.pushState(null, null, "?" + queryParams.toString());
                 listEvents(queryParams);
             });
@@ -106,7 +110,7 @@ $(document).ready(function () {
                 let category = $(this).data("label");
                 // Update URL Query.
                 var queryParams = new URLSearchParams();
-                queryParams.set("categories", category);
+                queryParams.set("categories[]", category);
                 history.pushState(null, null, "?" + queryParams.toString());
                 listEvents(queryParams);
             });
@@ -116,6 +120,15 @@ $(document).ready(function () {
                 // Update URL Query.
                 var queryParams = new URLSearchParams();
                 queryParams.set("location", location);
+                history.pushState(null, null, "?" + queryParams.toString());
+                listEvents(queryParams);
+            });
+            $(".year-month-search").click(function (event) {
+                event.preventDefault();
+                let year_month = $(this).data("year-month");
+                // Update URL Query.
+                var queryParams = new URLSearchParams();
+                queryParams.set("year_month", year_month);
                 history.pushState(null, null, "?" + queryParams.toString());
                 listEvents(queryParams);
             });
@@ -142,8 +155,8 @@ $(document).ready(function () {
             <dt>Year-Month</dt>
             <dd>
             <span>${event.start_date}</span>
-            <a href="#" class="date-search link-dark ms-1 text-decoration-none" data-date="${event.start_date}" aria-label="Search for this date">
-                <i class="fas fa-search" aria-hidden="true" title="Search for this date">
+            <a href="?year_month=${event.start_date}" class="year-month-search link-dark ms-1 text-decoration-none" data-year-month="${event.start_date.substring(0, 7)}" aria-label="Search for this year and month">
+                <i class="fas fa-search" aria-hidden="true" title="Search for this year and month">
                 </i>
             </a>
             </dd>
@@ -156,7 +169,7 @@ $(document).ready(function () {
                 namesHtml += `
                 <dd>
                 <span>${name.label}</span>
-                <a href="?names=${encodeURIComponent(name.label)}" class="name-search link-dark ms-1 text-decoration-none" data-id="${name._id}" data-label="${name.label}" aria-label="Search for this name">
+                <a href="?names[]=${encodeURIComponent(name.label)}" class="name-search link-dark ms-1 text-decoration-none" data-id="${name._id}" data-label="${name.label}" aria-label="Search for this name">
                     <i class="fas fa-search" aria-hidden="true" title="Search for this name">
                     </i>
                 </a>
@@ -199,7 +212,7 @@ $(document).ready(function () {
             const displayTitle = `${issue.calendar_title}, ${date.toLocaleDateString('en-US', options)}`;
             let issueHtml = `
                 <span>${displayTitle} (page ${issue.calendar_page})</span>
-                <a href="?issue=${encodeURIComponent(issue.calendar_id)}" class="issue-search link-dark ms-1 text-decoration-none" data-calendar_id="${issue.calendar_id}" data-calendar_page="${issue.calendar_page}" aria-label="Search for this issue">
+                <a href="?issue[]=${encodeURIComponent(issue.calendar_id)}" class="issue-search link-dark ms-1 text-decoration-none" data-calendar_id="${issue.calendar_id}" data-calendar_page="${issue.calendar_page}" aria-label="Search for this issue">
                 <i class="fas fa-search" aria-hidden="true" title="Search for this issue">
                 </i>
                 </a>
@@ -288,7 +301,7 @@ $(document).ready(function () {
                 categoryList.append(`
                 <dd>
                 <span>${category.label}</span>
-                <a href="?categories=${encodeURIComponent(category.label)}" class="category-search link-dark ms-1 text-decoration-none" data-modal="#nameInfo-${name._id}" data-id="${category._id}" data-label="${category.label}" aria-label="Search for this category">
+                <a href="?categories[]=${encodeURIComponent(category.label)}" class="category-search link-dark ms-1 text-decoration-none" data-modal="#nameInfo-${name._id}" data-id="${category._id}" data-label="${category.label}" aria-label="Search for this category">
                     <i class="fas fa-search" aria-hidden="true" title="Search for this category">
                     </i>
                 </a>
@@ -313,7 +326,7 @@ $(document).ready(function () {
           <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content">
               <div class="modal-header">
-                <h2 class="modal-title fs-5" id="viewerLabel"></h2>
+                <h2 class="modal-title fs-6" id="viewerLabel"></h2>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
@@ -335,139 +348,51 @@ $(document).ready(function () {
                 const pageURL = `/data-api/page?id=${encodeURIComponent(calendar_id)}&page=${encodeURIComponent(calendar_page)}`;
                 const modalTitle = viewerModal.querySelector('.modal-title');
                 const modalBody = viewerModal.querySelector('.modal-body');
-                $(modalBody).html(`<div class="openseadragon-frame"><div class="loader"></div></div>`);
+                $(modalBody).html(`<div id="mirador-viewer-frame"></div>`);
                 $(modalTitle).html(`
-                Page ${calendar_page}
-                <br>
-                <div class="issue-link">
-                    <span>${calendar_title}</span>
-                    <a class="btn btn-link link-dark ms-1 text-decoration-none p-0 disabled" aria-disabled="true" aria-label="View full issue"><i class="fas fa-book" aria-hidden="true" title="View full issue"></i></a>
-                </div>
+                <span>Page ${calendar_page}</span>
+                <a class="btn btn-link link-dark ms-1 text-decoration-none p-0 disabled" aria-disabled="true" aria-label="View issue page"><i class="fas fa-book" aria-hidden="true" title="View issue page"></i></a>
                 `);
                 $.getJSON(pageURL, function (data, status, xhr) {
                     $(modalBody).html(data.html);
                     $(modalTitle).find('a').attr({ "href": data["item-link"], "aria-disabled": "false" }).removeClass("disabled");
-                    var currentViewer = $(modalBody).find('.openseadragon');
-                    var currentViewerID = currentViewer.attr('id');
-                    var iiifEndpoint = $(currentViewer).data('infojson');
-                    var authtoken = $(currentViewer).data('authtoken');
-                    var thumbnail = $(currentViewer).data('thumbnail');
-
-                    function removeThumbnail(tiledImage, viewer, currentViewer) {
-
-                        setTimeout(
-                            function () {
-                                viewer.world.removeItem(viewer.world.getItemAt(0));
-                                viewer.viewport.goHome(true);
-                                removeLoader(currentViewer);
-                            }, 1000);
-                        tiledImage.removeAllHandlers();
-                    }
-
-                    function removeLoader(currentViewer) {
-                        $(currentViewer).parent().children('.loader').remove();
-                    }
-
-                    function addErrorMessage(currentViewer) {
-                        var errorMessage = $(`
-                            <div class="toast mx-1 bg-white fade show iiif-error" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">
-                            <div class="toast-header bg-danger text-white">
-                                <strong class="me-auto">Unable to Load High-Resolution Image</strong>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
-                            </div>
-                                            <div class="toast-body">
-                                It seems we've run into some issues loading this image. Please try reloading the page or contacting us at <a href="mailto:repository@fitnyc.edu" target="_blank">repository@fitnyc.edu</a> if you continue to receive this message.
-                            </div>
-                            </div>
-                        `);
-                        $(currentViewer).append(errorMessage);
-                        $('.media.show:not(.resource) .openseadragon .toast-header .btn-close').on("click", function () {
-                            $(this).parents('.toast').hide();
-                        });
-                    }
-
-                    if (thumbnail) {
-                        var options = {
-                            id: currentViewerID,
-                            prefixUrl: 'https://cdn.jsdelivr.net/npm/openseadragon@2.4/build/openseadragon/images/',
-                            showNavigator: true,
-                            navigatorSizeRatio: 0.1,
-                            minZoomImageRatio: 1,
-                            maxZoomPixelRatio: 10,
-                            controlsFadeDelay: 1000,
-                            tileSources: {
-                                type: 'image',
-                                url: thumbnail,
-                                x: 0,
-                                y: 0
+                    const manifest = $('#mirador-viewer').data('manifest');
+                    const authorization = $('#mirador-viewer').data('authorization');
+                    const canvas = $('#mirador-viewer').data('canvas');
+                    const miradorConfig = {
+                        id: "mirador-viewer",
+                        workspaceControlPanel: {
+                            enabled: false
+                        },
+                        window: {
+                            allowClose: false,
+                            allowFullscreen: true,
+                            allowMaximize: false,
+                        },
+                        windows: [
+                            {
+                                manifestId: manifest,
+                                thumbnailNavigationPosition: 'far-right',
+                            }
+                        ],
+                    };
+                    if (authorization) {
+                        miradorConfig['requests'] = {
+                            preprocessors: [
+                                (url, options) => (url.match('info.json') && { ...options, headers: { ...options.headers, "Authorization": "Bearer " + authorization } }),
+                            ]
+                        };
+                        miradorConfig['osdConfig'] = {
+                            loadTilesWithAjax: true,
+                            ajaxHeaders: {
+                                'Authorization': `Bearer ${authorization}`
                             }
                         }
-                        // if token exists, add ajax to the options
-                        if (authtoken) {
-                            options['loadTilesWithAjax'] = true;
-                            options['ajaxHeaders'] = {
-                                "Authorization": "Bearer " + authtoken
-                            }
-                        }
-
-                        var viewer = OpenSeadragon(
-                            options
-                        );
-
-                        //add the iiif tiles on top of the thumbnail and remove loader
-                        var iiifoptions = {
-                            tileSource: iiifEndpoint,
-                            x: 0,
-                            y: 0,
-                            success: function (event) {
-                                var tiledImage = event.item;
-                                tiledImage.addHandler('fully-loaded-change', removeThumbnail(tiledImage, viewer, currentViewer));
-                            },
-                            error: function (event) {
-                                removeLoader(currentViewer);
-                                addErrorMessage(currentViewer);
-                            }
-                        }
-
-                        viewer.addTiledImage(iiifoptions);
-                        viewerModal.addEventListener('hidden.bs.modal', event => {
-                            viewer.destroy();
-                        });
-                    } else {
-                        var options = {
-                            id: currentViewerID,
-                            prefixUrl: 'https://cdn.jsdelivr.net/npm/openseadragon@2.4/build/openseadragon/images/',
-                            showNavigator: true,
-                            navigatorSizeRatio: 0.1,
-                            minZoomImageRatio: 0.8,
-                            maxZoomPixelRatio: 10,
-                            controlsFadeDelay: 1000,
-                            tileSources: iiifEndpoint
-                        }
-                        // if token exists, add ajax to the options
-                        if (authtoken) {
-                            options['loadTilesWithAjax'] = true;
-                            options['ajaxHeaders'] = {
-                                "Authorization": "Bearer " + authtoken
-                            }
-                        }
-                        var viewer = OpenSeadragon(
-                            options
-                        );
-                        viewer.addHandler("add-item-failed", function (event) {
-                            removeLoader(currentViewer);
-                            addErrorMessage(currentViewer);
-                        });
-                        viewer.world.addHandler('add-item', function (event) {
-                            var tiledImage = event.item;
-                            tiledImage.addHandler('fully-loaded-change', function () {
-                                removeLoader(currentViewer);
-                            });
-                        });
-                        viewerModal.addEventListener('hidden.bs.modal', event => {
-                            viewer.destroy();
-                        });
                     }
+                    if (canvas) {
+                        miradorConfig['windows'][0]['canvasId'] = canvas;
+                    }
+                    Mirador.viewer(miradorConfig);
                 })
                     .fail(function () {
                         console.log(`Error retrieving ${calendar_id}, page ${calendar_page}`);
@@ -550,8 +475,10 @@ $(document).ready(function () {
             let namesCard = card.clone();
             namesCard.children('.card-header').text("Names")
             facets.names.forEach(name => {
+                let queryParams = new URLSearchParams(window.location.search);
+                queryParams.append("names[]", name.name);
                 namesCard.append(`
-                <a href="?names=${name.name}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-name="${name.name}">
+                <a href="${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-name="${name.name}">
                     ${name.name}
                     <span class="badge bg-secondary rounded-pill">${name.count}</span>
                 </a>
@@ -561,12 +488,38 @@ $(document).ready(function () {
                 event.preventDefault();
                 let name = $(this).data("name");
                 // Update URL Query.
-                var queryParams = new URLSearchParams(window.location.search);
-                queryParams.append("names", name);
+                let queryParams = new URLSearchParams(window.location.search);
+                queryParams.append("names[]", name);
                 history.pushState(null, null, "?" + queryParams.toString());
                 listEvents(queryParams);
             });
             offCanvas.children('.offcanvas-body').append(namesCard);
+
+        }
+        if (facets.categories.length) {
+            hasFacets = true;
+            let categoriesCard = card.clone();
+            categoriesCard.children('.card-header').text("Categories");
+            facets.categories.forEach(category => {
+                let queryParams = new URLSearchParams(window.location.search);
+                queryParams.append("categories[]", category.category);
+                categoriesCard.append(`
+                <a href="${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="${category.category}">
+                    ${category.category}
+                    <span class="badge bg-secondary rounded-pill">${category.count}</span>
+                </a>
+                `);
+            });
+            categoriesCard.children('a').click(function (event) {
+                event.preventDefault();
+                let category = $(this).data("category");
+                // Update URL Query.
+                let queryParams = new URLSearchParams(window.location.search);
+                queryParams.append("categories[]", category);
+                history.pushState(null, null, "?" + queryParams.toString());
+                listEvents(queryParams);
+            });
+            offCanvas.children('.offcanvas-body').append(categoriesCard);
 
         }
         if (hasFacets) {
