@@ -330,6 +330,7 @@ $(document).ready(function () {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
+              <div id="mirador-viewer-frame"></div>
               </div>
             </div>
           </div>
@@ -340,7 +341,7 @@ $(document).ready(function () {
     function initiateViewer() {
         const viewerModal = document.getElementById('viewerModal')
         if (viewerModal) {
-            viewerModal.addEventListener('show.bs.modal', event => {
+            viewerModal.addEventListener('shown.bs.modal', event => {
                 const button = event.relatedTarget;
                 const calendar_id = button.getAttribute('data-calendar_id');
                 const calendar_page = button.getAttribute('data-calendar_page');
@@ -348,11 +349,15 @@ $(document).ready(function () {
                 const pageURL = `/data-api/page?id=${encodeURIComponent(calendar_id)}&page=${encodeURIComponent(calendar_page)}`;
                 const modalTitle = viewerModal.querySelector('.modal-title');
                 const modalBody = viewerModal.querySelector('.modal-body');
-                $(modalBody).html(`<div id="mirador-viewer-frame"></div>`);
                 $(modalTitle).html(`
                 <span>Page ${calendar_page}</span>
                 <a class="btn btn-link link-dark ms-1 text-decoration-none p-0 disabled" aria-disabled="true" aria-label="View issue page"><i class="fas fa-book" aria-hidden="true" title="View issue page"></i></a>
                 `);
+                // reset modal on close
+                viewerModal.addEventListener('hidden.bs.modal', event => {
+                    $(modalBody).html(`<div id="mirador-viewer-frame"></div>`);
+                    $(modalTitle).empty();
+                });
                 $.getJSON(pageURL, function (data, status, xhr) {
                     $(modalBody).html(data.html);
                     $(modalTitle).find('a').attr({ "href": data["item-link"], "aria-disabled": "false" }).removeClass("disabled");
