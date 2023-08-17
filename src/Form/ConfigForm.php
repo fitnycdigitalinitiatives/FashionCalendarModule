@@ -20,6 +20,21 @@ class ConfigForm extends Form
             ],
         ]);
         $this->add([
+            'name' => 'mongo_connection_format',
+            'type' => Element\Radio::class,
+            'options' => [
+                'label' => 'MongoDB Connection Format',
+                'value_options' => [
+                    'mongodb' => 'mongodb',
+                    'mongodb+srv' => 'mongodb+srv',
+                ],
+                // @translate
+            ],
+            'attributes' => [
+                'id' => 'mongo_connection_format',
+            ],
+        ]);
+        $this->add([
             'name' => 'mongo_url',
             'type' => Element\Text::class,
             'options' => [

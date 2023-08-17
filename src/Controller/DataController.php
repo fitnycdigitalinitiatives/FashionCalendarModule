@@ -15,7 +15,11 @@ class DataController extends AbstractActionController
         if ($this->currentSite()->slug() == "fashioncalendar") {
             $response = $this->getResponse();
             $settings = $this->settings();
-            $uri = "mongodb+srv://" . $settings->get('fcm_mongo_user') . ":" . $settings->get('fcm_mongo_password') . "@" . $settings->get('fcm_mongo_url') . "/?retryWrites=true&w=majority";
+            $connectionFormat = "mongodb+srv";
+            if ($settings->get('fcm_mongo_connection_format')) {
+                $connectionFormat = $settings->get('fcm_mongo_connection_format');
+            }
+            $uri = $connectionFormat . "://" . $settings->get('fcm_mongo_user') . ":" . $settings->get('fcm_mongo_password') . "@" . $settings->get('fcm_mongo_url') . "/?retryWrites=true&w=majority";
             // Specify Stable API version 1
             $apiVersion = new ServerApi(ServerApi::V1);
             // Create a new client and connect to the server
