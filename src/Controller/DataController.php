@@ -26,7 +26,7 @@ class DataController extends AbstractActionController
             $client = new Client($uri, [], ['serverApi' => $apiVersion]);
             $params = $this->params()->fromQuery();
             $docs_per_page = 50;
-            $collection = $client->selectCollection('fashion-calendar', 'events');
+            $collection = $client->selectCollection($settings->get('fcm_mongo_db'), 'events');
             if (array_key_exists('page', $params) && ($page = $params['page']) && is_numeric($page)) {
                 $skip = ['$skip' => $docs_per_page * ($page - 1)];
             } else {

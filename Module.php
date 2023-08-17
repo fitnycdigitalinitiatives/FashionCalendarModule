@@ -40,6 +40,7 @@ class Module extends AbstractModule
             'mongo_url' => $settings->get('fcm_mongo_url'),
             'mongo_user' => $settings->get('fcm_mongo_user'),
             'mongo_password' => $settings->get('fcm_mongo_password'),
+            'mongo_db' => $settings->get('fcm_mongo_db'),
         ]);
         return $renderer->formCollection($form);
     }
@@ -60,6 +61,7 @@ class Module extends AbstractModule
         $settings->set('fcm_mongo_url', $formData['mongo_url']);
         $settings->set('fcm_mongo_user', $formData['mongo_user']);
         $settings->set('fcm_mongo_password', $formData['mongo_password']);
+        $settings->set('fcm_mongo_db', $formData['mongo_db']);
         return true;
     }
 }

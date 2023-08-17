@@ -67,5 +67,16 @@ class ConfigForm extends Form
                 'id' => 'mongo_password',
             ],
         ]);
+        $this->add([
+            'name' => 'mongo_db',
+            'type' => Element\Text::class,
+            'options' => [
+                'label' => 'MongoDB Database Name',
+                // @translate
+            ],
+            'attributes' => [
+                'id' => 'mongo_db',
+            ],
+        ]);
     }
 }
