@@ -95,7 +95,20 @@
     border-radius: .25rem;
 }
 
+.twitter-typeahead .typeahead-header {
+    font-size: 1rem;
+    padding: .5rem 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, .125);
+    border-top: 1px solid rgba(0, 0, 0, .125);
+    background-color: rgba(0, 0, 0, 0.05)
+}
+
+.twitter-typeahead .tt-dataset:first-of-type .typeahead-header {
+    border-top: 0;
+}
+
 .twitter-typeahead .tt-dataset .tt-suggestion {
+    font-size: .9rem;
     padding: .5rem 1rem;
     cursor: pointer;
     border-bottom: 1px solid rgba(0, 0, 0, .125);
@@ -114,4 +127,19 @@
 
 .twitter-typeahead .tt-dataset .tt-suggestion:last-child {
     border-bottom: 0;
+}
+
+#results {
+    font-family: "halyard-display", sans-serif;
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #6c757d;
+}
+
+#query {
+    font-family: "halyard-display", sans-serif;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #6c757d;
+    margin-top: 0.5rem;
 }

@@ -1,7 +1,7 @@
 $(document).ready(function () {
     initiateStartup();
     window.onpopstate = function () {
-        console.log("happening");
+        $('#data-search input').typeahead('destroy');
         initiateStartup();
     }
     function initiateStartup() {
@@ -22,6 +22,14 @@ $(document).ready(function () {
     }
 
     function listEvents(queryParams) {
+        $('.modal').modal('hide');
+        $('#data-container').empty();
+        $('#facet-container').empty();
+        $('#modal-container').empty();
+        $('#results').text("");
+        $('#query').empty().hide();
+        $('#facet-button').empty();
+        $('#data-search input').val("");
         let text = "";
         let names = "";
         let categories = "";
@@ -32,53 +40,124 @@ $(document).ready(function () {
         if (queryParams.toString()) {
             if (queryParams.has('text')) {
                 text = queryParams.get('text');
+                let newQueryParams = new URLSearchParams(window.location.search);
+                newQueryParams.delete('text')
+                $('#query').append(`
+                <li class="list-inline-item">
+                    <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${text}</a>
+                </li>
+                `);
             }
             if (queryParams.has('names[]')) {
                 names = queryParams.getAll('names[]');
+                names.forEach(name => {
+                    let newQueryParams = new URLSearchParams();
+                    queryParams.forEach((value, key) => {
+                        if (!((key == "names[]") && (value == name))) {
+                            newQueryParams.append(key, value);
+                        }
+                    });
+                    $('#query').append(`
+                    <li class="list-inline-item">
+                        <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${name}</a>
+                    </li>
+                    `);
+                });
             }
             if (queryParams.has('categories[]')) {
                 categories = queryParams.getAll('categories[]');
+                categories.forEach(category => {
+                    let newQueryParams = new URLSearchParams();
+                    queryParams.forEach((value, key) => {
+                        if (!((key == "categories[]") && (value == category))) {
+                            newQueryParams.append(key, value);
+                        }
+                    });
+                    $('#query').append(`
+                    <li class="list-inline-item">
+                        <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${category}</a>
+                    </li>
+                    `);
+                });
             }
             if (queryParams.has('issue[]')) {
                 issue = queryParams.getAll('issue[]');
+                issue.forEach(this_issue => {
+                    let newQueryParams = new URLSearchParams();
+                    queryParams.forEach((value, key) => {
+                        if (!((key == "issue[]") && (value == this_issue))) {
+                            newQueryParams.append(key, value);
+                        }
+                    });
+                    $('#query').append(`
+                    <li class="list-inline-item">
+                        <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${this_issue}</a>
+                    </li>
+                    `);
+                });
+            }
+            if (queryParams.has('date_range_start') && queryParams.has('date_range_end')) {
+                date_range_start = queryParams.get('date_range_start');
+                date_range_end = queryParams.get('date_range_end');
+                let newQueryParams = new URLSearchParams(window.location.search);
+                newQueryParams.delete('date_range_start');
+                newQueryParams.delete('date_range_end');
+                $('#query').append(`
+                <li class="list-inline-item">
+                    <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${date_range_start}-${date_range_end}</a>
+                </li>
+                `);
             }
             if (queryParams.has('year')) {
                 year = queryParams.get('year');
+                let newQueryParams = new URLSearchParams(window.location.search);
+                newQueryParams.delete('year');
+                $('#query').append(`
+                <li class="list-inline-item">
+                    <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${year}</a>
+                </li>
+                `);
             }
             if (queryParams.has('year_month')) {
                 year_month = queryParams.get('year_month');
+                let newQueryParams = new URLSearchParams(window.location.search);
+                newQueryParams.delete('year_month');
+                $('#query').append(`
+                <li class="list-inline-item">
+                    <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${year_month}</a>
+                </li>
+                `);
             }
             if (queryParams.has('location')) {
                 location = queryParams.get('location');
+                let newQueryParams = new URLSearchParams(window.location.search);
+                newQueryParams.delete('location');
+                $('#query').append(`
+                <li class="list-inline-item">
+                    <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${location}</a>
+                </li>
+                `);
             }
         }
-        $('.modal').modal('hide');
-        $('#data-container').empty();
-        $('#facet-container').empty();
-        $('#modal-container').empty();
-        $('#results').text("");
-        $('#query').text("");
-        $('#facet-button').empty();
-        $('#data-search input').val(text);
         const url = "/data-api/events?" + queryParams.toString();
         $.getJSON(url, function (data) {
             const totalResults = data.count;
             let resultsText = ""
             if (totalResults > 1) {
-                resultsText = `Showing ${Number(totalResults).toLocaleString()} results`;
+                resultsText = `Showing ${Number(totalResults).toLocaleString()} events`;
             } else if (totalResults == 1) {
-                resultsText = `Showing ${totalResults} result`;
+                resultsText = `Showing ${totalResults} event`;
             } else {
-                resultsText = `Your search did not return any results. Please try again with another search term.`;
+                resultsText = `Your search did not return any events. Please try again with another search term.`;
             }
             $('#results').text(resultsText);
+            $('#query').show();
             let searchTerm = [];
             [text, names, categories, issue, year, year_month, location].forEach(value => {
                 if (value) {
                     searchTerm.push(value);
                 }
             });
-            $('#query').text(searchTerm.join(", "));
             const namesList = [];
             data.results.forEach(event => {
                 $('#data-container').append(createListing(event));
@@ -136,6 +215,13 @@ $(document).ready(function () {
                 var queryParams = new URLSearchParams();
                 queryParams.set("year_month", year_month);
                 history.pushState(null, null, "?" + queryParams.toString());
+                listEvents(queryParams);
+            });
+            $('.remove-query').click(function (event) {
+                event.preventDefault();
+                // Update URL Query.
+                var queryParams = new URLSearchParams($(this).attr('href'));
+                history.pushState(null, null, $(this).attr('href'));
                 listEvents(queryParams);
             });
             initiateViewer();
@@ -671,6 +757,8 @@ $(document).ready(function () {
             yearsDisplayFacets.forEach(year => {
                 let queryParams = new URLSearchParams(window.location.search);
                 queryParams.append("year", year.year);
+                queryParams.delete("date_range_start");
+                queryParams.delete("date_range_end");
                 yearsCard.append(`
                 <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-year="${year.year}">
                     ${year.year}
@@ -697,6 +785,8 @@ $(document).ready(function () {
                 yearsHiddenFacets.forEach(year => {
                     let queryParams = new URLSearchParams(window.location.search);
                     queryParams.append("year", year.year);
+                    queryParams.delete("date_range_start");
+                    queryParams.delete("date_range_end");
                     yearsCollapse.append(`
                     <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-year="${year.year}">
                         ${year.year}
@@ -711,6 +801,8 @@ $(document).ready(function () {
                 // Update URL Query.
                 let queryParams = new URLSearchParams(window.location.search);
                 queryParams.append("year", year);
+                queryParams.delete("date_range_start");
+                queryParams.delete("date_range_end");
                 history.pushState(null, null, "?" + queryParams.toString());
                 listEvents(queryParams);
             });
@@ -754,7 +846,7 @@ $(document).ready(function () {
                 source: names,
                 limit: 10,
                 templates: {
-                    header: `<h5>Names</h5>`,
+                    header: `<h2 class="typeahead-header">Names</h2>`,
                     suggestion: function (data) {
                         return `<div>${data}</div>`;
                     }
@@ -765,7 +857,7 @@ $(document).ready(function () {
                 source: categories,
                 limit: 10,
                 templates: {
-                    header: `<h5>Categories</h5>`,
+                    header: `<h2 class="typeahead-header">Categories</h2>`,
                     suggestion: function (data) {
                         return `<div>${data}</div>`;
                     }

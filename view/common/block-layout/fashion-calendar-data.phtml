@@ -14,14 +14,14 @@ $escape = $this->plugin('escapeHtml');
         <div class="col-12 col-sm">
             <h2>Data</h2>
             <div id="results"></div>
-            <div id="query"></div>
+            <ul id="query" class="list-inline"></ul>
             <div id="facet-button"></div>
         </div>
-        <div class="col-auto">
+        <div class="col-12 col-sm-6">
             <form id="data-search">
                 <div class="input-group">
                     <input type="search" class="form-control" aria-label="<?php echo $translate('Search'); ?>"
-                        autocomplete="off">
+                        autocomplete="off" placeholder="Search by keyword or select names/categories via autocomplete">
                     <button class="btn btn-secondary" type="submit" aria-label="Search">
                         <i class="fas fa-search" title="<?php echo $translate('Search'); ?>" aria-hidden="true"></i>
                     </button>
