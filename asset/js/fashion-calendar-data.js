@@ -1,11 +1,13 @@
 $(document).ready(function () {
     initiateStartup();
     window.onpopstate = function () {
+        console.log("happening");
         initiateStartup();
     }
     function initiateStartup() {
         var queryParams = new URLSearchParams(window.location.search);
         listEvents(queryParams);
+        initializeTypeahead();
         $("#data-search").submit(function (event) {
             event.preventDefault();
             $(this).find('input').blur();
@@ -25,6 +27,7 @@ $(document).ready(function () {
         let categories = "";
         let issue = "";
         let location = "";
+        let year = "";
         let year_month = "";
         if (queryParams.toString()) {
             if (queryParams.has('text')) {
@@ -39,8 +42,11 @@ $(document).ready(function () {
             if (queryParams.has('issue[]')) {
                 issue = queryParams.getAll('issue[]');
             }
+            if (queryParams.has('year')) {
+                year = queryParams.get('year');
+            }
             if (queryParams.has('year_month')) {
-                location = queryParams.get('year_month');
+                year_month = queryParams.get('year_month');
             }
             if (queryParams.has('location')) {
                 location = queryParams.get('location');
@@ -67,7 +73,7 @@ $(document).ready(function () {
             }
             $('#results').text(resultsText);
             let searchTerm = [];
-            [text, names, categories, issue, year_month, location].forEach(value => {
+            [text, names, categories, issue, year, year_month, location].forEach(value => {
                 if (value) {
                     searchTerm.push(value);
                 }
@@ -89,7 +95,7 @@ $(document).ready(function () {
             // Attach listeners to new content
             $(".name-search").click(function (event) {
                 event.preventDefault();
-                let names = $(this).data("label");
+                let names = decodeURIComponent($(this).data("label"));
                 // Update URL Query.
                 var queryParams = new URLSearchParams();
                 queryParams.set("names[]", names);
@@ -98,7 +104,7 @@ $(document).ready(function () {
             });
             $(".issue-search").click(function (event) {
                 event.preventDefault();
-                let issue = $(this).data("calendar_id");
+                let issue = decodeURIComponent($(this).data("calendar_id"));
                 // Update URL Query.
                 var queryParams = new URLSearchParams();
                 queryParams.set("issue[]", issue);
@@ -107,7 +113,7 @@ $(document).ready(function () {
             });
             $(".category-search").click(function (event) {
                 event.preventDefault();
-                let category = $(this).data("label");
+                let category = decodeURIComponent($(this).data("label"));
                 // Update URL Query.
                 var queryParams = new URLSearchParams();
                 queryParams.set("categories[]", category);
@@ -116,7 +122,7 @@ $(document).ready(function () {
             });
             $(".location-search").click(function (event) {
                 event.preventDefault();
-                let location = $(this).data("location");
+                let location = decodeURIComponent($(this).data("location"));
                 // Update URL Query.
                 var queryParams = new URLSearchParams();
                 queryParams.set("location", location);
@@ -125,7 +131,7 @@ $(document).ready(function () {
             });
             $(".year-month-search").click(function (event) {
                 event.preventDefault();
-                let year_month = $(this).data("year-month");
+                let year_month = decodeURIComponent($(this).data("year-month"));
                 // Update URL Query.
                 var queryParams = new URLSearchParams();
                 queryParams.set("year_month", year_month);
@@ -155,7 +161,7 @@ $(document).ready(function () {
             <dt>Year-Month</dt>
             <dd>
             <span>${event.start_date}</span>
-            <a href="?year_month=${event.start_date}" class="year-month-search link-dark ms-1 text-decoration-none" data-year-month="${event.start_date.substring(0, 7)}" aria-label="Search for this year and month">
+            <a href="?year_month=${encodeURIComponent(event.start_date.substring(0, 7))}" class="year-month-search link-dark ms-1 text-decoration-none" data-year-month="${encodeURIComponent(event.start_date.substring(0, 7))}" aria-label="Search for this year and month">
                 <i class="fas fa-search" aria-hidden="true" title="Search for this year and month">
                 </i>
             </a>
@@ -169,7 +175,7 @@ $(document).ready(function () {
                 namesHtml += `
                 <dd>
                 <span>${name.label}</span>
-                <a href="?names[]=${encodeURIComponent(name.label)}" class="name-search link-dark ms-1 text-decoration-none" data-id="${name._id}" data-label="${name.label}" aria-label="Search for this name">
+                <a href="?names[]=${encodeURIComponent(name.label)}" class="name-search link-dark ms-1 text-decoration-none" data-id="${name._id}" data-label="${encodeURIComponent(name.label)}" aria-label="Search for this name">
                     <i class="fas fa-search" aria-hidden="true" title="Search for this name">
                     </i>
                 </a>
@@ -187,11 +193,11 @@ $(document).ready(function () {
             <dt>Coordinates</dt>
             <dd>
             <span>${event.location.coordinates.join(", ")}</span>
-            <a href="?location=${encodeURIComponent(event.location.coordinates)}" class="location-search link-dark ms-1 text-decoration-none" data-location="${event.location.coordinates}" aria-label="Search for this location">
+            <a href="?location=${encodeURIComponent(event.location.coordinates)}" class="location-search link-dark ms-1 text-decoration-none" data-location="${encodeURIComponent(event.location.coordinates)}" aria-label="Search for this location">
                 <i class="fas fa-search" aria-hidden="true" title="Search for this location">
                 </i>
             </a>
-            <button class="location-map border-0 bg-transparent p-0 ms-1" data-bs-toggle="modal" data-bs-target="#mapModal" data-longitude="${event.location.coordinates[0]}" data-latitude="${event.location.coordinates[1]}" data-formattedAddress="${event.formatted_address}" aria-label="See this location on a map">
+            <button class="location-map border-0 bg-transparent p-0 ms-1" data-bs-toggle="modal" data-bs-target="#mapModal" data-longitude="${event.location.coordinates[0]}" data-latitude="${event.location.coordinates[1]}" data-formattedAddress="${encodeURIComponent(event.formatted_address)}" aria-label="See this location on a map">
                 <i class="fas fa-map" aria-hidden="true" title="See this location on a map">
                 </i>
             </button>
@@ -212,11 +218,11 @@ $(document).ready(function () {
             const displayTitle = `${issue.calendar_title}, ${date.toLocaleDateString('en-US', options)}`;
             let issueHtml = `
                 <span>${displayTitle} (page ${issue.calendar_page})</span>
-                <a href="?issue[]=${encodeURIComponent(issue.calendar_id)}" class="issue-search link-dark ms-1 text-decoration-none" data-calendar_id="${issue.calendar_id}" data-calendar_page="${issue.calendar_page}" aria-label="Search for this issue">
+                <a href="?issue[]=${encodeURIComponent(issue.calendar_id)}" class="issue-search link-dark ms-1 text-decoration-none" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" aria-label="Search for this issue">
                 <i class="fas fa-search" aria-hidden="true" title="Search for this issue">
                 </i>
                 </a>
-                <button class="page-view border-0 bg-transparent p-0 ms-1" data-bs-toggle="modal" data-bs-target="#viewerModal" data-calendar_id="${issue.calendar_id}" data-calendar_page="${issue.calendar_page}" data-displayTitle="${displayTitle}" aria-label="See this page">
+                <button class="page-view border-0 bg-transparent p-0 ms-1" data-bs-toggle="modal" data-bs-target="#viewerModal" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" data-displayTitle="${encodeURIComponent(displayTitle)}" aria-label="See this page">
                 <i class="fas fa-file" aria-hidden="true" title="See this page">
                 </i>
                 </button>
@@ -301,7 +307,7 @@ $(document).ready(function () {
                 categoryList.append(`
                 <dd>
                 <span>${category.label}</span>
-                <a href="?categories[]=${encodeURIComponent(category.label)}" class="category-search link-dark ms-1 text-decoration-none" data-modal="#nameInfo-${name._id}" data-id="${category._id}" data-label="${category.label}" aria-label="Search for this category">
+                <a href="?categories[]=${encodeURIComponent(category.label)}" class="category-search link-dark ms-1 text-decoration-none" data-modal="#nameInfo-${name._id}" data-id="${category._id}" data-label="${encodeURIComponent(category.label)}" aria-label="Search for this category">
                     <i class="fas fa-search" aria-hidden="true" title="Search for this category">
                     </i>
                 </a>
@@ -343,9 +349,9 @@ $(document).ready(function () {
         if (viewerModal) {
             viewerModal.addEventListener('shown.bs.modal', event => {
                 const button = event.relatedTarget;
-                const calendar_id = button.getAttribute('data-calendar_id');
-                const calendar_page = button.getAttribute('data-calendar_page');
-                const calendar_title = button.getAttribute('data-displayTitle');
+                const calendar_id = decodeURIComponent(button.getAttribute('data-calendar_id'));
+                const calendar_page = decodeURIComponent(button.getAttribute('data-calendar_page'));
+                const calendar_title = decodeURIComponent(button.getAttribute('data-displayTitle'));
                 const pageURL = `/data-api/page?id=${encodeURIComponent(calendar_id)}&page=${encodeURIComponent(calendar_page)}`;
                 const modalTitle = viewerModal.querySelector('.modal-title');
                 const modalBody = viewerModal.querySelector('.modal-body');
@@ -433,7 +439,7 @@ $(document).ready(function () {
                 const button = event.relatedTarget;
                 const longitude = button.getAttribute('data-longitude');
                 const latitude = button.getAttribute('data-latitude');
-                const formattedAddress = button.getAttribute('data-formattedAddress');
+                const formattedAddress = decodeURIComponent(button.getAttribute('data-formattedAddress'));
                 const modalBody = mapModal.querySelector('.modal-body');
                 $(modalBody).html(`<div id="viewer-map"></div>`);
                 mapModal.addEventListener('shown.bs.modal', event => {
@@ -457,14 +463,14 @@ $(document).ready(function () {
     function createFacets(facets) {
         let hasFacets = false;
         let offCanvas = $(`
-        <div class="offcanvas offcanvas-start shadow border-end-0 show" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="facets" aria-labelledby="facetsLabel">
+        <div class="offcanvas offcanvas-start shadow border-end-0" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="facets" aria-labelledby="facetsLabel">
             <div class="offcanvas-header border-bottom">
             <h3 class="offcanvas-title" id="facetsLabel">
                 Facets
             </h3>
             <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
-            <div class="offcanvas-body p-0">
+            <div class="offcanvas-body p-0 pb-4">
             </div>
         </div>
         `);
@@ -475,21 +481,121 @@ $(document).ready(function () {
             </ul>
         </div>
         `);
+        if (facets.years.length > 1) {
+            hasFacets = true;
+            const first_year = facets.years[0].year;
+            const last_year = facets.years[facets.years.length - 1].year;
+            let dateRangeCard = $(`
+            <div class="card rounded-0 border-start-0 border-end-0">
+                <h4 class="card-header">Date</h4>
+                <form id="dateRangeFacet" class="card-body py-2">
+                    <div class="row justify-content-between mb-4">
+                    <div class="col-auto">
+                        <label for="dateRangeMin" class="form-label">Min</label>
+                        <input type="number" class="form-control form-control-sm" id="dateRangeMin" name="date_range_start" min="${first_year}" max="${last_year}">
+                    </div>
+                    <div class="col-auto">
+                        <label for="dateRangeMax" class="form-label">Max</label>
+                        <input type="number" class="form-control form-control-sm" id="dateRangeMax" name="date_range_end" min="${first_year}" max="${last_year}">
+                    </div>
+                    </div>
+                    <div class="row mb-4">
+                    <div class="col">
+                        <div id="date-facet-slider" data-min="${first_year}" data-max="${last_year}"></div>
+                    </div>
+                    </div>
+                    <div class="row justify-content-end">
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-secondary btn-sm">Set Date Range</button>
+                    </div>
+                    </div>
+                </form>
+            </div>
+            `);
+            var slider = dateRangeCard.find('#date-facet-slider')[0];
+            var minInput = dateRangeCard.find('#dateRangeMin')[0];
+            var maxInput = dateRangeCard.find('#dateRangeMax')[0];
+            noUiSlider.create(slider, {
+                start: [first_year, last_year],
+                step: 1,
+                range: {
+                    'min': first_year,
+                    'max': last_year,
+                }
+            });
+            slider.noUiSlider.on('update', function (values, handle) {
+                var value = values[handle];
+
+                if (handle) {
+                    maxInput.value = Math.round(value);
+                } else {
+                    minInput.value = Math.round(value);
+                }
+            });
+            minInput.addEventListener('change', function () {
+                slider.noUiSlider.set([this.value, null]);
+            });
+
+            maxInput.addEventListener('change', function () {
+                slider.noUiSlider.set([null, this.value]);
+            });
+            dateRangeCard.find('#dateRangeFacet').submit(function (event) {
+                event.preventDefault();
+                // Update URL Query.
+                let queryParams = new URLSearchParams(window.location.search);
+                // Set because there can only be one date range
+                queryParams.set("date_range_start", minInput.value);
+                queryParams.set("date_range_end", maxInput.value);
+                history.pushState(null, null, "?" + queryParams.toString());
+                listEvents(queryParams);
+            });
+            offCanvas.children('.offcanvas-body').append(dateRangeCard);
+        }
         if (facets.names.length) {
             hasFacets = true;
             let namesCard = card.clone();
-            namesCard.children('.card-header').text("Names")
-            facets.names.forEach(name => {
+            namesCard.children('.card-header').text("Names");
+            const nameDisplayFacets = facets.names.slice(0, 10);
+            const nameHiddenFacets = facets.names.slice(10);
+            nameDisplayFacets.forEach(name => {
                 let queryParams = new URLSearchParams(window.location.search);
                 queryParams.append("names[]", name.name);
                 namesCard.append(`
-                <a href="${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-name="${name.name}">
+                <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-name="${name.name}">
                     ${name.name}
                     <span class="badge bg-secondary rounded-pill">${name.count}</span>
                 </a>
                 `);
             });
-            namesCard.children('a').click(function (event) {
+            if (nameHiddenFacets.length) {
+                const namesCollapse = $(`
+                <div class="collapse hidden-facets" id="collapse-names">
+                </div>
+                `);
+                namesCard.append(namesCollapse);
+                namesCollapse.after(`
+                <button class="list-group-item list-group-item-action expander d-inline-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-names" aria-expanded="false" aria-controls="collapse-names">
+                More >
+                </button>
+                `);
+                namesCollapse[0].addEventListener('show.bs.collapse', event => {
+                    namesCollapse.parent().children('button').text('Less ^')
+                });
+                namesCollapse[0].addEventListener('hide.bs.collapse', event => {
+                    namesCollapse.parent().children('button').text('More >')
+                });
+                nameHiddenFacets.forEach(name => {
+                    let queryParams = new URLSearchParams(window.location.search);
+                    queryParams.append("names[]", name.name);
+                    namesCollapse.append(`
+                    <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-name="${name.name}">
+                        ${name.name}
+                        <span class="badge bg-secondary rounded-pill">${name.count}</span>
+                    </a>
+                    `);
+                });
+            }
+            namesCard.find('a').click(function (event) {
                 event.preventDefault();
                 let name = $(this).data("name");
                 // Update URL Query.
@@ -505,17 +611,46 @@ $(document).ready(function () {
             hasFacets = true;
             let categoriesCard = card.clone();
             categoriesCard.children('.card-header').text("Categories");
-            facets.categories.forEach(category => {
+            const categoriesDisplayFacets = facets.categories.slice(0, 10);
+            const categoriesHiddenFacets = facets.categories.slice(10);
+            categoriesDisplayFacets.forEach(category => {
                 let queryParams = new URLSearchParams(window.location.search);
                 queryParams.append("categories[]", category.category);
                 categoriesCard.append(`
-                <a href="${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="${category.category}">
+                <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="${category.category}">
                     ${category.category}
                     <span class="badge bg-secondary rounded-pill">${category.count}</span>
                 </a>
                 `);
             });
-            categoriesCard.children('a').click(function (event) {
+            if (categoriesHiddenFacets.length) {
+                const categoriesCollapse = $(`
+                <div class="collapse hidden-facets" id="collapse-categories">
+                </div>
+                `);
+                categoriesCard.append(categoriesCollapse);
+                categoriesCollapse.after(`
+                <button class="list-group-item list-group-item-action expander d-inline-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-categories" aria-expanded="false" aria-controls="collapse-categories">
+                More >
+                </button>`);
+                categoriesCollapse[0].addEventListener('show.bs.collapse', event => {
+                    categoriesCollapse.parent().children('button').text('Less ^')
+                });
+                categoriesCollapse[0].addEventListener('hide.bs.collapse', event => {
+                    categoriesCollapse.parent().children('button').text('More >')
+                });
+                categoriesHiddenFacets.forEach(category => {
+                    let queryParams = new URLSearchParams(window.location.search);
+                    queryParams.append("categories[]", category.category);
+                    categoriesCollapse.append(`
+                    <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="${category.category}">
+                        ${category.category}
+                        <span class="badge bg-secondary rounded-pill">${category.count}</span>
+                    </a>
+                    `);
+                });
+            }
+            categoriesCard.find('a').click(function (event) {
                 event.preventDefault();
                 let category = $(this).data("category");
                 // Update URL Query.
@@ -526,6 +661,60 @@ $(document).ready(function () {
             });
             offCanvas.children('.offcanvas-body').append(categoriesCard);
 
+        }
+        if (facets.years.length) {
+            hasFacets = true;
+            let yearsCard = card.clone();
+            yearsCard.children('.card-header').text("Years");
+            const yearsDisplayFacets = facets.years.slice(0, 10);
+            const yearsHiddenFacets = facets.years.slice(10);
+            yearsDisplayFacets.forEach(year => {
+                let queryParams = new URLSearchParams(window.location.search);
+                queryParams.append("year", year.year);
+                yearsCard.append(`
+                <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-year="${year.year}">
+                    ${year.year}
+                    <span class="badge bg-secondary rounded-pill">${year.count}</span>
+                </a>
+                `);
+            });
+            if (yearsHiddenFacets.length) {
+                const yearsCollapse = $(`
+                <div class="collapse hidden-facets" id="collapse-years">
+                </div>
+                `);
+                yearsCard.append(yearsCollapse);
+                yearsCollapse.after(`
+                <button class="list-group-item list-group-item-action expander d-inline-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-years" aria-expanded="false" aria-controls="collapse-years">
+                More >
+                </button>`);
+                yearsCollapse[0].addEventListener('show.bs.collapse', event => {
+                    yearsCollapse.parent().children('button').text('Less ^')
+                });
+                yearsCollapse[0].addEventListener('hide.bs.collapse', event => {
+                    yearsCollapse.parent().children('button').text('More >')
+                });
+                yearsHiddenFacets.forEach(year => {
+                    let queryParams = new URLSearchParams(window.location.search);
+                    queryParams.append("year", year.year);
+                    yearsCollapse.append(`
+                    <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-year="${year.year}">
+                        ${year.year}
+                        <span class="badge bg-secondary rounded-pill">${year.count}</span>
+                    </a>
+                    `);
+                });
+            }
+            yearsCard.find('a').click(function (event) {
+                event.preventDefault();
+                let year = $(this).data("year");
+                // Update URL Query.
+                let queryParams = new URLSearchParams(window.location.search);
+                queryParams.append("year", year);
+                history.pushState(null, null, "?" + queryParams.toString());
+                listEvents(queryParams);
+            });
+            offCanvas.children('.offcanvas-body').append(yearsCard);
         }
         if (hasFacets) {
             $('#facet-button').html(`
@@ -540,5 +729,56 @@ $(document).ready(function () {
             `);
             return offCanvas;
         }
+    }
+
+    function initializeTypeahead() {
+        const names = new Bloodhound({
+            datumTokenizer: Bloodhound.tokenizers.whitespace,
+            queryTokenizer: Bloodhound.tokenizers.whitespace,
+            prefetch: "/data-api/suggester?type=names"
+        });
+        const categories = new Bloodhound({
+            datumTokenizer: Bloodhound.tokenizers.whitespace,
+            queryTokenizer: Bloodhound.tokenizers.whitespace,
+            prefetch: "/data-api/suggester?type=categories"
+        });
+        var termSuggester = $('#data-search input').typeahead(
+            {
+                hint: false,
+                highlight: true,
+                minLength: 2
+
+            },
+            {
+                name: 'names',
+                source: names,
+                limit: 10,
+                templates: {
+                    header: `<h5>Names</h5>`,
+                    suggestion: function (data) {
+                        return `<div>${data}</div>`;
+                    }
+                }
+            },
+            {
+                name: 'categories',
+                source: categories,
+                limit: 10,
+                templates: {
+                    header: `<h5>Categories</h5>`,
+                    suggestion: function (data) {
+                        return `<div>${data}</div>`;
+                    }
+                }
+            });
+        termSuggester.on('typeahead:select', function (ev, data, dataset) {
+            $(this).blur();
+            // Update URL Query.
+            var queryParams = new URLSearchParams();
+            queryParams.set(`${dataset}[]`, data);
+            history.pushState(null, null, "?" + queryParams.toString());
+            termSuggester.typeahead('val', '')
+            listEvents(queryParams);
+        });
     }
 });

@@ -4,6 +4,8 @@ $this->headLink()->appendStylesheet('https://unpkg.com/leaflet@1.9.4/dist/leafle
 $this->headScript()->appendFile($this->assetUrl('js/fashion-calendar-data.js', 'FashionCalendarModule'));
 $this->headScript()->appendFile('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', 'text/javascript', ['integrity' => 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=', 'crossorigin' => '']);
 $this->headScript()->appendFile('https://unpkg.com/mirador@3.3.0/dist/mirador.min.js', 'text/javascript');
+$this->headScript()->appendFile('https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.6.0/nouislider.min.js', 'text/javascript', ['integrity' => 'sha512-1mDhG//LAjM3pLXCJyaA+4c+h5qmMoTc7IuJyuNNPaakrWT9rVTxICK4tIizf7YwJsXgDC2JP74PGCc7qxLAHw==', 'crossorigin' => 'anonymous']);
+$this->headScript()->appendFile('https://cdn.jsdelivr.net/npm/corejs-typeahead@1.3.3/dist/typeahead.bundle.min.js', 'text/javascript');
 $translate = $this->plugin('translate');
 $escape = $this->plugin('escapeHtml');
 ?>

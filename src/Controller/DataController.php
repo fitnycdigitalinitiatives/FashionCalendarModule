@@ -3,7 +3,7 @@
 namespace FashionCalendarModule\Controller;
 
 use Laminas\Mvc\Controller\AbstractActionController;
-use Exception;
+use Omeka\Mvc\Exception\RuntimeException;
 use MongoDB\Client;
 use MongoDB\Driver\ServerApi;
 use MongoDB\BSON\UTCDateTime;
@@ -59,6 +59,12 @@ class DataController extends AbstractActionController
                 foreach ($issue as $this_issue) {
                     $match['$match']['$and'][] = ['appears_in.calendar_id' => $this_issue];
                 }
+            }
+            if (array_key_exists('year', $params) && ($year = $params['year']) && (strlen($year) == 4) && is_numeric($year)) {
+                $match['$match']['$and'][] = ['start_date_iso' => ['$gte' => new UTCDateTime(strtotime($year . '-01-01') * 1000), '$lt' => new UTCDateTime(strtotime(strval($year + 1) . '-01-01') * 1000)]];
+            }
+            if (array_key_exists('date_range_start', $params) && array_key_exists('date_range_end', $params) && ($date_range_start = $params['date_range_start']) && ($date_range_end = $params['date_range_end']) && (strlen($date_range_start) == 4) && (strlen($date_range_end) == 4) && is_numeric($date_range_start) && is_numeric($date_range_end) && $date_range_start <= $date_range_end) {
+                $match['$match']['$and'][] = ['start_date_iso' => ['$gte' => new UTCDateTime(strtotime($date_range_start . '-01-01') * 1000), '$lt' => new UTCDateTime(strtotime(strval($date_range_end + 1) . '-01-01') * 1000)]];
             }
             if (array_key_exists('year_month', $params) && ($year_month = $params['year_month']) && (strlen($year_month) == 7) && (strpos($year_month, '-') == 4)) {
                 $year = explode("-", $year_month)[0];
@@ -127,6 +133,47 @@ class DataController extends AbstractActionController
                 return $response;
             }
 
+        } else {
+            throw new RuntimeException("Invalid Page");
+        }
+    }
+
+    public function suggesterAction()
+    {
+        if ($this->currentSite()->slug() == "fashioncalendar") {
+            $response = $this->getResponse();
+            $params = $this->params()->fromQuery();
+            if (array_key_exists('type', $params) && ($type = $params['type']) && (($type == 'names') || ($type == 'categories'))) {
+                $settings = $this->settings();
+                $connectionFormat = "mongodb+srv";
+                if ($settings->get('fcm_mongo_connection_format')) {
+                    $connectionFormat = $settings->get('fcm_mongo_connection_format');
+                }
+                $uri = $connectionFormat . "://" . $settings->get('fcm_mongo_user') . ":" . $settings->get('fcm_mongo_password') . "@" . $settings->get('fcm_mongo_url') . "/?retryWrites=true&w=majority";
+                // Specify Stable API version 1
+                $apiVersion = new ServerApi(ServerApi::V1);
+                // Create a new client and connect to the server
+                $client = new Client($uri, [], ['serverApi' => $apiVersion]);
+                $collection = $client->selectCollection($settings->get('fcm_mongo_db'), $type);
+                try {
+                    $distinct = $collection->distinct('label');
+                    $response->setContent(json_encode($distinct));
+                    $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
+                    return $response;
+                } catch (Exception $e) {
+                    $error = array('error' => ["code" => 500, "message" => $e->getMessage()]);
+                    $response->setStatusCode(500);
+                    $response->setContent(json_encode($error));
+                    $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
+                    return $response;
+                }
+            } else {
+                $error = array('error' => ["code" => 500, "message" => "Invalid request"]);
+                $response->setStatusCode(500);
+                $response->setContent(json_encode($error));
+                $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
+                return $response;
+            }
         } else {
             throw new RuntimeException("Invalid Page");
         }
