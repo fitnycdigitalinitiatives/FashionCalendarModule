@@ -24,7 +24,7 @@ $(document).ready(function () {
     function listEvents(queryParams) {
         $('.modal').modal('hide');
         $('#data-container').html(`
-        <div class="d-flex justify-content-center my-5 py-5">
+        <div id="loader" class="d-flex justify-content-center align-items-center">
             <div class="spinner-border" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>

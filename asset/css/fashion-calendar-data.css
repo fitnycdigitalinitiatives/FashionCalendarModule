@@ -1,12 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
 
-#data-container dd.source {
-    font-family: 'Special Elite', cursive;
+#loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
-#data-container.blur {
-    filter: blur(2px);
-    transition: 2s filter linear;
+#data-container dd.source {
+    font-family: 'Special Elite', cursive;
 }
 
 #data-container dl a {
