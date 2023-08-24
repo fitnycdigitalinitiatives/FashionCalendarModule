@@ -4,6 +4,10 @@
     font-family: 'Special Elite', cursive;
 }
 
+#data-container.blur {
+    filter: blur(2px);
+    transition: 2s filter linear;
+}
 
 #data-container dl a {
     text-decoration: none;
@@ -100,7 +104,8 @@
     padding: .5rem 1rem;
     border-bottom: 1px solid rgba(0, 0, 0, .125);
     border-top: 1px solid rgba(0, 0, 0, .125);
-    background-color: rgba(0, 0, 0, 0.05)
+    background-color: rgba(0, 0, 0, 0.05);
+    margin-bottom: 0;
 }
 
 .twitter-typeahead .tt-dataset:first-of-type .typeahead-header {

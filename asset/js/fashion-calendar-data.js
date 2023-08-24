@@ -23,12 +23,18 @@ $(document).ready(function () {
 
     function listEvents(queryParams) {
         $('.modal').modal('hide');
-        $('#data-container').empty();
+        $('#data-container').html(`
+        <div class="d-flex justify-content-center my-5 py-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        `);
         $('#facet-container').empty();
         $('#modal-container').empty();
-        $('#results').text("");
+        $('#results').text("").hide();
         $('#query').empty().hide();
-        $('#facet-button').empty();
+        $('#facet-button').empty().hide();
         $('#data-search input').val("");
         let text = "";
         let names = "";
@@ -150,15 +156,8 @@ $(document).ready(function () {
             } else {
                 resultsText = `Your search did not return any events. Please try again with another search term.`;
             }
-            $('#results').text(resultsText);
-            $('#query').show();
-            let searchTerm = [];
-            [text, names, categories, issue, year, year_month, location].forEach(value => {
-                if (value) {
-                    searchTerm.push(value);
-                }
-            });
             const namesList = [];
+            $('#data-container').empty().hide();
             data.results.forEach(event => {
                 $('#data-container').append(createListing(event));
                 event.names.forEach(name => {
@@ -169,6 +168,10 @@ $(document).ready(function () {
                 });
             });
             $('#modal-container').append(createFacets(data.facets));
+            $('#results').text(resultsText).fadeIn();
+            $('#query').fadeIn();
+            $('#data-container').fadeIn();
+            $('#facet-button').fadeIn();
             $('#modal-container').append(createViewerModal());
             $('#modal-container').append(createMapModal());
             // Attach listeners to new content
@@ -627,13 +630,17 @@ $(document).ready(function () {
             });
             dateRangeCard.find('#dateRangeFacet').submit(function (event) {
                 event.preventDefault();
+                let openedCanvas = bootstrap.Offcanvas.getInstance(offCanvas);
                 // Update URL Query.
                 let queryParams = new URLSearchParams(window.location.search);
                 // Set because there can only be one date range
                 queryParams.set("date_range_start", minInput.value);
                 queryParams.set("date_range_end", maxInput.value);
                 history.pushState(null, null, "?" + queryParams.toString());
-                listEvents(queryParams);
+                openedCanvas.hide();
+                offCanvas[0].addEventListener('hidden.bs.offcanvas', event => {
+                    listEvents(queryParams);
+                });
             });
             offCanvas.children('.offcanvas-body').append(dateRangeCard);
         }
@@ -688,7 +695,11 @@ $(document).ready(function () {
                 let queryParams = new URLSearchParams(window.location.search);
                 queryParams.append("names[]", name);
                 history.pushState(null, null, "?" + queryParams.toString());
-                listEvents(queryParams);
+                let openedCanvas = bootstrap.Offcanvas.getInstance(offCanvas);
+                openedCanvas.hide();
+                offCanvas[0].addEventListener('hidden.bs.offcanvas', event => {
+                    listEvents(queryParams);
+                });
             });
             offCanvas.children('.offcanvas-body').append(namesCard);
 
@@ -743,7 +754,12 @@ $(document).ready(function () {
                 let queryParams = new URLSearchParams(window.location.search);
                 queryParams.append("categories[]", category);
                 history.pushState(null, null, "?" + queryParams.toString());
-                listEvents(queryParams);
+                let openedCanvas = bootstrap.Offcanvas.getInstance(offCanvas);
+                openedCanvas.hide();
+                offCanvas[0].addEventListener('hidden.bs.offcanvas', event => {
+                    listEvents(queryParams);
+                });
+
             });
             offCanvas.children('.offcanvas-body').append(categoriesCard);
 
@@ -804,7 +820,11 @@ $(document).ready(function () {
                 queryParams.delete("date_range_start");
                 queryParams.delete("date_range_end");
                 history.pushState(null, null, "?" + queryParams.toString());
-                listEvents(queryParams);
+                let openedCanvas = bootstrap.Offcanvas.getInstance(offCanvas);
+                openedCanvas.hide();
+                offCanvas[0].addEventListener('hidden.bs.offcanvas', event => {
+                    listEvents(queryParams);
+                });
             });
             offCanvas.children('.offcanvas-body').append(yearsCard);
         }
