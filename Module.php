@@ -5,6 +5,7 @@
 namespace FashionCalendarModule;
 
 use Omeka\Module\AbstractModule;
+use Laminas\Mvc\MvcEvent;
 use Laminas\View\Renderer\PhpRenderer;
 use Laminas\Mvc\Controller\AbstractController;
 use Laminas\ModuleManager\ModuleManager;
@@ -27,6 +28,18 @@ class Module extends AbstractModule
     public function getConfig()
     {
         return include __DIR__ . '/config/module.config.php';
+    }
+    public function onBootstrap(MvcEvent $event)
+    {
+        parent::onBootstrap($event);
+
+        $acl = $this->getServiceLocator()->get('Omeka\Acl');
+        $acl->allow(
+            null,
+            [
+                'FashionCalendarModule\Controller\Data',
+            ]
+        );
     }
 
     public function getConfigForm(PhpRenderer $renderer)
