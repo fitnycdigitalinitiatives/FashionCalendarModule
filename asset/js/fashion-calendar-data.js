@@ -46,13 +46,16 @@ $(document).ready(function () {
         if (queryParams.toString()) {
             if (queryParams.has('text')) {
                 text = queryParams.get('text');
-                let newQueryParams = new URLSearchParams(window.location.search);
-                newQueryParams.delete('text')
-                $('#query').append(`
-                <li class="list-inline-item">
-                    <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${text}</a>
-                </li>
-                `);
+                if (text) {
+                    let newQueryParams = new URLSearchParams(window.location.search);
+                    newQueryParams.delete('text')
+                    $('#query').append(`
+                    <li class="list-inline-item">
+                        <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${text}</a>
+                    </li>
+                    `);
+                }
+
             }
             if (queryParams.has('names[]')) {
                 names = queryParams.getAll('names[]');
@@ -111,6 +114,16 @@ $(document).ready(function () {
                 $('#query').append(`
                 <li class="list-inline-item">
                     <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${date_range_start}-${date_range_end}</a>
+                </li>
+                `);
+            }
+            if (queryParams.has('titles')) {
+                titles = queryParams.get('titles');
+                let newQueryParams = new URLSearchParams(window.location.search);
+                newQueryParams.delete('titles');
+                $('#query').append(`
+                <li class="list-inline-item">
+                    <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${titles}</a>
                 </li>
                 `);
             }
@@ -643,6 +656,37 @@ $(document).ready(function () {
                 });
             });
             offCanvas.children('.offcanvas-body').append(dateRangeCard);
+        }
+        if (facets.titles.length) {
+            hasFacets = true;
+            let titlesCard = card.clone();
+            titlesCard.children('.card-header').text("Titles");
+            const titleDisplayFacets = facets.titles;
+            titleDisplayFacets.forEach(title => {
+                let queryParams = new URLSearchParams(window.location.search);
+                queryParams.append("titles", title.title);
+                titlesCard.append(`
+                <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-title="${title.title}">
+                    ${title.title}
+                    <span class="badge bg-secondary rounded-pill">${title.count}</span>
+                </a>
+                `);
+            });
+            titlesCard.find('a').click(function (event) {
+                event.preventDefault();
+                let title = $(this).data("title");
+                // Update URL Query.
+                let queryParams = new URLSearchParams(window.location.search);
+                queryParams.append("titles", title);
+                history.pushState(null, null, "?" + queryParams.toString());
+                let openedCanvas = bootstrap.Offcanvas.getInstance(offCanvas);
+                openedCanvas.hide();
+                offCanvas[0].addEventListener('hidden.bs.offcanvas', event => {
+                    listEvents(queryParams);
+                });
+            });
+            offCanvas.children('.offcanvas-body').append(titlesCard);
+
         }
         if (facets.names.length) {
             hasFacets = true;

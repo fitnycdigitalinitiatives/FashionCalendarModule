@@ -60,6 +60,9 @@ class DataController extends AbstractActionController
                     $match['$match']['$and'][] = ['appears_in.calendar_id' => $this_issue];
                 }
             }
+            if (array_key_exists('titles', $params) && ($titles = $params['titles']) && (($titles == "Fashion Calendar") || ($titles == "Home Furnishings Calendar"))) {
+                $match['$match']['$and'][] = ['appears_in.calendar_title' => $titles];
+            }
             if (array_key_exists('year', $params) && ($year = $params['year']) && (strlen($year) == 4) && is_numeric($year)) {
                 $match['$match']['$and'][] = ['start_date_iso' => ['$gte' => new UTCDateTime(strtotime($year . '-01-01') * 1000), '$lt' => new UTCDateTime(strtotime(strval($year + 1) . '-01-01') * 1000)]];
             }
@@ -109,6 +112,7 @@ class DataController extends AbstractActionController
                     'names' => [['$unwind' => ['path' => '$names']], ['$group' => ['_id' => '$names.label', 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$limit' => 25], ['$project' => ['_id' => 0, 'name' => '$_id', 'count' => 1]]],
                     'categories' => [['$project' => ['categories' => ['$reduce' => ['input' => '$names.categories.label', 'initialValue' => [], 'in' => ['$setUnion' => ['$$this', '$$value']]]]]], ['$unwind' => ['path' => '$categories']], ['$group' => ['_id' => '$categories', 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$limit' => 25], ['$project' => ['_id' => 0, 'category' => '$_id', 'count' => 1]]],
                     'years' => [['$group' => ['_id' => ['$year' => '$start_date_iso'], 'count' => ['$sum' => 1]]], ['$sort' => ['_id' => 1]], ['$project' => ['_id' => 0, 'year' => '$_id', 'count' => 1]]],
+                    'titles' => [['$group' => ['_id' => ['$arrayElemAt' => ['$appears_in.calendar_title', 0]], 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$project' => ['_id' => 0, 'title' => '$_id', 'count' => 1]]],
                     'count' => [
                         [
                             '$count' => 'count'
@@ -117,7 +121,7 @@ class DataController extends AbstractActionController
                 ]
             ];
             $aggregation[] = $facet;
-            $aggregation[] = ['$project' => ['results' => 1, 'facets' => ['names' => '$names', 'categories' => '$categories', 'years' => '$years'], 'count' => ['$first' => '$count']]];
+            $aggregation[] = ['$project' => ['results' => 1, 'facets' => ['names' => '$names', 'categories' => '$categories', 'years' => '$years', 'titles' => '$titles'], 'count' => ['$first' => '$count']]];
             $aggregation[] = ['$project' => ['results' => 1, 'facets' => 1, 'count' => '$count.count']];
 
             try {
