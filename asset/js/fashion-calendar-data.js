@@ -960,6 +960,11 @@ $(document).ready(function () {
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <div id="graph-loader" class="d-flex justify-content-center align-items-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
                 </div>
                 </div>
             </div>
@@ -979,7 +984,7 @@ $(document).ready(function () {
             const thisGraphModal = document.getElementById('graphModal');
             thisGraphModal.addEventListener('shown.bs.modal', event => {
                 const modalBody = $(thisGraphModal).find('.modal-body');
-                if (modalBody.children().length == 0) {
+                if (modalBody.children('.graph').length == 0) {
                     let thisURL = new URL(url, "https://fashioncalendar.fitnyc.edu/");
                     let queryParams = new URLSearchParams(thisURL.search);
                     queryParams.set("graph", "true");
@@ -987,6 +992,7 @@ $(document).ready(function () {
                     fetch(graphURL)
                         .then((response) => response.json())
                         .then((data) => {
+                            modalBody.empty();
                             graphsData = data;
                             data = null;
                             // Events per year
@@ -1020,14 +1026,14 @@ $(document).ready(function () {
                             });
                             // Hosts per year
                             modalBody.append(`
-                        <div class="graph">
-                            <h3>
-                            <span>Unique Hosts Per Year</span>
-                            <button class="data-download btn btn-link link-dark ms-1 text-decoration-none p-0" data-type="hosts-by-year-chart" aria-label="Download data as csv"><i class="fas fa-download" aria-hidden="true" title="Download data as csv"></i></button>
-                            </h3>
-                            <canvas id="hosts-by-year-chart" aria-label="Chart of unique hosts per year" role="img"></canvas>
-                        </div>
-                        `);
+                            <div class="graph">
+                                <h3>
+                                <span>Unique Hosts Per Year</span>
+                                <button class="data-download btn btn-link link-dark ms-1 text-decoration-none p-0" data-type="hosts-by-year-chart" aria-label="Download data as csv"><i class="fas fa-download" aria-hidden="true" title="Download data as csv"></i></button>
+                                </h3>
+                                <canvas id="hosts-by-year-chart" aria-label="Chart of unique hosts per year" role="img"></canvas>
+                            </div>
+                            `);
                             const hostsByYearChart = document.getElementById('hosts-by-year-chart');
                             hostsyearChart = new Chart(hostsByYearChart, {
                                 type: 'bar',
@@ -1049,14 +1055,14 @@ $(document).ready(function () {
                             });
                             // Categories
                             modalBody.append(`
-                        <div class="graph">
-                            <h3>
-                            <span>Categories</span>
-                            <button class="data-download btn btn-link link-dark ms-1 text-decoration-none p-0" data-type="events-per-category-chart" aria-label="Download data as csv"><i class="fas fa-download" aria-hidden="true" title="Download data as csv"></i></button>
-                            </h3>
-                            <canvas id="events-per-category-chart" aria-label="Chart of number of events per category" role="img"></canvas>
-                        </div>
-                        `);
+                            <div class="graph">
+                                <h3>
+                                <span>Categories</span>
+                                <button class="data-download btn btn-link link-dark ms-1 text-decoration-none p-0" data-type="events-per-category-chart" aria-label="Download data as csv"><i class="fas fa-download" aria-hidden="true" title="Download data as csv"></i></button>
+                                </h3>
+                                <canvas id="events-per-category-chart" aria-label="Chart of number of events per category" role="img"></canvas>
+                            </div>
+                            `);
                             const eventsPerCategoryChart = document.getElementById('events-per-category-chart');
                             eventsCategoryChart = new Chart(eventsPerCategoryChart, {
                                 type: 'pie',
@@ -1077,14 +1083,14 @@ $(document).ready(function () {
                             });
                             // Names
                             modalBody.append(`
-                        <div class="graph">
-                            <h3>
-                            <span>Names</span>
-                            <button class="data-download btn btn-link link-dark ms-1 text-decoration-none p-0" data-type="events-per-name-chart" aria-label="Download data as csv"><i class="fas fa-download" aria-hidden="true" title="Download data as csv"></i></button>
-                            </h3>
-                            <canvas id="events-per-name-chart" aria-label="Chart of number of events per name" role="img"></canvas>
-                        </div>
-                        `);
+                            <div class="graph">
+                                <h3>
+                                <span>Names</span>
+                                <button class="data-download btn btn-link link-dark ms-1 text-decoration-none p-0" data-type="events-per-name-chart" aria-label="Download data as csv"><i class="fas fa-download" aria-hidden="true" title="Download data as csv"></i></button>
+                                </h3>
+                                <canvas id="events-per-name-chart" aria-label="Chart of number of events per name" role="img"></canvas>
+                            </div>
+                            `);
                             const eventsPerNameChart = document.getElementById('events-per-name-chart');
                             eventsNameChart = new Chart(eventsPerNameChart, {
                                 type: 'pie',
