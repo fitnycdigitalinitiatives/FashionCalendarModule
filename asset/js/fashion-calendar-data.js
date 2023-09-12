@@ -1,20 +1,28 @@
 $(document).ready(function () {
+    // define vars
+    let yearChart = null;
+    let hostsyearChart = null;
+    let eventsCategoryChart = null;
+    let eventsNameChart = null;
+    let miradorViewer = null;
+    let eventsData = null;
+    let graphsData = null;
     initiateStartup();
     window.onpopstate = function () {
         $('#data-search input').typeahead('destroy');
         initiateStartup();
     }
     function initiateStartup() {
-        var queryParams = new URLSearchParams(window.location.search);
+        let queryParams = new URLSearchParams(window.location.search);
         listEvents(queryParams);
         initializeTypeahead();
         $("#data-search").submit(function (event) {
             event.preventDefault();
             $(this).find('input').blur();
             $(this).find('button').blur();
-            text = $(this).find('input').val();
+            let text = $(this).find('input').val();
             // Update URL Query.
-            var queryParams = new URLSearchParams();
+            let queryParams = new URLSearchParams();
             queryParams.set("text", text);
             history.pushState(null, null, "?" + queryParams.toString());
             listEvents(queryParams);
@@ -22,7 +30,36 @@ $(document).ready(function () {
     }
 
     function listEvents(queryParams) {
+        if (yearChart) {
+            yearChart.destroy();
+            yearChart = null;
+        }
+        if (hostsyearChart) {
+            hostsyearChart.destroy();
+            hostsyearChart = null;
+        }
+        if (eventsCategoryChart) {
+            eventsCategoryChart.destroy();
+            eventsCategoryChart = null;
+        }
+        if (eventsNameChart) {
+            eventsNameChart.destroy();
+            eventsNameChart = null;
+        }
+        if (miradorViewer) {
+            miradorViewer.unmount();
+            miradorViewer = null;
+        }
+        if (eventsData) {
+            eventsData = null;
+        }
+        if (graphsData) {
+            graphsData = null;
+        }
         $('.modal').modal('hide');
+        $('.modal').modal('dispose');
+        $('.offcanvas').offcanvas('dispose');
+        $('#data-container').empty();
         $('#data-container').html(`
         <div id="loader" class="d-flex justify-content-center align-items-center">
             <div class="spinner-border" role="status">
@@ -34,7 +71,8 @@ $(document).ready(function () {
         $('#modal-container').empty();
         $('#results').text("").hide();
         $('#query').empty().hide();
-        $('#facet-button').empty().hide();
+        $('#facet').empty().hide();
+        $('#graph').empty().hide();
         $('#data-search input').val("");
         let text = "";
         let names = "";
@@ -159,101 +197,106 @@ $(document).ready(function () {
             }
         }
         const url = "/data-api/events?" + queryParams.toString();
-        $.getJSON(url, function (data) {
-            const totalResults = data.count;
-            let resultsText = ""
-            if (totalResults > 1) {
-                resultsText = `Showing ${Number(totalResults).toLocaleString()} events`;
-            } else if (totalResults == 1) {
-                resultsText = `Showing ${totalResults} event`;
-            } else {
-                resultsText = `Your search did not return any events. Please try again with another search term.`;
-            }
-            const namesList = [];
-            $('#data-container').empty().hide();
-            data.results.forEach(event => {
-                $('#data-container').append(createListing(event));
-                event.names.forEach(name => {
-                    if (!(namesList.includes(name._id))) {
-                        namesList.push(name._id);
-                        $('#modal-container').append(createNameModal(name));
-                    }
+        fetch(url)
+            .then((response) => response.json())
+            .then((data) => {
+                eventsData = data;
+                data = null;
+                const totalResults = eventsData[0].count;
+                let resultsText = ""
+                if (totalResults > 1) {
+                    resultsText = `Showing ${Number(totalResults).toLocaleString()} events`;
+                } else if (totalResults == 1) {
+                    resultsText = `Showing ${totalResults} event`;
+                } else {
+                    resultsText = `Your search did not return any events. Please try again with another search term.`;
+                }
+                const namesList = [];
+                $('#data-container').empty().hide();
+                eventsData[0].results.forEach(event => {
+                    $('#data-container').append(createListing(event));
+                    event.names.forEach(name => {
+                        if (!(namesList.includes(name._id))) {
+                            namesList.push(name._id);
+                            $('#modal-container').append(createNameModal(name));
+                        }
+                    });
                 });
-            });
-            $('#modal-container').append(createFacets(data.facets));
-            $('#results').text(resultsText).fadeIn();
-            $('#query').fadeIn();
-            $('#data-container').fadeIn();
-            $('#facet-button').fadeIn();
-            $('#modal-container').append(createViewerModal());
-            $('#modal-container').append(createMapModal());
-            // Attach listeners to new content
-            $(".name-search").click(function (event) {
-                event.preventDefault();
-                let names = decodeURIComponent($(this).data("label"));
-                // Update URL Query.
-                var queryParams = new URLSearchParams();
-                queryParams.set("names[]", names);
-                history.pushState(null, null, "?" + queryParams.toString());
-                listEvents(queryParams);
-            });
-            $(".issue-search").click(function (event) {
-                event.preventDefault();
-                let issue = decodeURIComponent($(this).data("calendar_id"));
-                // Update URL Query.
-                var queryParams = new URLSearchParams();
-                queryParams.set("issue[]", issue);
-                history.pushState(null, null, "?" + queryParams.toString());
-                listEvents(queryParams);
-            });
-            $(".category-search").click(function (event) {
-                event.preventDefault();
-                let category = decodeURIComponent($(this).data("label"));
-                // Update URL Query.
-                var queryParams = new URLSearchParams();
-                queryParams.set("categories[]", category);
-                history.pushState(null, null, "?" + queryParams.toString());
-                listEvents(queryParams);
-            });
-            $(".location-search").click(function (event) {
-                event.preventDefault();
-                let location = decodeURIComponent($(this).data("location"));
-                // Update URL Query.
-                var queryParams = new URLSearchParams();
-                queryParams.set("location", location);
-                history.pushState(null, null, "?" + queryParams.toString());
-                listEvents(queryParams);
-            });
-            $(".year-month-search").click(function (event) {
-                event.preventDefault();
-                let year_month = decodeURIComponent($(this).data("year-month"));
-                // Update URL Query.
-                var queryParams = new URLSearchParams();
-                queryParams.set("year_month", year_month);
-                history.pushState(null, null, "?" + queryParams.toString());
-                listEvents(queryParams);
-            });
-            $('.remove-query').click(function (event) {
-                event.preventDefault();
-                // Update URL Query.
-                var queryParams = new URLSearchParams($(this).attr('href'));
-                history.pushState(null, null, $(this).attr('href'));
-                listEvents(queryParams);
-            });
-            initiateViewer();
-            initiateMap();
-        })
-            .fail(function () {
-                console.log("error");
-                var error = `
-            <div>
-            <h2>Error</h2>
-            <p class="lead">
-              
-            </p>
-            </div>
-            `;
-                $('#data-container').append(error);
+                createFacets();
+                createGraphs(url);
+                $('#results').text(resultsText).fadeIn();
+                $('#query').fadeIn();
+                $('#data-container').fadeIn();
+                $('#facet').fadeIn();
+                $('#graph').fadeIn();
+                $('#modal-container').append(createViewerModal());
+                $('#modal-container').append(createMapModal());
+                // Attach listeners to new content
+                $(".name-search").click(function (event) {
+                    event.preventDefault();
+                    let names = decodeURIComponent($(this).data("label"));
+                    // Update URL Query.
+                    let queryParams = new URLSearchParams();
+                    queryParams.set("names[]", names);
+                    history.pushState(null, null, "?" + queryParams.toString());
+                    listEvents(queryParams);
+                });
+                $(".issue-search").click(function (event) {
+                    event.preventDefault();
+                    let issue = decodeURIComponent($(this).data("calendar_id"));
+                    // Update URL Query.
+                    let queryParams = new URLSearchParams();
+                    queryParams.set("issue[]", issue);
+                    history.pushState(null, null, "?" + queryParams.toString());
+                    listEvents(queryParams);
+                });
+                $(".category-search").click(function (event) {
+                    event.preventDefault();
+                    let category = decodeURIComponent($(this).data("label"));
+                    // Update URL Query.
+                    let queryParams = new URLSearchParams();
+                    queryParams.set("categories[]", category);
+                    history.pushState(null, null, "?" + queryParams.toString());
+                    listEvents(queryParams);
+                });
+                $(".location-search").click(function (event) {
+                    event.preventDefault();
+                    let location = decodeURIComponent($(this).data("location"));
+                    // Update URL Query.
+                    let queryParams = new URLSearchParams();
+                    queryParams.set("location", location);
+                    history.pushState(null, null, "?" + queryParams.toString());
+                    listEvents(queryParams);
+                });
+                $(".year-month-search").click(function (event) {
+                    event.preventDefault();
+                    let year_month = decodeURIComponent($(this).data("year-month"));
+                    // Update URL Query.
+                    let queryParams = new URLSearchParams();
+                    queryParams.set("year_month", year_month);
+                    history.pushState(null, null, "?" + queryParams.toString());
+                    listEvents(queryParams);
+                });
+                $('.remove-query').click(function (event) {
+                    event.preventDefault();
+                    // Update URL Query.
+                    let queryParams = new URLSearchParams($(this).attr('href'));
+                    history.pushState(null, null, $(this).attr('href'));
+                    listEvents(queryParams);
+                });
+                initiateViewer();
+                initiateMap();
+            })
+            .catch((error) => {
+                console.log(error);
+                $('#data-container').append(`
+                <div>
+                <h2>Error</h2>
+                <p class="lead">
+                
+                </p>
+                </div>
+                `);
             });
     }
     function createListing(event) {
@@ -394,7 +437,7 @@ $(document).ready(function () {
         `);
         const modalBody = $(nameModal).find('.modal-body');
         if (name.description) {
-            $(modalBody).append(`
+            modalBody.append(`
             <dl>
             <dt>Description</dt>
             <dd>${name.description}</dd>
@@ -416,12 +459,12 @@ $(document).ready(function () {
                 </dd>
                 `);
             });
-            $(modalBody).append(categoryList);
+            modalBody.append(categoryList);
         }
 
         //Add note to empty body
         if (!$.trim($(modalBody).html())) {
-            $(modalBody).append("Unfortunately, it doesn't seem that we've been able to gather any information or categorize this name so far.")
+            modalBody.append("Unfortunately, it doesn't seem that we've been able to gather any information or categorize this name so far.")
         }
 
         return nameModal;
@@ -449,6 +492,12 @@ $(document).ready(function () {
     function initiateViewer() {
         const viewerModal = document.getElementById('viewerModal')
         if (viewerModal) {
+            viewerModal.addEventListener('show.bs.modal', event => {
+                if (miradorViewer) {
+                    //Set current window to null temporarily
+                    miradorViewer.store.dispatch(Mirador.actions.removeWindow('this-window-id'));
+                };
+            });
             viewerModal.addEventListener('shown.bs.modal', event => {
                 const button = event.relatedTarget;
                 const calendar_id = decodeURIComponent(button.getAttribute('data-calendar_id'));
@@ -461,57 +510,69 @@ $(document).ready(function () {
                 <span>Page ${calendar_page}</span>
                 <a class="btn btn-link link-dark ms-1 text-decoration-none p-0 disabled" aria-disabled="true" aria-label="View issue page"><i class="fas fa-book" aria-hidden="true" title="View issue page"></i></a>
                 `);
-                // reset modal on close
-                viewerModal.addEventListener('hidden.bs.modal', event => {
-                    $(modalBody).html(`<div id="mirador-viewer-frame"></div>`);
-                    $(modalTitle).empty();
-                });
-                $.getJSON(pageURL, function (data, status, xhr) {
-                    $(modalBody).html(data.html);
-                    $(modalTitle).find('a').attr({ "href": data["item-link"], "aria-disabled": "false" }).removeClass("disabled");
-                    const manifest = $('#mirador-viewer').data('manifest');
-                    const authorization = $('#mirador-viewer').data('authorization');
-                    const canvas = $('#mirador-viewer').data('canvas');
-                    const miradorConfig = {
-                        id: "mirador-viewer",
-                        workspaceControlPanel: {
-                            enabled: false
-                        },
-                        window: {
-                            allowClose: false,
-                            allowFullscreen: true,
-                            allowMaximize: false,
-                        },
-                        windows: [
-                            {
-                                manifestId: manifest,
-                                thumbnailNavigationPosition: 'far-right',
-                            }
-                        ],
-                    };
-                    if (authorization) {
-                        miradorConfig['requests'] = {
-                            preprocessors: [
-                                (url, options) => (url.match('info.json') && { ...options, headers: { ...options.headers, "Authorization": "Bearer " + authorization } }),
-                            ]
-                        };
-                        miradorConfig['osdConfig'] = {
-                            loadTilesWithAjax: true,
-                            ajaxHeaders: {
-                                'Authorization': `Bearer ${authorization}`
+                if (!miradorViewer) {
+                    $(modalBody).html(`
+                    <div id="mirador-viewer-frame">
+                        <div id="mirador-viewer"></div>
+                    </div>
+                    `);
+                    miradorViewer = Mirador.viewer(
+                        {
+                            id: "mirador-viewer",
+                            workspaceControlPanel: {
+                                enabled: false
+                            },
+                            window: {
+                                allowClose: false,
+                                allowFullscreen: true,
+                                allowMaximize: false,
+                            },
+                            translations: {
+                                en: {
+                                    welcome: 'Loading...',
+                                }
                             }
                         }
-                    }
-                    if (canvas) {
-                        miradorConfig['windows'][0]['canvasId'] = canvas;
-                    }
-                    Mirador.viewer(miradorConfig);
-                })
-                    .fail(function () {
+                    );
+                }
+                fetch(pageURL)
+                    .then((response) => response.json())
+                    .then((pageData) => {
+                        let miradorData = $(pageData.html).children('#mirador-viewer');
+                        $(modalTitle).find('a').attr({ "href": pageData["item-link"], "aria-disabled": "false" }).removeClass("disabled");
+                        const manifest = miradorData.data('manifest');
+                        const authorization = miradorData.data('authorization');
+                        const canvas = miradorData.data('canvas');
+                        const thisWindow = {
+                            id: 'this-window-id',
+                            manifestId: manifest,
+                            thumbnailNavigationPosition: 'far-right',
+                            canvasId: canvas
+                        }
+                        const miradorConfig = {};
+                        if (authorization) {
+                            const miradorConfig = {};
+                            miradorConfig['requests'] = {
+                                preprocessors: [
+                                    (url, options) => (url.match('info.json') && { ...options, headers: { ...options.headers, "Authorization": "Bearer " + authorization } }),
+                                ]
+                            };
+                            miradorConfig['osdConfig'] = {
+                                loadTilesWithAjax: true,
+                                ajaxHeaders: {
+                                    'Authorization': `Bearer ${authorization}`
+                                }
+                            }
+                            miradorViewer.store.dispatch(Mirador.actions.updateConfig(miradorConfig));
+                        }
+                        miradorViewer.store.dispatch(Mirador.actions.addWindow(thisWindow));
+                        pageData = null;
+                    })
+                    .catch((error) => {
+                        console.log(error);
                         console.log(`Error retrieving ${calendar_id}, page ${calendar_page}`);
                         modalBody.textContent = `Error retrieving ${calendar_id}, page ${calendar_page}`;
                     });
-
             })
         }
     }
@@ -535,7 +596,7 @@ $(document).ready(function () {
         return mapModal;
     }
     function initiateMap() {
-        const mapModal = document.getElementById('mapModal')
+        const mapModal = document.getElementById('mapModal');
         if (mapModal) {
             mapModal.addEventListener('show.bs.modal', event => {
                 const button = event.relatedTarget;
@@ -545,16 +606,16 @@ $(document).ready(function () {
                 const modalBody = mapModal.querySelector('.modal-body');
                 $(modalBody).html(`<div id="viewer-map"></div>`);
                 mapModal.addEventListener('shown.bs.modal', event => {
-                    var container = L.DomUtil.get('viewer-map');
+                    let container = L.DomUtil.get('viewer-map');
                     if (container != null) {
                         container._leaflet_id = null;
                     }
-                    var map = L.map('viewer-map').setView([latitude, longitude], 12);
+                    let map = L.map('viewer-map').setView([latitude, longitude], 12);
                     L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZml0ZGlnaXRhbGluaXRpYXRpdmVzIiwiYSI6ImNqZ3FxaWI0YTBoOXYyenA2ZnVyYWdsenQifQ.ckTVKSAZ8ZWPAefkd7SOaA', {
                         id: 'mapbox/light-v10',
                         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' + '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' + 'Imagery © <a href="http://mapbox.com">Mapbox</a>'
                     }).addTo(map);
-                    var marker = L.marker([latitude, longitude]).addTo(map);
+                    let marker = L.marker([latitude, longitude]).addTo(map);
                     marker.bindPopup(formattedAddress).openPopup();
                 });
 
@@ -562,7 +623,7 @@ $(document).ready(function () {
         }
     }
 
-    function createFacets(facets) {
+    function createFacets() {
         let hasFacets = false;
         let offCanvas = $(`
         <div class="offcanvas offcanvas-start shadow border-end-0" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="facets" aria-labelledby="facetsLabel">
@@ -583,10 +644,10 @@ $(document).ready(function () {
             </ul>
         </div>
         `);
-        if (facets.years.length > 1) {
+        if (eventsData[0].facets.years.length > 1) {
             hasFacets = true;
-            const first_year = facets.years[0].year;
-            const last_year = facets.years[facets.years.length - 1].year;
+            const first_year = eventsData[0].facets.years[0].year;
+            const last_year = eventsData[0].facets.years[eventsData[0].facets.years.length - 1].year;
             let dateRangeCard = $(`
             <div class="card rounded-0 border-start-0 border-end-0">
                 <h4 class="card-header">Date</h4>
@@ -614,9 +675,9 @@ $(document).ready(function () {
                 </form>
             </div>
             `);
-            var slider = dateRangeCard.find('#date-facet-slider')[0];
-            var minInput = dateRangeCard.find('#dateRangeMin')[0];
-            var maxInput = dateRangeCard.find('#dateRangeMax')[0];
+            let slider = dateRangeCard.find('#date-facet-slider')[0];
+            let minInput = dateRangeCard.find('#dateRangeMin')[0];
+            let maxInput = dateRangeCard.find('#dateRangeMax')[0];
             noUiSlider.create(slider, {
                 start: [first_year, last_year],
                 step: 1,
@@ -626,7 +687,7 @@ $(document).ready(function () {
                 }
             });
             slider.noUiSlider.on('update', function (values, handle) {
-                var value = values[handle];
+                let value = values[handle];
 
                 if (handle) {
                     maxInput.value = Math.round(value);
@@ -657,11 +718,11 @@ $(document).ready(function () {
             });
             offCanvas.children('.offcanvas-body').append(dateRangeCard);
         }
-        if (facets.titles.length) {
+        if (eventsData[0].facets.titles.length) {
             hasFacets = true;
             let titlesCard = card.clone();
             titlesCard.children('.card-header').text("Titles");
-            const titleDisplayFacets = facets.titles;
+            const titleDisplayFacets = eventsData[0].facets.titles;
             titleDisplayFacets.forEach(title => {
                 let queryParams = new URLSearchParams(window.location.search);
                 queryParams.append("titles", title.title);
@@ -688,12 +749,12 @@ $(document).ready(function () {
             offCanvas.children('.offcanvas-body').append(titlesCard);
 
         }
-        if (facets.names.length) {
+        if (eventsData[0].facets.names.length) {
             hasFacets = true;
             let namesCard = card.clone();
             namesCard.children('.card-header').text("Names");
-            const nameDisplayFacets = facets.names.slice(0, 10);
-            const nameHiddenFacets = facets.names.slice(10);
+            const nameDisplayFacets = eventsData[0].facets.names.slice(0, 10);
+            const nameHiddenFacets = eventsData[0].facets.names.slice(10);
             nameDisplayFacets.forEach(name => {
                 let queryParams = new URLSearchParams(window.location.search);
                 queryParams.append("names[]", name.name);
@@ -748,12 +809,12 @@ $(document).ready(function () {
             offCanvas.children('.offcanvas-body').append(namesCard);
 
         }
-        if (facets.categories.length) {
+        if (eventsData[0].facets.categories.length) {
             hasFacets = true;
             let categoriesCard = card.clone();
             categoriesCard.children('.card-header').text("Categories");
-            const categoriesDisplayFacets = facets.categories.slice(0, 10);
-            const categoriesHiddenFacets = facets.categories.slice(10);
+            const categoriesDisplayFacets = eventsData[0].facets.categories.slice(0, 10);
+            const categoriesHiddenFacets = eventsData[0].facets.categories.slice(10);
             categoriesDisplayFacets.forEach(category => {
                 let queryParams = new URLSearchParams(window.location.search);
                 queryParams.append("categories[]", category.category);
@@ -808,12 +869,12 @@ $(document).ready(function () {
             offCanvas.children('.offcanvas-body').append(categoriesCard);
 
         }
-        if (facets.years.length) {
+        if (eventsData[0].facets.years.length) {
             hasFacets = true;
             let yearsCard = card.clone();
             yearsCard.children('.card-header').text("Years");
-            const yearsDisplayFacets = facets.years.slice(0, 10);
-            const yearsHiddenFacets = facets.years.slice(10);
+            const yearsDisplayFacets = eventsData[0].facets.years.slice(0, 10);
+            const yearsHiddenFacets = eventsData[0].facets.years.slice(10);
             yearsDisplayFacets.forEach(year => {
                 let queryParams = new URLSearchParams(window.location.search);
                 queryParams.append("year", year.year);
@@ -873,19 +934,253 @@ $(document).ready(function () {
             offCanvas.children('.offcanvas-body').append(yearsCard);
         }
         if (hasFacets) {
-            $('#facet-button').html(`
+            $('#facet').html(`
             <button id="facet-button" class="btn btn-fit-pink floating-action" type="button" data-bs-toggle="offcanvas"
               data-bs-target="#facets" aria-controls="facets" aria-label="Facet results">
               <span class="action-container">
                 <i class="fas fa-filter" aria-hidden="true" title="Facet results">
                 </i>
-                Facet results
+                Facet
               </span>
             </button>
             `);
-            return offCanvas;
+            $('#modal-container').append(offCanvas);
         }
     }
+
+    function createGraphs(url) {
+        // Only need graphs for multiple years of data?
+        if (eventsData[0].facets.years.length > 1) {
+            let graphModal = $(`
+            <div class="modal fade" id="graphModal" tabindex="-1" aria-labelledby="graphLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-xl">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-6" id="graphLabel">Graph Visualizations</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                </div>
+                </div>
+            </div>
+            </div>
+            `);
+            $('#modal-container').append(graphModal);
+            $('#graph').html(`
+            <button id="graph-button" class="btn btn-fit-green floating-action" type="button" data-bs-toggle="modal"
+              data-bs-target="#graphModal" aria-controls="graphModal" aria-label="Graph results">
+              <span class="action-container">
+                <i class="fas fa-chart-bar" aria-hidden="true" title="Graph results">
+                </i>
+                Graph
+              </span>
+            </button>
+            `);
+            const thisGraphModal = document.getElementById('graphModal');
+            thisGraphModal.addEventListener('shown.bs.modal', event => {
+                const modalBody = $(thisGraphModal).find('.modal-body');
+                if (modalBody.children().length == 0) {
+                    let thisURL = new URL(url, "https://fashioncalendar.fitnyc.edu/");
+                    let queryParams = new URLSearchParams(thisURL.search);
+                    queryParams.set("graph", "true");
+                    let graphURL = "/data-api/events?" + queryParams.toString();
+                    fetch(graphURL)
+                        .then((response) => response.json())
+                        .then((data) => {
+                            graphsData = data;
+                            data = null;
+                            // Events per year
+                            modalBody.append(`
+                                <div class="graph">
+                                    <h3>
+                                    <span>Events Per Year</span>
+                                    <button class="data-download btn btn-link link-dark ms-1 text-decoration-none p-0" data-type="by-year-chart" aria-label="Download data as csv"><i class="fas fa-download" aria-hidden="true" title="Download data as csv"></i></button>
+                                    </h3>
+                                    <canvas id="by-year-chart" aria-label="Chart of events per year" role="img"></canvas>
+                                </div>
+                            `);
+                            const byYearChart = document.getElementById('by-year-chart');
+                            yearChart = new Chart(byYearChart, {
+                                type: 'bar',
+                                data: {
+                                    labels: eventsData[0].facets.years.map(row => row.year),
+                                    datasets: [{
+                                        label: '# of Events',
+                                        data: eventsData[0].facets.years.map(row => row.count),
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true
+                                        }
+                                    }
+                                }
+                            });
+                            // Hosts per year
+                            modalBody.append(`
+                        <div class="graph">
+                            <h3>
+                            <span>Unique Hosts Per Year</span>
+                            <button class="data-download btn btn-link link-dark ms-1 text-decoration-none p-0" data-type="hosts-by-year-chart" aria-label="Download data as csv"><i class="fas fa-download" aria-hidden="true" title="Download data as csv"></i></button>
+                            </h3>
+                            <canvas id="hosts-by-year-chart" aria-label="Chart of unique hosts per year" role="img"></canvas>
+                        </div>
+                        `);
+                            const hostsByYearChart = document.getElementById('hosts-by-year-chart');
+                            hostsyearChart = new Chart(hostsByYearChart, {
+                                type: 'bar',
+                                data: {
+                                    labels: graphsData[0].uniqueHostsbyYear.map(row => row.year),
+                                    datasets: [{
+                                        label: '# of Hosts',
+                                        data: graphsData[0].uniqueHostsbyYear.map(row => row.numberOfHosts),
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true
+                                        }
+                                    }
+                                }
+                            });
+                            // Categories
+                            modalBody.append(`
+                        <div class="graph">
+                            <h3>
+                            <span>Categories</span>
+                            <button class="data-download btn btn-link link-dark ms-1 text-decoration-none p-0" data-type="events-per-category-chart" aria-label="Download data as csv"><i class="fas fa-download" aria-hidden="true" title="Download data as csv"></i></button>
+                            </h3>
+                            <canvas id="events-per-category-chart" aria-label="Chart of number of events per category" role="img"></canvas>
+                        </div>
+                        `);
+                            const eventsPerCategoryChart = document.getElementById('events-per-category-chart');
+                            eventsCategoryChart = new Chart(eventsPerCategoryChart, {
+                                type: 'pie',
+                                data: {
+                                    labels: graphsData[0].categories.map(row => row.category),
+                                    datasets: [{
+                                        label: '# of Events',
+                                        data: graphsData[0].categories.map(row => row.count),
+                                    }]
+                                },
+                                options: {
+                                    plugins: {
+                                        legend: {
+                                            display: false,
+                                        }
+                                    }
+                                }
+                            });
+                            // Names
+                            modalBody.append(`
+                        <div class="graph">
+                            <h3>
+                            <span>Names</span>
+                            <button class="data-download btn btn-link link-dark ms-1 text-decoration-none p-0" data-type="events-per-name-chart" aria-label="Download data as csv"><i class="fas fa-download" aria-hidden="true" title="Download data as csv"></i></button>
+                            </h3>
+                            <canvas id="events-per-name-chart" aria-label="Chart of number of events per name" role="img"></canvas>
+                        </div>
+                        `);
+                            const eventsPerNameChart = document.getElementById('events-per-name-chart');
+                            eventsNameChart = new Chart(eventsPerNameChart, {
+                                type: 'pie',
+                                data: {
+                                    labels: graphsData[0].names.map(row => row.name),
+                                    datasets: [{
+                                        label: '# of Events',
+                                        data: graphsData[0].names.map(row => row.count),
+                                    }]
+                                },
+                                options: {
+                                    plugins: {
+                                        legend: {
+                                            display: false,
+                                        }
+                                    }
+                                }
+                            });
+                            $(".data-download").click(graphDownload);
+                        })
+                        .catch((error) => {
+                            console.log(error);
+                            modalBody.append(`
+                            <div>
+                            <h2>Error</h2>
+                            <p class="lead">
+                            Error loading graph data. Please try again.
+                            </p>
+                            </div>
+                            `);
+                        });
+                }
+            });
+        }
+    }
+
+    const download = function (data, name) {
+
+        // Creating a Blob for having a csv file format
+        // and passing the data with type
+        const blob = new Blob([data], { type: 'text/csv' });
+
+        // Creating an object for downloading url
+        const url = window.URL.createObjectURL(blob);
+
+        // Creating an anchor(a) tag of HTML
+        const a = document.createElement('a');
+
+        // Passing the blob downloading url
+        a.setAttribute('href', url);
+
+        // Setting the anchor tag attribute for downloading
+        // and passing the download file name
+        a.setAttribute('download', name + '.csv');
+
+        // Performing a download with click
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    const csvmaker = function (data) {
+        const replacer = (key, value) => value === null ? '' : value; // specify how you want to handle null values here
+        const header = Object.keys(data[0]);
+        const csv = [
+            header.join(','), // header row first
+            ...data.map(row => header.map(fieldName => JSON.stringify(row[fieldName], replacer)).join(','))
+        ].join('\r\n');
+        return csv;
+    }
+
+    const graphDownload = async function (event) {
+        const type = event.currentTarget.getAttribute('data-type');
+        switch (type) {
+            case 'by-year-chart': {
+                const csvdata = csvmaker(eventsData[0].facets.years);
+                download(csvdata, type);
+                break;
+            }
+            case 'hosts-by-year-chart': {
+                const csvdata = csvmaker(graphsData[0].uniqueHostsbyYear);
+                download(csvdata, type);
+                break;
+            }
+            case 'events-per-category-chart': {
+                const csvdata = csvmaker(graphsData[0].categories);
+                download(csvdata, type);
+                break;
+            }
+            case 'events-per-name-chart': {
+                const csvdata = csvmaker(graphsData[0].names);
+                download(csvdata, type);
+                break;
+            }
+        }
+    }
+
 
     function initializeTypeahead() {
         const names = new Bloodhound({
@@ -898,7 +1193,7 @@ $(document).ready(function () {
             queryTokenizer: Bloodhound.tokenizers.whitespace,
             prefetch: "/data-api/suggester?type=categories"
         });
-        var termSuggester = $('#data-search input').typeahead(
+        let termSuggester = $('#data-search input').typeahead(
             {
                 hint: false,
                 highlight: true,
@@ -930,7 +1225,7 @@ $(document).ready(function () {
         termSuggester.on('typeahead:select', function (ev, data, dataset) {
             $(this).blur();
             // Update URL Query.
-            var queryParams = new URLSearchParams();
+            let queryParams = new URLSearchParams();
             queryParams.set(`${dataset}[]`, data);
             history.pushState(null, null, "?" + queryParams.toString());
             termSuggester.typeahead('val', '')

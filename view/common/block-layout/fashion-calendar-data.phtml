@@ -6,6 +6,7 @@ $this->headScript()->appendFile('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js
 $this->headScript()->appendFile('https://unpkg.com/mirador@3.3.0/dist/mirador.min.js', 'text/javascript');
 $this->headScript()->appendFile('https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.6.0/nouislider.min.js', 'text/javascript', ['integrity' => 'sha512-1mDhG//LAjM3pLXCJyaA+4c+h5qmMoTc7IuJyuNNPaakrWT9rVTxICK4tIizf7YwJsXgDC2JP74PGCc7qxLAHw==', 'crossorigin' => 'anonymous']);
 $this->headScript()->appendFile('https://cdn.jsdelivr.net/npm/corejs-typeahead@1.3.3/dist/typeahead.bundle.min.js', 'text/javascript');
+$this->headScript()->appendFile('https://cdn.jsdelivr.net/npm/chart.js', 'text/javascript');
 $translate = $this->plugin('translate');
 $escape = $this->plugin('escapeHtml');
 ?>
@@ -15,7 +16,6 @@ $escape = $this->plugin('escapeHtml');
             <h2>Data</h2>
             <div id="results"></div>
             <ul id="query" class="list-inline"></ul>
-            <div id="facet-button"></div>
         </div>
         <div class="col-12 col-sm-6">
             <form id="data-search">
@@ -27,7 +27,64 @@ $escape = $this->plugin('escapeHtml');
                     </button>
                 </div>
             </form>
+            <div class="search-info d-flex justify-content-end mt-2 small">
+                <button class="border-0 bg-transparent p-0 link-secondary me-2" data-bs-toggle="modal"
+                    data-bs-target="#advanced-search-data">
+                    <i class="fas fa-search me-1" aria-hidden="true"></i>
+                    <span>Advanced Search</span>
+                </button>
+                |
+                <button class="border-0 bg-transparent p-0 link-secondary ms-2" data-bs-toggle="modal"
+                    data-bs-target="#search-tips">
+                    <i class="fas fa-info-circle me-1" aria-hidden="true"></i>
+                    <span>Search Tips</span>
+                </button>
+                <!-- Modal -->
+                <div class="modal fade" id="advanced-search-data" tabindex="-1"
+                    aria-labelledby="advanced-search-data-label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h2 class="modal-title fs-5" id="advanced-search-data-label">Advanced Search</h2>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body placeholder-glow">
+                                <span class="placeholder col-7"></span>
+                                <span class="placeholder col-4"></span>
+                                <span class="placeholder col-4"></span>
+                                <span class="placeholder col-6"></span>
+                                <span class="placeholder col-8"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Modal -->
+                <div class="modal fade" id="search-tips" tabindex="-1" aria-labelledby="search-tips-label"
+                    aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h2 class="modal-title fs-5" id="search-tips-label">Search Tips</h2>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body placeholder-glow">
+                                <span class="placeholder col-7"></span>
+                                <span class="placeholder col-4"></span>
+                                <span class="placeholder col-4"></span>
+                                <span class="placeholder col-6"></span>
+                                <span class="placeholder col-8"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
+    <div class="row">
+        <div id="facet" class="col-auto"></div>
+        <div id="graph" class="col-auto"></div>
     </div>
 </div>
 <div id="data-container">
