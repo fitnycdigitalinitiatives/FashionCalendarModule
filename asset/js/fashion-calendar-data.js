@@ -7,6 +7,8 @@ $(document).ready(function () {
     let miradorViewer = null;
     let eventsData = null;
     let graphsData = null;
+    let singleMap = null;
+    let singleMarker = null;
     initiateStartup();
     window.onpopstate = function () {
         $('#data-search input').typeahead('destroy');
@@ -55,6 +57,14 @@ $(document).ready(function () {
         }
         if (graphsData) {
             graphsData = null;
+        }
+        if (singleMap) {
+            singleMap.remove();
+            singleMap = null;
+            console.log('removing');
+        }
+        if (singleMarker) {
+            singleMarker = null;
         }
         $('.modal').modal('hide');
         $('.modal').modal('dispose');
@@ -230,7 +240,7 @@ $(document).ready(function () {
                 $('#facet').fadeIn();
                 $('#graph').fadeIn();
                 $('#modal-container').append(createViewerModal());
-                $('#modal-container').append(createMapModal());
+                $('#modal-container').append(createSingleMapModal());
                 // Attach listeners to new content
                 $(".name-search").click(function (event) {
                     event.preventDefault();
@@ -285,7 +295,7 @@ $(document).ready(function () {
                     listEvents(queryParams);
                 });
                 initiateViewer();
-                initiateMap();
+                initiateSingleMap();
             })
             .catch((error) => {
                 console.log(error);
@@ -577,7 +587,7 @@ $(document).ready(function () {
         }
     }
     // Maps
-    function createMapModal() {
+    function createSingleMapModal() {
         let mapModal = $(`
         <!-- Modal -->
         <div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapLabel" aria-hidden="true">
@@ -588,6 +598,7 @@ $(document).ready(function () {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
+              <div id="viewer-map"></div>
               </div>
             </div>
           </div>
@@ -595,31 +606,38 @@ $(document).ready(function () {
         `);
         return mapModal;
     }
-    function initiateMap() {
+    function initiateSingleMap() {
         const mapModal = document.getElementById('mapModal');
         if (mapModal) {
             mapModal.addEventListener('show.bs.modal', event => {
                 const button = event.relatedTarget;
                 const longitude = button.getAttribute('data-longitude');
                 const latitude = button.getAttribute('data-latitude');
-                const formattedAddress = decodeURIComponent(button.getAttribute('data-formattedAddress'));
-                const modalBody = mapModal.querySelector('.modal-body');
-                $(modalBody).html(`<div id="viewer-map"></div>`);
-                mapModal.addEventListener('shown.bs.modal', event => {
-                    let container = L.DomUtil.get('viewer-map');
-                    if (container != null) {
-                        container._leaflet_id = null;
+                if (singleMap) {
+                    singleMap.setView([latitude, longitude], 12);
+                    if (singleMarker) {
+                        singleMap.removeLayer(singleMarker);
                     }
-                    let map = L.map('viewer-map').setView([latitude, longitude], 12);
+                }
+            });
+            mapModal.addEventListener('shown.bs.modal', event => {
+                const button = event.relatedTarget;
+                const longitude = button.getAttribute('data-longitude');
+                const latitude = button.getAttribute('data-latitude');
+                const formattedAddress = decodeURIComponent(button.getAttribute('data-formattedAddress'));
+                if (!singleMap) {
+                    singleMap = L.map('viewer-map').setView([latitude, longitude], 12);
                     L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZml0ZGlnaXRhbGluaXRpYXRpdmVzIiwiYSI6ImNqZ3FxaWI0YTBoOXYyenA2ZnVyYWdsenQifQ.ckTVKSAZ8ZWPAefkd7SOaA', {
                         id: 'mapbox/light-v10',
                         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' + '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' + 'Imagery © <a href="http://mapbox.com">Mapbox</a>'
-                    }).addTo(map);
-                    let marker = L.marker([latitude, longitude]).addTo(map);
-                    marker.bindPopup(formattedAddress).openPopup();
-                });
-
-            })
+                    }).addTo(singleMap);
+                }
+                // singleMarker = L.marker([latitude, longitude]).addTo(singleMap);
+                // singleMarker.bindPopup(formattedAddress).openPopup();
+                singleMarker = L.marker([latitude, longitude]);
+                singleMap.addLayer(singleMarker);
+                singleMarker.bindPopup(formattedAddress).openPopup();
+            });
         }
     }
 
