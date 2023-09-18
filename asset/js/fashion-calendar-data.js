@@ -9,6 +9,7 @@ $(document).ready(function () {
     let graphsData = null;
     let singleMap = null;
     let singleMarker = null;
+    let namesList = null;
     initiateStartup();
     window.onpopstate = function () {
         $('#data-search input').typeahead('destroy');
@@ -66,6 +67,11 @@ $(document).ready(function () {
         if (singleMarker) {
             singleMarker = null;
         }
+        if (namesList) {
+            namesList = null;
+        }
+        $('.pagination-row').remove();
+        $('.page-load-status').remove();
         $('.modal').modal('hide');
         $('.modal').modal('dispose');
         $('.offcanvas').offcanvas('dispose');
@@ -91,6 +97,10 @@ $(document).ready(function () {
         let location = "";
         let year = "";
         let year_month = "";
+        let date_range_start = "";
+        let date_range_end = "";
+        let titles = "";
+        let page = "";
         if (queryParams.toString()) {
             if (queryParams.has('text')) {
                 text = queryParams.get('text');
@@ -205,6 +215,16 @@ $(document).ready(function () {
                 </li>
                 `);
             }
+            if (queryParams.has('page')) {
+                page = queryParams.get('page');
+                let newQueryParams = new URLSearchParams(window.location.search);
+                newQueryParams.delete('page');
+                $('#query').append(`
+                <li class="list-inline-item">
+                    <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> Page ${page}</a>
+                </li>
+                `);
+            }
         }
         const url = "/data-api/events?" + queryParams.toString();
         fetch(url)
@@ -221,7 +241,7 @@ $(document).ready(function () {
                 } else {
                     resultsText = `Your search did not return any events. Please try again with another search term.`;
                 }
-                const namesList = [];
+                namesList = [];
                 $('#data-container').empty().hide();
                 eventsData[0].results.forEach(event => {
                     $('#data-container').append(createListing(event));
@@ -241,61 +261,10 @@ $(document).ready(function () {
                 $('#graph').fadeIn();
                 $('#modal-container').append(createViewerModal());
                 $('#modal-container').append(createSingleMapModal());
-                // Attach listeners to new content
-                $(".name-search").click(function (event) {
-                    event.preventDefault();
-                    let names = decodeURIComponent($(this).data("label"));
-                    // Update URL Query.
-                    let queryParams = new URLSearchParams();
-                    queryParams.set("names[]", names);
-                    history.pushState(null, null, "?" + queryParams.toString());
-                    listEvents(queryParams);
-                });
-                $(".issue-search").click(function (event) {
-                    event.preventDefault();
-                    let issue = decodeURIComponent($(this).data("calendar_id"));
-                    // Update URL Query.
-                    let queryParams = new URLSearchParams();
-                    queryParams.set("issue[]", issue);
-                    history.pushState(null, null, "?" + queryParams.toString());
-                    listEvents(queryParams);
-                });
-                $(".category-search").click(function (event) {
-                    event.preventDefault();
-                    let category = decodeURIComponent($(this).data("label"));
-                    // Update URL Query.
-                    let queryParams = new URLSearchParams();
-                    queryParams.set("categories[]", category);
-                    history.pushState(null, null, "?" + queryParams.toString());
-                    listEvents(queryParams);
-                });
-                $(".location-search").click(function (event) {
-                    event.preventDefault();
-                    let location = decodeURIComponent($(this).data("location"));
-                    // Update URL Query.
-                    let queryParams = new URLSearchParams();
-                    queryParams.set("location", location);
-                    history.pushState(null, null, "?" + queryParams.toString());
-                    listEvents(queryParams);
-                });
-                $(".year-month-search").click(function (event) {
-                    event.preventDefault();
-                    let year_month = decodeURIComponent($(this).data("year-month"));
-                    // Update URL Query.
-                    let queryParams = new URLSearchParams();
-                    queryParams.set("year_month", year_month);
-                    history.pushState(null, null, "?" + queryParams.toString());
-                    listEvents(queryParams);
-                });
-                $('.remove-query').click(function (event) {
-                    event.preventDefault();
-                    // Update URL Query.
-                    let queryParams = new URLSearchParams($(this).attr('href'));
-                    history.pushState(null, null, $(this).attr('href'));
-                    listEvents(queryParams);
-                });
+                attachClicks();
                 initiateViewer();
                 initiateSingleMap();
+                initiateScroll();
             })
             .catch((error) => {
                 console.log(error);
@@ -428,6 +397,67 @@ $(document).ready(function () {
         </div>
         `;
         return eventHtml;
+    }
+    function attachClicks() {
+        $(".name-search").off("click.fashionCalendar");
+        $(".issue-search").off("click.fashionCalendar");
+        $(".category-search").off("click.fashionCalendar");
+        $(".location-search").off("click.fashionCalendar");
+        $(".year-month-search").off("click.fashionCalendar");
+        $(".remove-query").off("click.fashionCalendar");
+        // Attach listeners to new content
+        $(".name-search").on("click.fashionCalendar", function (event) {
+            event.preventDefault();
+            let names = decodeURIComponent($(this).data("label"));
+            // Update URL Query.
+            let queryParams = new URLSearchParams();
+            queryParams.set("names[]", names);
+            history.pushState(null, null, "?" + queryParams.toString());
+            listEvents(queryParams);
+        });
+        $(".issue-search").on("click.fashionCalendar", function (event) {
+            event.preventDefault();
+            let issue = decodeURIComponent($(this).data("calendar_id"));
+            // Update URL Query.
+            let queryParams = new URLSearchParams();
+            queryParams.set("issue[]", issue);
+            history.pushState(null, null, "?" + queryParams.toString());
+            listEvents(queryParams);
+        });
+        $(".category-search").on("click.fashionCalendar", function (event) {
+            event.preventDefault();
+            let category = decodeURIComponent($(this).data("label"));
+            // Update URL Query.
+            let queryParams = new URLSearchParams();
+            queryParams.set("categories[]", category);
+            history.pushState(null, null, "?" + queryParams.toString());
+            listEvents(queryParams);
+        });
+        $(".location-search").on("click.fashionCalendar", function (event) {
+            event.preventDefault();
+            let location = decodeURIComponent($(this).data("location"));
+            // Update URL Query.
+            let queryParams = new URLSearchParams();
+            queryParams.set("location", location);
+            history.pushState(null, null, "?" + queryParams.toString());
+            listEvents(queryParams);
+        });
+        $(".year-month-search").on("click.fashionCalendar", function (event) {
+            event.preventDefault();
+            let year_month = decodeURIComponent($(this).data("year-month"));
+            // Update URL Query.
+            let queryParams = new URLSearchParams();
+            queryParams.set("year_month", year_month);
+            history.pushState(null, null, "?" + queryParams.toString());
+            listEvents(queryParams);
+        });
+        $('.remove-query').on("click.fashionCalendar", function (event) {
+            event.preventDefault();
+            // Update URL Query.
+            let queryParams = new URLSearchParams($(this).attr('href'));
+            history.pushState(null, null, $(this).attr('href'));
+            listEvents(queryParams);
+        });
     }
     function createNameModal(name) {
         let nameModal = $(`
@@ -751,7 +781,7 @@ $(document).ready(function () {
                 </a>
                 `);
             });
-            titlesCard.find('a').click(function (event) {
+            titlesCard.find('a').on("click", function (event) {
                 event.preventDefault();
                 let title = $(this).data("title");
                 // Update URL Query.
@@ -811,7 +841,7 @@ $(document).ready(function () {
                     `);
                 });
             }
-            namesCard.find('a').click(function (event) {
+            namesCard.find('a').on("click", function (event) {
                 event.preventDefault();
                 let name = $(this).data("name");
                 // Update URL Query.
@@ -870,7 +900,7 @@ $(document).ready(function () {
                     `);
                 });
             }
-            categoriesCard.find('a').click(function (event) {
+            categoriesCard.find('a').on("click", function (event) {
                 event.preventDefault();
                 let category = $(this).data("category");
                 // Update URL Query.
@@ -934,7 +964,7 @@ $(document).ready(function () {
                     `);
                 });
             }
-            yearsCard.find('a').click(function (event) {
+            yearsCard.find('a').on("click", function (event) {
                 event.preventDefault();
                 let year = $(this).data("year");
                 // Update URL Query.
@@ -968,7 +998,7 @@ $(document).ready(function () {
 
     function createGraphs(url) {
         // Only need graphs for multiple years of data?
-        if (eventsData[0].facets.years.length > 1) {
+        if ((eventsData[0].facets.years.length > 1) || (eventsData[0].facets.names.length > 1) || (eventsData[0].facets.categories.length > 1)) {
             let graphModal = $(`
             <div class="modal fade" id="graphModal" tabindex="-1" aria-labelledby="graphLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -1127,7 +1157,7 @@ $(document).ready(function () {
                                     }
                                 }
                             });
-                            $(".data-download").click(graphDownload);
+                            $(".data-download").on("click", graphDownload);
                         })
                         .catch((error) => {
                             console.log(error);
@@ -1165,7 +1195,7 @@ $(document).ready(function () {
         a.setAttribute('download', name + '.csv');
 
         // Performing a download with click
-        a.click();
+        a.on("click",);
         URL.revokeObjectURL(url);
     }
 
@@ -1256,4 +1286,114 @@ $(document).ready(function () {
             listEvents(queryParams);
         });
     }
+
+    function initiateScroll() {
+        if ('count' in eventsData[0]) {
+            let queryParams = new URLSearchParams(window.location.search);
+            let page = 1;
+            if (queryParams.has('page') && queryParams.get('page')) {
+                page = Number(queryParams.get('page'));
+            }
+            if ((page * 50) < eventsData[0].count) {
+                let pagination = `
+                <div class="row justify-content-center pagination-row">
+                    <div class="col-auto">
+                        <button id="load-button" class="btn btn-fit-green floating-action" type="button" aria-controls="searchFilters" aria-label="Load more results">
+                            <span class="action-container">
+                            <i class="fas fa-plus" aria-hidden="true" title="Load more results">
+                            </i>
+                            Load More
+                            </span>
+                        </button>
+                    </div>
+                </div>
+                `;
+                let status = $(`
+                    <div class="page-load-status">
+                        <div class="row justify-content-center pb-5 mb-5">
+                            <div class="col-auto">
+                            <div class="spinner-border infinite-scroll-request" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+                status.hide();
+                $('#data-container').after(pagination).after(status);
+                $("#load-button").on("click", loadNewEvents);
+                status = null;
+            }
+        }
+    };
+    function loadNewEvents() {
+        let queryParams = new URLSearchParams(window.location.search);
+        let page = 1;
+        if (queryParams.has('page') && queryParams.get('page')) {
+            page = Number(queryParams.get('page'));
+        }
+        page = page + 1;
+        queryParams.set('page', page);
+        const url = "/data-api/events?" + queryParams.toString();
+        history.pushState(null, null, "?" + queryParams.toString());
+        $('.pagination-row').hide();
+        $('.page-load-status').show();
+        console.log(url);
+        fetch(url)
+            .then((response) => response.json())
+            .then((data) => {
+                eventsData = data;
+                data = null;
+                eventsData[0].results.forEach(event => {
+                    $('#data-container').append(createListing(event));
+                    event.names.forEach(name => {
+                        if (!(namesList.includes(name._id))) {
+                            namesList.push(name._id);
+                            $('#modal-container').append(createNameModal(name));
+                        }
+                    });
+                });
+                attachClicks();
+                if ((page * 50) < eventsData[0].count) {
+                    $('.pagination-row').show();
+                    $('.page-load-status').hide();
+                } else {
+                    $('.pagination-row').remove();
+                    $('.page-load-status').remove();
+                };
+            })
+            .catch((error) => {
+                console.log(error);
+                $('#data-container').append(`
+                <div>
+                <h2>Error</h2>
+                <p class="lead">
+                    Unable to load additional results.
+                </p>
+                </div>
+                `);
+            });
+    }
+    // Scroll to top button
+    let mybutton = $("#top-button");
+
+    mybutton.on("click", topFunction);
+
+    // When the user scrolls down 20px from the top of the document, show the button
+    window.onscroll = function () { scrollFunction() };
+
+    function scrollFunction() {
+        if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+            mybutton.show();
+        } else {
+            mybutton.hide();
+        }
+    }
+
+    // When the user clicks on the button, scroll to the top of the document
+    function topFunction() {
+        document.body.scrollTop = 0; // For Safari
+        document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+    }
 });
+

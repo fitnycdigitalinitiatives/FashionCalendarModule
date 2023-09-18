@@ -16,6 +16,14 @@
     bottom: 0;
 }
 
+#top-button {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    width: auto;
+}
+
 #data-container dd.source {
     font-family: 'Special Elite', cursive;
 }
