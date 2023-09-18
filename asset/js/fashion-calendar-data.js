@@ -758,6 +758,7 @@ $(document).ready(function () {
                 // Set because there can only be one date range
                 queryParams.set("date_range_start", minInput.value);
                 queryParams.set("date_range_end", maxInput.value);
+                queryParams.delete("page");
                 history.pushState(null, null, "?" + queryParams.toString());
                 openedCanvas.hide();
                 offCanvas[0].addEventListener('hidden.bs.offcanvas', event => {
@@ -774,6 +775,7 @@ $(document).ready(function () {
             titleDisplayFacets.forEach(title => {
                 let queryParams = new URLSearchParams(window.location.search);
                 queryParams.append("titles", title.title);
+                queryParams.delete("page");
                 titlesCard.append(`
                 <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-title="${title.title}">
                     ${title.title}
@@ -787,6 +789,7 @@ $(document).ready(function () {
                 // Update URL Query.
                 let queryParams = new URLSearchParams(window.location.search);
                 queryParams.append("titles", title);
+                queryParams.delete("page");
                 history.pushState(null, null, "?" + queryParams.toString());
                 let openedCanvas = bootstrap.Offcanvas.getInstance(offCanvas);
                 openedCanvas.hide();
@@ -806,6 +809,7 @@ $(document).ready(function () {
             nameDisplayFacets.forEach(name => {
                 let queryParams = new URLSearchParams(window.location.search);
                 queryParams.append("names[]", name.name);
+                queryParams.delete("page");
                 namesCard.append(`
                 <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-name="${name.name}">
                     ${name.name}
@@ -833,6 +837,7 @@ $(document).ready(function () {
                 nameHiddenFacets.forEach(name => {
                     let queryParams = new URLSearchParams(window.location.search);
                     queryParams.append("names[]", name.name);
+                    queryParams.delete("page");
                     namesCollapse.append(`
                     <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-name="${name.name}">
                         ${name.name}
@@ -847,6 +852,7 @@ $(document).ready(function () {
                 // Update URL Query.
                 let queryParams = new URLSearchParams(window.location.search);
                 queryParams.append("names[]", name);
+                queryParams.delete("page");
                 history.pushState(null, null, "?" + queryParams.toString());
                 let openedCanvas = bootstrap.Offcanvas.getInstance(offCanvas);
                 openedCanvas.hide();
@@ -866,6 +872,7 @@ $(document).ready(function () {
             categoriesDisplayFacets.forEach(category => {
                 let queryParams = new URLSearchParams(window.location.search);
                 queryParams.append("categories[]", category.category);
+                queryParams.delete("page");
                 categoriesCard.append(`
                 <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="${category.category}">
                     ${category.category}
@@ -892,6 +899,7 @@ $(document).ready(function () {
                 categoriesHiddenFacets.forEach(category => {
                     let queryParams = new URLSearchParams(window.location.search);
                     queryParams.append("categories[]", category.category);
+                    queryParams.delete("page");
                     categoriesCollapse.append(`
                     <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="${category.category}">
                         ${category.category}
@@ -906,6 +914,7 @@ $(document).ready(function () {
                 // Update URL Query.
                 let queryParams = new URLSearchParams(window.location.search);
                 queryParams.append("categories[]", category);
+                queryParams.delete("page");
                 history.pushState(null, null, "?" + queryParams.toString());
                 let openedCanvas = bootstrap.Offcanvas.getInstance(offCanvas);
                 openedCanvas.hide();
@@ -928,6 +937,7 @@ $(document).ready(function () {
                 queryParams.append("year", year.year);
                 queryParams.delete("date_range_start");
                 queryParams.delete("date_range_end");
+                queryParams.delete("page");
                 yearsCard.append(`
                 <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-year="${year.year}">
                     ${year.year}
@@ -956,6 +966,7 @@ $(document).ready(function () {
                     queryParams.append("year", year.year);
                     queryParams.delete("date_range_start");
                     queryParams.delete("date_range_end");
+                    queryParams.delete("page");
                     yearsCollapse.append(`
                     <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-year="${year.year}">
                         ${year.year}
@@ -972,6 +983,7 @@ $(document).ready(function () {
                 queryParams.append("year", year);
                 queryParams.delete("date_range_start");
                 queryParams.delete("date_range_end");
+                queryParams.delete("page");
                 history.pushState(null, null, "?" + queryParams.toString());
                 let openedCanvas = bootstrap.Offcanvas.getInstance(offCanvas);
                 openedCanvas.hide();
@@ -1036,6 +1048,7 @@ $(document).ready(function () {
                     let thisURL = new URL(url, "https://fashioncalendar.fitnyc.edu/");
                     let queryParams = new URLSearchParams(thisURL.search);
                     queryParams.set("graph", "true");
+                    queryParams.delete("page");
                     let graphURL = "/data-api/events?" + queryParams.toString();
                     fetch(graphURL)
                         .then((response) => response.json())
