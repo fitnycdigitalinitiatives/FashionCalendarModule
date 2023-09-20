@@ -104,9 +104,6 @@ class DataController extends AbstractActionController
             if (array_key_exists('graph', $params) && ($params['graph'] == 'true')) {
                 $aggregation[] = ['$facet' => ['uniqueHostsbyYear' => [['$unwind' => ['path' => '$names']], ['$group' => ['_id' => ['$year' => '$start_date_iso'], 'names' => ['$addToSet' => '$names.label']]], ['$sort' => ['_id' => 1]], ['$project' => ['_id' => 0, 'year' => '$_id', 'numberOfHosts' => ['$size' => '$names']]]], 'names' => [['$unwind' => ['path' => '$names']], ['$group' => ['_id' => '$names.label', 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$project' => ['_id' => 0, 'name' => '$_id', 'count' => 1]]], 'categories' => [['$project' => ['categories' => ['$reduce' => ['input' => '$names.categories.label', 'initialValue' => [], 'in' => ['$setUnion' => ['$$this', '$$value']]]]]], ['$unwind' => ['path' => '$categories']], ['$group' => ['_id' => '$categories', 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$project' => ['_id' => 0, 'category' => '$_id', 'count' => 1]]]]];
             } else {
-                if ($sort) {
-                    $aggregation[] = $sort;
-                }
                 $facet = [
                     '$facet' => [
                         'results' => [
@@ -124,6 +121,9 @@ class DataController extends AbstractActionController
                         ]
                     ]
                 ];
+                if ($sort) {
+                    array_unshift($facet['$facet']['results'], $sort);
+                }
                 $aggregation[] = $facet;
                 $aggregation[] = ['$project' => ['results' => 1, 'facets' => ['names' => '$names', 'categories' => '$categories', 'years' => '$years', 'titles' => '$titles'], 'count' => ['$first' => '$count']]];
                 $aggregation[] = ['$project' => ['results' => 1, 'facets' => 1, 'count' => '$count.count']];

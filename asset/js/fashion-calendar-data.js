@@ -511,7 +511,7 @@ $(document).ready(function () {
     }
     // Page viewer
     function createViewerModal() {
-        let viewerModal = $(`
+        let viewerModal = `
         <!-- Modal -->
         <div class="modal fade" id="viewerModal" tabindex="-1" aria-labelledby="viewerLabel" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -526,7 +526,7 @@ $(document).ready(function () {
             </div>
           </div>
         </div>
-        `);
+        `;
         return viewerModal;
     }
     function initiateViewer() {
@@ -618,7 +618,7 @@ $(document).ready(function () {
     }
     // Maps
     function createSingleMapModal() {
-        let mapModal = $(`
+        let mapModal = `
         <!-- Modal -->
         <div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapLabel" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -633,7 +633,7 @@ $(document).ready(function () {
             </div>
           </div>
         </div>
-        `);
+        `;
         return mapModal;
     }
     function initiateSingleMap() {
