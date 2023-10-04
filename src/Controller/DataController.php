@@ -26,13 +26,8 @@ class DataController extends AbstractActionController
             $client = new Client($uri, [], ['serverApi' => $apiVersion]);
             $params = $this->params()->fromQuery();
             $docs_per_page = 50;
+            $map_docs_per_page = 5000;
             $collection = $client->selectCollection($settings->get('fcm_mongo_db'), 'events');
-            if (array_key_exists('page', $params) && ($page = $params['page']) && is_numeric($page)) {
-                $skip = ['$skip' => $docs_per_page * ($page - 1)];
-            } else {
-                $skip = ['$skip' => 0];
-            }
-            $limit = ['$limit' => $docs_per_page];
             $sort = [];
             $match = [];
             $geoNear = [];
@@ -103,7 +98,39 @@ class DataController extends AbstractActionController
             // Check if graph data is all that is needed
             if (array_key_exists('graph', $params) && ($params['graph'] == 'true')) {
                 $aggregation[] = ['$facet' => ['uniqueHostsbyYear' => [['$unwind' => ['path' => '$names']], ['$group' => ['_id' => ['$year' => '$start_date_iso'], 'names' => ['$addToSet' => '$names.label']]], ['$sort' => ['_id' => 1]], ['$project' => ['_id' => 0, 'year' => '$_id', 'numberOfHosts' => ['$size' => '$names']]]], 'names' => [['$unwind' => ['path' => '$names']], ['$group' => ['_id' => '$names.label', 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$project' => ['_id' => 0, 'name' => '$_id', 'count' => 1]]], 'categories' => [['$project' => ['categories' => ['$reduce' => ['input' => '$names.categories.label', 'initialValue' => [], 'in' => ['$setUnion' => ['$$this', '$$value']]]]]], ['$unwind' => ['path' => '$categories']], ['$group' => ['_id' => '$categories', 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$project' => ['_id' => 0, 'category' => '$_id', 'count' => 1]]]]];
+            } elseif (array_key_exists('map', $params) && ($params['map'] == 'true')) {
+                if (array_key_exists('mappage', $params) && ($mappage = $params['mappage']) && is_numeric($mappage)) {
+                    $skip = ['$skip' => $map_docs_per_page * ($mappage - 1)];
+                } else {
+                    $skip = ['$skip' => 0];
+                }
+                $limit = ['$limit' => $map_docs_per_page];
+                $facet = [
+                    '$facet' => [
+                        'results' => [
+                            $skip,
+                            $limit
+                        ],
+                        'count' => [
+                            [
+                                '$count' => 'count'
+                            ]
+                        ]
+                    ]
+                ];
+                if ($sort) {
+                    array_unshift($facet['$facet']['results'], $sort);
+                }
+                $aggregation[] = $facet;
+                $aggregation[] = ['$project' => ['results' => 1, 'count' => ['$first' => '$count']]];
+                $aggregation[] = ['$project' => ['results' => 1, 'count' => '$count.count']];
             } else {
+                if (array_key_exists('page', $params) && ($page = $params['page']) && is_numeric($page)) {
+                    $skip = ['$skip' => $docs_per_page * ($page - 1)];
+                } else {
+                    $skip = ['$skip' => 0];
+                }
+                $limit = ['$limit' => $docs_per_page];
                 $facet = [
                     '$facet' => [
                         'results' => [

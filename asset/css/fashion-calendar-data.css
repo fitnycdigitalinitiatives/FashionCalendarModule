@@ -8,7 +8,8 @@
     bottom: 0;
 }
 
-#graph-loader {
+#graph-loader,
+#map-loader {
     position: absolute;
     top: 0;
     left: 0;
@@ -24,7 +25,7 @@
     width: auto;
 }
 
-#data-container dd.source {
+.source {
     font-family: 'Special Elite', cursive;
 }
 
@@ -61,22 +62,55 @@
 }
 
 /* viewerMap */
-#viewer-map {
+#big-map {
+    height: 100%;
+    width: 100%;
+}
+
+#single-map {
     height: 70vh;
 }
 
-#viewer-map.leaflet-container {
+#big-map.leaflet-container,
+#single-map.leaflet-container {
     font-family: "halyard-text", sans-serif;
 }
 
+.leaflet-popup-content h1 {
+    font-size: 1.5rem;
+}
+
+.leaflet-popup-content dd {
+    margin-bottom: 0;
+}
+
+.leaflet-popup-content dt {
+    margin-top: 0.5rem;
+}
+
+.leaflet-popup-content dt:first-of-type {
+    margin-top: 0;
+}
+
 /* facets */
-#facets .card {
-    border-bottom: 0;
+#facets .card:first-of-type {
     border-top: 0;
 }
 
-#facets .card-header {
+#facets .card:not(:last-of-type) {
     border-bottom: 0;
+}
+
+#facets .hidden-facets .list-group-item {
+    border-width: 0 0 1px;
+}
+
+#facets .hidden-facets .list-group-item:first-child {
+    border-top-width: 0;
+}
+
+/* #facets .card {
+    border-top: 0;
 }
 
 #facets .hidden-facets .list-group-item:first-child {
@@ -90,7 +124,7 @@
 #facets #dateRangeFacet {
     border-top: 1px solid rgba(0, 0, 0, .125);
     border-bottom: 1px solid rgba(0, 0, 0, .125);
-}
+} */
 
 /* typeahead */
 .twitter-typeahead {

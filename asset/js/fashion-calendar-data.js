@@ -6,7 +6,9 @@ $(document).ready(function () {
     let eventsNameChart = null;
     let miradorViewer = null;
     let eventsData = null;
+    let mapData = null;
     let graphsData = null;
+    let bigMap = null;
     let singleMap = null;
     let singleMarker = null;
     let namesList = null;
@@ -56,13 +58,19 @@ $(document).ready(function () {
         if (eventsData) {
             eventsData = null;
         }
+        if (mapData) {
+            mapData = null;
+        }
         if (graphsData) {
             graphsData = null;
         }
         if (singleMap) {
             singleMap.remove();
             singleMap = null;
-            console.log('removing');
+        }
+        if (bigMap) {
+            bigMap.remove();
+            bigMap = null;
         }
         if (singleMarker) {
             singleMarker = null;
@@ -79,16 +87,17 @@ $(document).ready(function () {
         $('#data-container').html(`
         <div id="loader" class="d-flex justify-content-center align-items-center">
             <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
+                <span class="visually-hidden">Fetching data...</span>
             </div>
         </div>
         `);
         $('#facet-container').empty();
         $('#modal-container').empty();
-        $('#results').text("").hide();
+        $('#results').text("Fetching data...");
         $('#query').empty().hide();
         $('#facet').empty().hide();
         $('#graph').empty().hide();
+        $('#map').empty().hide();
         $('#data-search input').val("");
         let text = "";
         let names = "";
@@ -254,11 +263,13 @@ $(document).ready(function () {
                 });
                 createFacets();
                 createGraphs(url);
-                $('#results').text(resultsText).fadeIn();
+                createMap();
+                $('#results').hide().text(resultsText).fadeIn();
                 $('#query').fadeIn();
                 $('#data-container').fadeIn();
                 $('#facet').fadeIn();
                 $('#graph').fadeIn();
+                $('#map').fadeIn();
                 $('#modal-container').append(createViewerModal());
                 $('#modal-container').append(createSingleMapModal());
                 attachClicks();
@@ -321,8 +332,8 @@ $(document).ready(function () {
                 <i class="fas fa-search" aria-hidden="true" title="Search for this location">
                 </i>
             </a>
-            <button class="location-map border-0 bg-transparent p-0 ms-1" data-bs-toggle="modal" data-bs-target="#mapModal" data-longitude="${event.location.coordinates[0]}" data-latitude="${event.location.coordinates[1]}" data-formattedAddress="${encodeURIComponent(event.formatted_address)}" aria-label="See this location on a map">
-                <i class="fas fa-map" aria-hidden="true" title="See this location on a map">
+            <button class="location-map border-0 bg-transparent p-0 ms-1" data-bs-toggle="modal" data-bs-target="#singleMapModal" data-longitude="${event.location.coordinates[0]}" data-latitude="${event.location.coordinates[1]}" data-formattedAddress="${encodeURIComponent(event.formatted_address)}" aria-label="See this location on a map">
+                <i class="fas fa-map-marker-alt" aria-hidden="true" title="See this location on a map">
                 </i>
             </button>
             </dd>
@@ -426,12 +437,17 @@ $(document).ready(function () {
         });
         $(".category-search").on("click.fashionCalendar", function (event) {
             event.preventDefault();
+
             let category = decodeURIComponent($(this).data("label"));
             // Update URL Query.
             let queryParams = new URLSearchParams();
             queryParams.set("categories[]", category);
             history.pushState(null, null, "?" + queryParams.toString());
-            listEvents(queryParams);
+            let thisModal = $(event.target).parents('.name-modal');
+            thisModal.modal('hide');
+            thisModal[0].addEventListener('hidden.bs.modal', event => {
+                listEvents(queryParams);
+            })
         });
         $(".location-search").on("click.fashionCalendar", function (event) {
             event.preventDefault();
@@ -462,7 +478,7 @@ $(document).ready(function () {
     function createNameModal(name) {
         let nameModal = $(`
         <!-- Modal -->
-        <div class="modal fade" id="nameInfo-${name._id}" tabindex="-1" aria-labelledby="nameInfo-${name._id}Label" aria-hidden="true">
+        <div class="modal fade name-modal" id="nameInfo-${name._id}" tabindex="-1" aria-labelledby="nameInfo-${name._id}Label" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
               <div class="modal-header">
@@ -500,6 +516,27 @@ $(document).ready(function () {
                 `);
             });
             modalBody.append(categoryList);
+        }
+        if (name["wikipedia-link"] || name["research-sources"]) {
+            let wikilink = "";
+            let otherlinks = "";
+            if (name["wikipedia-link"]) {
+                wikilink = `
+                <dd><a href="${name["wikipedia-link"]}" class="link-dark text-decoration-none" target="_blank">Wikipedia entry<i class="fas fa-external-link-alt ms-2"></i></a></dd>
+                `;
+            }
+            if (name["research-sources"]) {
+                wikilink = `
+                <dd>${name["research-sources"]}</dd>
+                `;
+            }
+            modalBody.append(`
+            <dl>
+            <dt>Sources</dt>
+            ${wikilink}
+            ${otherlinks}
+            </dl>
+            `);
         }
 
         //Add note to empty body
@@ -569,7 +606,7 @@ $(document).ready(function () {
                             },
                             translations: {
                                 en: {
-                                    welcome: 'Loading...',
+                                    welcome: 'Fetching data...',
                                 }
                             }
                         }
@@ -617,29 +654,173 @@ $(document).ready(function () {
         }
     }
     // Maps
-    function createSingleMapModal() {
-        let mapModal = `
+    function createMap() {
+        $('#modal-container').append(`
         <!-- Modal -->
         <div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapLabel" aria-hidden="true">
-          <div class="modal-dialog modal-dialog-centered modal-xl">
+          <div class="modal-dialog modal-dialog-centered modal-fullscreen">
             <div class="modal-content">
               <div class="modal-header">
-                <h2 class="modal-title fs-5" id="mapLabel">Location</h2>
+                <h2 class="modal-title fs-5" id="mapLabel">Map</h2>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
-              <div id="viewer-map"></div>
+              <div id="big-map"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        `);
+        $('#map').html(`
+        <button id="map-button" class="btn btn-fit-blue floating-action" type="button" data-bs-toggle="modal"
+            data-bs-target="#mapModal" aria-controls="mapModal" aria-label="Map results">
+            <span class="action-container">
+            <i class="fas fa-map" aria-hidden="true" title="Map results">
+            </i>
+            Map
+            </span>
+        </button>
+        `);
+        const mapModal = document.getElementById('mapModal');
+        if (mapModal) {
+            $("#big-map").html(`
+            <div id="map-loader" class="d-flex justify-content-center align-items-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Fetching data...</span>
+                </div>
+            </div>
+            `);
+            mapModal.addEventListener('shown.bs.modal', async event => {
+                if (!mapData) {
+                    let queryParams = new URLSearchParams(window.location.search);
+                    queryParams.set('map', 'true');
+                    const url = "/data-api/events?" + queryParams.toString();
+                    try {
+                        const res = await fetch(url);
+                        mapData = await res.json();
+                    } catch (error) {
+                        console.log('There was an error', error);
+                        $("#big-map").text("Sorry. There was an error fetching the data.");
+                        return;
+                    }
+                }
+                $("#big-map").empty();
+                bigMap = L.map('big-map');
+                L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZml0ZGlnaXRhbGluaXRpYXRpdmVzIiwiYSI6ImNqZ3FxaWI0YTBoOXYyenA2ZnVyYWdsenQifQ.ckTVKSAZ8ZWPAefkd7SOaA', {
+                    id: 'mapbox/light-v10',
+                    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' + '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' + 'Imagery © <a href="http://mapbox.com">Mapbox</a>'
+                }).addTo(bigMap);
+                let featureGroup = L.featureGroup();
+                mapData[0].results.forEach(event => {
+                    if (event.location && ('coordinates' in event.location) && event.location.coordinates[0] && event.location.coordinates[1]) {
+                        let marker = L.marker([event.location.coordinates[1], event.location.coordinates[0]]);
+                        let popup_content = '';
+                        if (event.what) {
+                            popup_content += `<h1 class="source">${event.what}`;
+                            if (event.who) {
+                                popup_content += `<br><small class="text-muted">${event.who}</small>`;
+                            }
+                            popup_content += `</h1>`;
+                        }
+                        if (event.where || event.start_date || event.when) {
+                            popup_content += `<ul class="list-unstyled source">`;
+
+                            if (event.when) {
+                                popup_content += `<li>${event.when}</li>`;
+                            }
+                            if (event.start_date) {
+                                popup_content += `<li>${event.start_date.substring(0, 4)}</li>`;
+                            }
+                            if (event.where) {
+                                popup_content += `<li>${event.where}</li>`;
+                            }
+                            popup_content += '</ul>';
+                        }
+                        if (event.description) {
+                            popup_content += `<p class="source">${event.description}</p>`;
+                        }
+                        popup_content += '<dl>';
+                        if (event.appears_in) {
+                            popup_content += '<dt>Appears in</dt>';
+                            event.appears_in.forEach(issue => {
+                                const date = new Date(issue.calendar_date);
+                                const options = {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    timeZone: 'UTC'
+                                };
+                                if (issue.calendar_date.length == 10) {
+                                    options["day"] = 'numeric';
+                                }
+                                const displayTitle = `${issue.calendar_title}, ${date.toLocaleDateString('en-US', options)}`;
+                                popup_content += `
+                                    <dd>
+                                    <span>${displayTitle} (page ${issue.calendar_page})</span>
+                                    <a href="?issue[]=${encodeURIComponent(issue.calendar_id)}" class="issue-search link-dark ms-1 text-decoration-none" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" aria-label="Search for this issue">
+                                    <i class="fas fa-search" aria-hidden="true" title="Search for this issue">
+                                    </i>
+                                    </a>
+                                    <button class="page-view border-0 bg-transparent p-0 ms-1" data-bs-toggle="modal" data-bs-target="#viewerModal" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" data-displayTitle="${encodeURIComponent(displayTitle)}" aria-label="See this page">
+                                    <i class="fas fa-file" aria-hidden="true" title="See this page">
+                                    </i>
+                                    </button>
+                                    </dd>
+                                `;
+                            });
+                        }
+                        if (event.associated_names) {
+                            popup_content += '<dt>Names</dt>';
+                            $.each(event.associated_names, function (index, value) {
+                                popup_content += '<dd>' + value + '</dd>';
+                            });
+                        }
+                        popup_content += '</dl>';
+                        let popup = L.popup({
+                            maxWidth: 500
+                        }).setContent(popup_content);
+                        marker.bindPopup(popup);
+                        featureGroup.addLayer(marker);
+                    }
+                });
+                L.markerClusterGroup.layerSupport({
+                    maxClusterRadius: 5
+                }).addTo(bigMap).checkIn(featureGroup);
+                bigMap.fitBounds(featureGroup.getBounds());
+                featureGroup.addTo(bigMap);
+            });
+            mapModal.addEventListener('hide.bs.modal', event => {
+                if (bigMap) {
+                    bigMap.remove();
+                    bigMap = null;
+                    $("#big-map").empty();
+                }
+            });
+        }
+
+    }
+    function createSingleMapModal() {
+        let singleMapModal = `
+        <!-- Modal -->
+        <div class="modal fade" id="singleMapModal" tabindex="-1" aria-labelledby="singleMapLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h2 class="modal-title fs-5" id="singleMapLabel">Location</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+              <div id="single-map"></div>
               </div>
             </div>
           </div>
         </div>
         `;
-        return mapModal;
+        return singleMapModal;
     }
     function initiateSingleMap() {
-        const mapModal = document.getElementById('mapModal');
-        if (mapModal) {
-            mapModal.addEventListener('show.bs.modal', event => {
+        const singleMapModal = document.getElementById('singleMapModal');
+        if (singleMapModal) {
+            singleMapModal.addEventListener('show.bs.modal', event => {
                 const button = event.relatedTarget;
                 const longitude = button.getAttribute('data-longitude');
                 const latitude = button.getAttribute('data-latitude');
@@ -650,20 +831,18 @@ $(document).ready(function () {
                     }
                 }
             });
-            mapModal.addEventListener('shown.bs.modal', event => {
+            singleMapModal.addEventListener('shown.bs.modal', event => {
                 const button = event.relatedTarget;
                 const longitude = button.getAttribute('data-longitude');
                 const latitude = button.getAttribute('data-latitude');
                 const formattedAddress = decodeURIComponent(button.getAttribute('data-formattedAddress'));
                 if (!singleMap) {
-                    singleMap = L.map('viewer-map').setView([latitude, longitude], 12);
+                    singleMap = L.map('single-map').setView([latitude, longitude], 12);
                     L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZml0ZGlnaXRhbGluaXRpYXRpdmVzIiwiYSI6ImNqZ3FxaWI0YTBoOXYyenA2ZnVyYWdsenQifQ.ckTVKSAZ8ZWPAefkd7SOaA', {
                         id: 'mapbox/light-v10',
                         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' + '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' + 'Imagery © <a href="http://mapbox.com">Mapbox</a>'
                     }).addTo(singleMap);
                 }
-                // singleMarker = L.marker([latitude, longitude]).addTo(singleMap);
-                // singleMarker.bindPopup(formattedAddress).openPopup();
                 singleMarker = L.marker([latitude, longitude]);
                 singleMap.addLayer(singleMarker);
                 singleMarker.bindPopup(formattedAddress).openPopup();
@@ -776,7 +955,7 @@ $(document).ready(function () {
                 let queryParams = new URLSearchParams(window.location.search);
                 queryParams.append("titles", title.title);
                 queryParams.delete("page");
-                titlesCard.append(`
+                titlesCard.children('.list-group').append(`
                 <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-title="${title.title}">
                     ${title.title}
                     <span class="badge bg-secondary rounded-pill">${title.count}</span>
@@ -810,7 +989,7 @@ $(document).ready(function () {
                 let queryParams = new URLSearchParams(window.location.search);
                 queryParams.append("names[]", name.name);
                 queryParams.delete("page");
-                namesCard.append(`
+                namesCard.children('.list-group').append(`
                 <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-name="${name.name}">
                     ${name.name}
                     <span class="badge bg-secondary rounded-pill">${name.count}</span>
@@ -822,7 +1001,7 @@ $(document).ready(function () {
                 <div class="collapse hidden-facets" id="collapse-names">
                 </div>
                 `);
-                namesCard.append(namesCollapse);
+                namesCard.children('.list-group').append(namesCollapse);
                 namesCollapse.after(`
                 <button class="list-group-item list-group-item-action expander d-inline-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-names" aria-expanded="false" aria-controls="collapse-names">
                 More >
@@ -873,7 +1052,7 @@ $(document).ready(function () {
                 let queryParams = new URLSearchParams(window.location.search);
                 queryParams.append("categories[]", category.category);
                 queryParams.delete("page");
-                categoriesCard.append(`
+                categoriesCard.children('.list-group').append(`
                 <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="${category.category}">
                     ${category.category}
                     <span class="badge bg-secondary rounded-pill">${category.count}</span>
@@ -885,7 +1064,7 @@ $(document).ready(function () {
                 <div class="collapse hidden-facets" id="collapse-categories">
                 </div>
                 `);
-                categoriesCard.append(categoriesCollapse);
+                categoriesCard.children('.list-group').append(categoriesCollapse);
                 categoriesCollapse.after(`
                 <button class="list-group-item list-group-item-action expander d-inline-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-categories" aria-expanded="false" aria-controls="collapse-categories">
                 More >
@@ -938,7 +1117,7 @@ $(document).ready(function () {
                 queryParams.delete("date_range_start");
                 queryParams.delete("date_range_end");
                 queryParams.delete("page");
-                yearsCard.append(`
+                yearsCard.children('.list-group').append(`
                 <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-year="${year.year}">
                     ${year.year}
                     <span class="badge bg-secondary rounded-pill">${year.count}</span>
@@ -950,7 +1129,7 @@ $(document).ready(function () {
                 <div class="collapse hidden-facets" id="collapse-years">
                 </div>
                 `);
-                yearsCard.append(yearsCollapse);
+                yearsCard.children('.list-group').append(yearsCollapse);
                 yearsCollapse.after(`
                 <button class="list-group-item list-group-item-action expander d-inline-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-years" aria-expanded="false" aria-controls="collapse-years">
                 More >
@@ -1022,7 +1201,7 @@ $(document).ready(function () {
                 <div class="modal-body">
                     <div id="graph-loader" class="d-flex justify-content-center align-items-center">
                         <div class="spinner-border" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                            <span class="visually-hidden">Fetching data...</span>
                         </div>
                     </div>
                 </div>
@@ -1326,7 +1505,7 @@ $(document).ready(function () {
                         <div class="row justify-content-center pb-5 mb-5">
                             <div class="col-auto">
                             <div class="spinner-border infinite-scroll-request" role="status">
-                                <span class="visually-hidden">Loading...</span>
+                                <span class="visually-hidden">Fetching data...</span>
                             </div>
                             </div>
                         </div>
@@ -1351,7 +1530,6 @@ $(document).ready(function () {
         history.pushState(null, null, "?" + queryParams.toString());
         $('.pagination-row').hide();
         $('.page-load-status').show();
-        console.log(url);
         fetch(url)
             .then((response) => response.json())
             .then((data) => {
