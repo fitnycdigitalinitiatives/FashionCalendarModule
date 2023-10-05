@@ -12,6 +12,8 @@ $(document).ready(function () {
     let singleMap = null;
     let singleMarker = null;
     let namesList = null;
+    let mapSearch = false;
+    let mappage = 1;
     initiateStartup();
     window.onpopstate = function () {
         $('#data-search input').typeahead('destroy');
@@ -78,6 +80,7 @@ $(document).ready(function () {
         if (namesList) {
             namesList = null;
         }
+        mappage = 1;
         $('.pagination-row').remove();
         $('.page-load-status').remove();
         $('.modal').modal('hide');
@@ -304,7 +307,7 @@ $(document).ready(function () {
             `;
         }
         let namesHtml = '';
-        if (event.names) {
+        if (event.names.length) {
             namesHtml = '<dt>Names</dt>';
             event.names.forEach(name => {
                 namesHtml += `
@@ -437,7 +440,6 @@ $(document).ready(function () {
         });
         $(".category-search").on("click.fashionCalendar", function (event) {
             event.preventDefault();
-
             let category = decodeURIComponent($(this).data("label"));
             // Update URL Query.
             let queryParams = new URLSearchParams();
@@ -683,80 +685,100 @@ $(document).ready(function () {
         `);
         const mapModal = document.getElementById('mapModal');
         if (mapModal) {
-            $("#big-map").html(`
-            <div id="map-loader" class="d-flex justify-content-center align-items-center">
-                <div class="spinner-border" role="status">
-                    <span class="visually-hidden">Fetching data...</span>
-                </div>
-            </div>
-            `);
-            mapModal.addEventListener('shown.bs.modal', async event => {
-                if (!mapData) {
-                    let queryParams = new URLSearchParams(window.location.search);
-                    queryParams.set('map', 'true');
-                    const url = "/data-api/events?" + queryParams.toString();
-                    try {
-                        const res = await fetch(url);
-                        mapData = await res.json();
-                    } catch (error) {
-                        console.log('There was an error', error);
-                        $("#big-map").text("Sorry. There was an error fetching the data.");
-                        return;
-                    }
+            mapModal.addEventListener('shown.bs.modal', drawMap);
+            mapModal.addEventListener('hide.bs.modal', event => {
+                if (bigMap) {
+                    bigMap.remove();
+                    bigMap = null;
+                    $("#big-map").empty();
+                    $("#map-legend").remove();
                 }
-                $("#big-map").empty();
-                bigMap = L.map('big-map');
-                L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZml0ZGlnaXRhbGluaXRpYXRpdmVzIiwiYSI6ImNqZ3FxaWI0YTBoOXYyenA2ZnVyYWdsenQifQ.ckTVKSAZ8ZWPAefkd7SOaA', {
-                    id: 'mapbox/light-v10',
-                    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' + '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' + 'Imagery © <a href="http://mapbox.com">Mapbox</a>'
-                }).addTo(bigMap);
-                let featureGroup = L.featureGroup();
-                mapData[0].results.forEach(event => {
-                    if (event.location && ('coordinates' in event.location) && event.location.coordinates[0] && event.location.coordinates[1]) {
-                        let marker = L.marker([event.location.coordinates[1], event.location.coordinates[0]]);
-                        let popup_content = '';
-                        if (event.what) {
-                            popup_content += `<h1 class="source">${event.what}`;
-                            if (event.who) {
-                                popup_content += `<br><small class="text-muted">${event.who}</small>`;
-                            }
-                            popup_content += `</h1>`;
-                        }
-                        if (event.where || event.start_date || event.when) {
-                            popup_content += `<ul class="list-unstyled source">`;
+            });
+            mapModal.addEventListener('hidden.bs.modal', event => {
+                if (mapSearch) {
+                    mapSearch = false;
+                    let queryParams = new URLSearchParams(window.location.search);
+                    listEvents(queryParams);
+                }
+            });
+        }
 
-                            if (event.when) {
-                                popup_content += `<li>${event.when}</li>`;
-                            }
-                            if (event.start_date) {
-                                popup_content += `<li>${event.start_date.substring(0, 4)}</li>`;
-                            }
-                            if (event.where) {
-                                popup_content += `<li>${event.where}</li>`;
-                            }
-                            popup_content += '</ul>';
+    }
+    async function drawMap() {
+        $("#big-map").html(`
+        <div id="map-loader" class="d-flex justify-content-center align-items-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Fetching data...</span>
+            </div>
+        </div>
+        `);
+        let queryParams = new URLSearchParams(window.location.search);
+        if (!mapData) {
+            queryParams.set('map', 'true');
+            queryParams.set('mappage', mappage);
+            const url = "/data-api/events?" + queryParams.toString();
+            try {
+                const res = await fetch(url);
+                mapData = await res.json();
+            } catch (error) {
+                console.log('There was an error', error);
+                $("#big-map").text("Sorry. There was an error fetching the data.");
+                return;
+            }
+        }
+        $("#big-map").empty();
+        bigMap = L.map('big-map');
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiZml0ZGlnaXRhbGluaXRpYXRpdmVzIiwiYSI6ImNqZ3FxaWI0YTBoOXYyenA2ZnVyYWdsenQifQ.ckTVKSAZ8ZWPAefkd7SOaA', {
+            id: 'mapbox/light-v10',
+            attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' + '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' + 'Imagery © <a href="http://mapbox.com">Mapbox</a>'
+        }).addTo(bigMap);
+        let featureGroup = L.featureGroup();
+        mapData[0].results.forEach(event => {
+            if (event.location && ('coordinates' in event.location) && event.location.coordinates[0] && event.location.coordinates[1]) {
+                let marker = L.marker([event.location.coordinates[1], event.location.coordinates[0]]);
+                let popup_content = '';
+                if (event.what) {
+                    popup_content += `<h1 class="source">${event.what}`;
+                    if (event.who) {
+                        popup_content += `<br><small class="text-muted">${event.who}</small>`;
+                    }
+                    popup_content += `</h1>`;
+                }
+                if (event.where || event.start_date || event.when) {
+                    popup_content += `<ul class="list-unstyled source">`;
+
+                    if (event.when) {
+                        popup_content += `<li>${event.when}</li>`;
+                    }
+                    if (event.start_date) {
+                        popup_content += `<li>${event.start_date.substring(0, 4)}</li>`;
+                    }
+                    if (event.where) {
+                        popup_content += `<li>${event.where}</li>`;
+                    }
+                    popup_content += '</ul>';
+                }
+                if (event.description) {
+                    popup_content += `<p class="source">${event.description}</p>`;
+                }
+                popup_content += '<dl>';
+                if (event.appears_in) {
+                    popup_content += '<dt>Appears in</dt>';
+                    event.appears_in.forEach(issue => {
+                        const date = new Date(issue.calendar_date);
+                        const options = {
+                            year: 'numeric',
+                            month: 'long',
+                            timeZone: 'UTC'
+                        };
+                        if (issue.calendar_date.length == 10) {
+                            options["day"] = 'numeric';
                         }
-                        if (event.description) {
-                            popup_content += `<p class="source">${event.description}</p>`;
-                        }
-                        popup_content += '<dl>';
-                        if (event.appears_in) {
-                            popup_content += '<dt>Appears in</dt>';
-                            event.appears_in.forEach(issue => {
-                                const date = new Date(issue.calendar_date);
-                                const options = {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    timeZone: 'UTC'
-                                };
-                                if (issue.calendar_date.length == 10) {
-                                    options["day"] = 'numeric';
-                                }
-                                const displayTitle = `${issue.calendar_title}, ${date.toLocaleDateString('en-US', options)}`;
-                                popup_content += `
+                        const displayTitle = `${issue.calendar_title}, ${date.toLocaleDateString('en-US', options)}`;
+                        popup_content += `
                                     <dd>
                                     <span>${displayTitle} (page ${issue.calendar_page})</span>
-                                    <a href="?issue[]=${encodeURIComponent(issue.calendar_id)}" class="issue-search link-dark ms-1 text-decoration-none" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" aria-label="Search for this issue">
+                                    <a href="?issue[]=${encodeURIComponent(issue.calendar_id)}" class="map-issue-search link-dark ms-1 text-decoration-none" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" aria-label="Search for this issue">
                                     <i class="fas fa-search" aria-hidden="true" title="Search for this issue">
                                     </i>
                                     </a>
@@ -766,37 +788,147 @@ $(document).ready(function () {
                                     </button>
                                     </dd>
                                 `;
-                            });
-                        }
-                        if (event.associated_names) {
-                            popup_content += '<dt>Names</dt>';
-                            $.each(event.associated_names, function (index, value) {
-                                popup_content += '<dd>' + value + '</dd>';
-                            });
-                        }
-                        popup_content += '</dl>';
-                        let popup = L.popup({
-                            maxWidth: 500
-                        }).setContent(popup_content);
-                        marker.bindPopup(popup);
-                        featureGroup.addLayer(marker);
-                    }
-                });
-                L.markerClusterGroup.layerSupport({
-                    maxClusterRadius: 5
-                }).addTo(bigMap).checkIn(featureGroup);
-                bigMap.fitBounds(featureGroup.getBounds());
-                featureGroup.addTo(bigMap);
-            });
-            mapModal.addEventListener('hide.bs.modal', event => {
-                if (bigMap) {
-                    bigMap.remove();
-                    bigMap = null;
-                    $("#big-map").empty();
+                    });
                 }
-            });
-        }
+                if (event.names.length) {
+                    popup_content += '<dt>Names</dt>';
+                    event.names.forEach(name => {
+                        popup_content += `
+                                <dd>
+                                <a href="?names[]=${encodeURIComponent(name.label)}" class="map-name-search link-dark text-decoration-none" data-id="${name._id}" data-label="${encodeURIComponent(name.label)}">
+                                    <span>${name.label}</span>
+                                    <i class="fas fa-search ms-1" aria-hidden="true" title="Search for this name">
+                                    </i>
+                                </a>
+                                </dd>
+                                `;
+                        if (name.categories.length) {
+                            popup_content += `<ul class="list-inline ms-3 mt-1">`;
+                            name.categories.forEach(category => {
+                                popup_content += `
+                                        <li class="list-inline-item">
+                                            <a href="?categories[]=${encodeURIComponent(category.label)}" class="map-category-search link-dark  text-decoration-none" data-modal="#nameInfo-${name._id}" data-id="${category._id}" data-label="${encodeURIComponent(category.label)}">
+                                                <span>${category.label}</span>
+                                                <i class="fas fa-search ms-1" aria-hidden="true" title="Search for this category">
+                                                </i>
+                                            </a>
+                                        </li>`
+                            });
+                            popup_content += `</ul>`;
+                        }
+                    });
+                }
+                popup_content += '</dl>';
+                let popup = L.popup({
+                    maxWidth: 500
+                }).setContent(popup_content);
+                marker.bindPopup(popup);
+                featureGroup.addLayer(marker);
+            }
+        });
+        L.markerClusterGroup.layerSupport({
+            maxClusterRadius: 5
+        }).addTo(bigMap).checkIn(featureGroup);
+        bigMap.fitBounds(featureGroup.getBounds());
+        featureGroup.addTo(bigMap);
 
+        let legend = `
+        <div class="card" id="map-legend">
+            <div class="card-body">
+                <h2 class="card-title">Map</h2>
+                <div id="map-results">${mapData[0].count} events</div>
+        `;
+        if (mapData[0].count > 5000) {
+            let showingAmount = 5000;
+            if ((5000 * mappage) > mapData[0].count) {
+                showingAmount = mapData[0].count - (5000 * (mappage - 1));
+            }
+            legend += `<div id="map-pagination">`;
+            if (mappage > 1) {
+                legend += `
+                <button class="map-previous border-0 bg-transparent p-0 me-1" aria-label="Previous set of map results">
+                    <i class="fas fa-angle-double-left" aria-hidden="true" title="Previous set of map results">
+                    </i>
+                </button>
+                `;
+            }
+            legend += `${(5000 * (mappage - 1)) + 1} - ${(5000 * (mappage - 1)) + showingAmount}`;
+            if ((mappage * 5000) < mapData[0].count) {
+                legend += `
+                <button class="map-next border-0 bg-transparent p-0 ms-1" aria-label="Next set of map results">
+                    <i class="fas fa-angle-double-right" aria-hidden="true" title="Next set of map results">
+                    </i>
+                </button>
+                `;
+            }
+            legend += `</div>`;
+        }
+        legend += `
+        </div>
+        </div>
+        `;
+        $("#big-map").after(legend);
+        $(".map-next").on("click.fashionCalendar", function (event) {
+            let queryParams = new URLSearchParams(window.location.search);
+            mappage = mappage + 1;
+            mapData = null;
+            bigMap.remove();
+            bigMap = null;
+            $("#map-legend").remove();
+            drawMap();
+        });
+
+        bigMap.on('popupopen', function (event) {
+            // Remove any old listeners
+            $(".map-name-search").off("click.fashionCalendar");
+            $(".map-category-search").off("click.fashionCalendar");
+            $(".map-issue-search").off("click.fashionCalendar");
+            $(".map-name-search").on("click.fashionCalendar", function (event) {
+                event.preventDefault();
+                mapSearch = true;
+                let names = decodeURIComponent($(this).data("label"));
+                // Update URL Query.
+                let queryParams = new URLSearchParams();
+                mappage = 1;
+                queryParams.set("names[]", names);
+                history.pushState(null, null, "?" + queryParams.toString());
+                mapData = null;
+                bigMap.remove();
+                bigMap = null;
+                $("#map-legend").remove();
+                drawMap();
+            });
+            $(".map-category-search").on("click.fashionCalendar", function (event) {
+                event.preventDefault();
+                mapSearch = true;
+                let category = decodeURIComponent($(this).data("label"));
+                // Update URL Query.
+                let queryParams = new URLSearchParams();
+                mappage = 1;
+                queryParams.set("categories[]", category);
+                history.pushState(null, null, "?" + queryParams.toString());
+                mapData = null;
+                bigMap.remove();
+                bigMap = null;
+                $("#map-legend").remove();
+                drawMap();
+            });
+            $(".map-issue-search").on("click.fashionCalendar", function (event) {
+                event.preventDefault();
+                mapSearch = true;
+                let issue = decodeURIComponent($(this).data("calendar_id"));
+                // Update URL Query.
+                let queryParams = new URLSearchParams();
+                mappage = 1;
+                queryParams.set("issue[]", issue);
+                history.pushState(null, null, "?" + queryParams.toString());
+                mapData = null;
+                bigMap.remove();
+                bigMap = null;
+                $("#map-legend").remove();
+                drawMap();
+            });
+        });
     }
     function createSingleMapModal() {
         let singleMapModal = `
