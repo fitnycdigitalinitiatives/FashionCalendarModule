@@ -108,6 +108,47 @@
     margin-top: 0;
 }
 
+#dateRangeMap input[type="number"] {
+    max-width: 6rem;
+}
+
+#date-map-slider.noUi-target {
+    height: 0.5rem;
+    background: #dee2e6;
+    cursor: pointer;
+    border-color: transparent;
+    border-radius: 1rem;
+    box-shadow: none;
+}
+
+#date-map-slider .noUi-handle {
+    width: 1rem;
+    height: 1rem;
+    right: -8px;
+    top: -5px;
+    background-color: #0036f9;
+    border: 0;
+    border-radius: 1rem;
+    cursor: pointer;
+    box-shadow: none;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+#date-map-slider .noUi-handle.noUi-active {
+    background-color: #b6d4fe;
+}
+
+#date-map-slider .noUi-handle:focus,
+#date-map-slider .noUi-handle:focus-visible {
+    outline: 0;
+    box-shadow: 0 0 0 1px #fff, 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+#date-map-slider .noUi-handle:before,
+#date-map-slider .noUi-handle:after {
+    content: none;
+}
+
 /* facets */
 #facets .card:first-of-type {
     border-top: 0;
@@ -193,7 +234,8 @@
     color: #6c757d;
 }
 
-#query {
+#query,
+#map-query {
     font-family: "halyard-display", sans-serif;
     font-size: 1rem;
     font-weight: bold;

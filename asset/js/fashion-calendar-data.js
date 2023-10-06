@@ -522,6 +522,7 @@ $(document).ready(function () {
         if (name["wikipedia-link"] || name["research-sources"]) {
             let wikilink = "";
             let otherlinks = "";
+            let libraryLink = `<dd><a href="https://onesearch.fitnyc.edu/discovery/search?query=any,contains,${encodeURIComponent(name.label)}&tab=Everything&search_scope=FITSUNY&vid=01SUNY_FIT:01SUNY_FIT&offset=0" class="link-dark text-decoration-none" target="_blank">Search the FIT Library<i class="fas fa-external-link-alt ms-2"></i></a></dd>`;
             if (name["wikipedia-link"]) {
                 wikilink = `
                 <dd><a href="${name["wikipedia-link"]}" class="link-dark text-decoration-none" target="_blank">Wikipedia entry<i class="fas fa-external-link-alt ms-2"></i></a></dd>
@@ -537,6 +538,7 @@ $(document).ready(function () {
             <dt>Sources</dt>
             ${wikilink}
             ${otherlinks}
+            ${libraryLink}
             </dl>
             `);
         }
@@ -662,10 +664,6 @@ $(document).ready(function () {
         <div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapLabel" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered modal-fullscreen">
             <div class="modal-content">
-              <div class="modal-header">
-                <h2 class="modal-title fs-5" id="mapLabel">Map</h2>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
               <div class="modal-body">
               <div id="big-map"></div>
               </div>
@@ -831,43 +829,236 @@ $(document).ready(function () {
         }).addTo(bigMap).checkIn(featureGroup);
         bigMap.fitBounds(featureGroup.getBounds());
         featureGroup.addTo(bigMap);
-
-        let legend = `
+        $("#big-map").after(`
         <div class="card" id="map-legend">
             <div class="card-body">
-                <h2 class="card-title">Map</h2>
-                <div id="map-results">${mapData[0].count} events</div>
-        `;
+                <div class="legend-header d-flex align-items-center">
+                <h2 class="card-title" id="mapLabel">Map</h2>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div id="map-results">${mapData[0].count.toLocaleString()} events<sup><i id="map-results-info" class="fas fa-info-circle ms-1" aria-hidden="true" title="Info" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Note: some events do not include location data and are unabled to be displayed on this map. Also, results are limited to 5,000 per page."></i></sup></div>
+            </div>
+        </div>
+        `);
+
+        let currentQueryParams = new URLSearchParams(window.location.search);
+        if (currentQueryParams.toString()) {
+            $("#map-legend .card-body").append(`<ul id="map-query" class="list-inline"></ul>`);
+            if (currentQueryParams.has('text')) {
+                text = currentQueryParams.get('text');
+                if (text) {
+                    let newcurrentQueryParams = new URLSearchParams(window.location.search);
+                    newcurrentQueryParams.delete('text');
+                    $("#map-query").append(`
+                    <li class="list-inline-item">
+                        <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${text}</a>
+                    </li>
+                    `);
+                }
+
+            }
+            if (currentQueryParams.has('names[]')) {
+                names = currentQueryParams.getAll('names[]');
+                names.forEach(name => {
+                    let newcurrentQueryParams = new URLSearchParams();
+                    currentQueryParams.forEach((value, key) => {
+                        if (!((key == "names[]") && (value == name))) {
+                            newcurrentQueryParams.append(key, value);
+                        }
+                    });
+                    $("#map-query").append(`
+                    <li class="list-inline-item">
+                        <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${name}</a>
+                    </li>
+                    `);
+                });
+            }
+            if (currentQueryParams.has('categories[]')) {
+                categories = currentQueryParams.getAll('categories[]');
+                categories.forEach(category => {
+                    let newcurrentQueryParams = new URLSearchParams();
+                    currentQueryParams.forEach((value, key) => {
+                        if (!((key == "categories[]") && (value == category))) {
+                            newcurrentQueryParams.append(key, value);
+                        }
+                    });
+                    $("#map-query").append(`
+                    <li class="list-inline-item">
+                        <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${category}</a>
+                    </li>
+                    `);
+                });
+            }
+            if (currentQueryParams.has('issue[]')) {
+                issue = currentQueryParams.getAll('issue[]');
+                issue.forEach(this_issue => {
+                    let newcurrentQueryParams = new URLSearchParams();
+                    currentQueryParams.forEach((value, key) => {
+                        if (!((key == "issue[]") && (value == this_issue))) {
+                            newcurrentQueryParams.append(key, value);
+                        }
+                    });
+                    $("#map-query").append(`
+                    <li class="list-inline-item">
+                        <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${this_issue}</a>
+                    </li>
+                    `);
+                });
+            }
+            if (currentQueryParams.has('date_range_start') && currentQueryParams.has('date_range_end')) {
+                date_range_start = currentQueryParams.get('date_range_start');
+                date_range_end = currentQueryParams.get('date_range_end');
+                let newcurrentQueryParams = new URLSearchParams(window.location.search);
+                newcurrentQueryParams.delete('date_range_start');
+                newcurrentQueryParams.delete('date_range_end');
+                $("#map-query").append(`
+                <li class="list-inline-item">
+                    <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${date_range_start}-${date_range_end}</a>
+                </li>
+                `);
+            }
+            if (currentQueryParams.has('titles')) {
+                titles = currentQueryParams.get('titles');
+                let newcurrentQueryParams = new URLSearchParams(window.location.search);
+                newcurrentQueryParams.delete('titles');
+                $("#map-query").append(`
+                <li class="list-inline-item">
+                    <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${titles}</a>
+                </li>
+                `);
+            }
+            if (currentQueryParams.has('year')) {
+                year = currentQueryParams.get('year');
+                let newcurrentQueryParams = new URLSearchParams(window.location.search);
+                newcurrentQueryParams.delete('year');
+                $("#map-query").append(`
+                <li class="list-inline-item">
+                    <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${year}</a>
+                </li>
+                `);
+            }
+            if (currentQueryParams.has('year_month')) {
+                year_month = currentQueryParams.get('year_month');
+                let newcurrentQueryParams = new URLSearchParams(window.location.search);
+                newcurrentQueryParams.delete('year_month');
+                $("#map-query").append(`
+                <li class="list-inline-item">
+                    <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${year_month}</a>
+                </li>
+                `);
+            }
+            if (currentQueryParams.has('location')) {
+                location = currentQueryParams.get('location');
+                let newcurrentQueryParams = new URLSearchParams(window.location.search);
+                newcurrentQueryParams.delete('location');
+                $("#map-query").append(`
+                <li class="list-inline-item">
+                    <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${location}</a>
+                </li>
+                `);
+            }
+        }
+        if (mapData[0].range && ("earliest" in mapData[0].range) && ("latest" in mapData[0].range) && (mapData[0].range.earliest != mapData[0].range.latest)) {
+            const first_year = mapData[0].range.earliest;
+            const last_year = mapData[0].range.latest;
+            $("#map-legend .card-body").append(`
+            <div class="mt-2 pt-2 border-top">
+                <h3 class="fs-5">Date Range</h3>
+                <form id="dateRangeMap">
+                    <div class="row justify-content-between mb-3 small">
+                    <div class="col-auto">
+                        <label for="dateRangeMapMin" class="form-label">Min</label>
+                        <input type="number" class="form-control form-control-sm" id="dateRangeMapMin" name="date_range_start" min="${first_year}" max="${last_year}">
+                    </div>
+                    <div class="col-auto">
+                        <label for="dateRangeMapMax" class="form-label">Max</label>
+                        <input type="number" class="form-control form-control-sm" id="dateRangeMapMax" name="date_range_end" min="${first_year}" max="${last_year}">
+                    </div>
+                    </div>
+                    <div class="row mb-3">
+                    <div class="col">
+                        <div id="date-map-slider" data-min="${first_year}" data-max="${last_year}"></div>
+                    </div>
+                    </div>
+                    <div class="row justify-content-end">
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-secondary btn-sm">Set Range</button>
+                    </div>
+                    </div>
+                </form>
+            </div>
+            `);
+            let slider = document.getElementById('date-map-slider');
+            let minInput = document.getElementById('dateRangeMapMin');
+            let maxInput = document.getElementById('dateRangeMapMax');
+            noUiSlider.create(slider, {
+                start: [first_year, last_year],
+                step: 1,
+                range: {
+                    'min': first_year,
+                    'max': last_year,
+                }
+            });
+            slider.noUiSlider.on('update', function (values, handle) {
+                let value = values[handle];
+
+                if (handle) {
+                    maxInput.value = Math.round(value);
+                } else {
+                    minInput.value = Math.round(value);
+                }
+            });
+            minInput.addEventListener('change', function () {
+                slider.noUiSlider.set([this.value, null]);
+            });
+
+            maxInput.addEventListener('change', function () {
+                slider.noUiSlider.set([null, this.value]);
+            });
+            $('#dateRangeMap').submit(function (event) {
+                event.preventDefault();
+                // Update URL Query.
+                let queryParams = new URLSearchParams(window.location.search);
+                // Set because there can only be one date range
+                queryParams.set("date_range_start", minInput.value);
+                queryParams.set("date_range_end", maxInput.value);
+                queryParams.delete("page");
+                history.pushState(null, null, "?" + queryParams.toString());
+                mapSearch = true;
+                mappage = 1;
+                mapData = null;
+                bigMap.remove();
+                bigMap = null;
+                $("#map-legend").remove();
+                drawMap();
+            });
+        }
         if (mapData[0].count > 5000) {
             let showingAmount = 5000;
             if ((5000 * mappage) > mapData[0].count) {
                 showingAmount = mapData[0].count - (5000 * (mappage - 1));
             }
-            legend += `<div id="map-pagination">`;
-            if (mappage > 1) {
-                legend += `
-                <button class="map-previous border-0 bg-transparent p-0 me-1" aria-label="Previous set of map results">
-                    <i class="fas fa-angle-double-left" aria-hidden="true" title="Previous set of map results">
-                    </i>
+            $("#map-legend").append(`
+            <div id="map-pagination" class="card-footer text-center">
+                <button class="map-previous border-0 bg-transparent p-0 me-1" aria-label="Previous set of map results"${mappage == 1 ? ' disabled' : ""}>
+                    <i class="fas fa-angle-double-left" aria-hidden="true" title="Previous set of map results"></i>
                 </button>
-                `;
-            }
-            legend += `${(5000 * (mappage - 1)) + 1} - ${(5000 * (mappage - 1)) + showingAmount}`;
-            if ((mappage * 5000) < mapData[0].count) {
-                legend += `
-                <button class="map-next border-0 bg-transparent p-0 ms-1" aria-label="Next set of map results">
-                    <i class="fas fa-angle-double-right" aria-hidden="true" title="Next set of map results">
-                    </i>
+                <span>${((5000 * (mappage - 1)) + 1).toLocaleString()} - ${((5000 * (mappage - 1)) + showingAmount).toLocaleString()}</span>
+                <button class="map-next border-0 bg-transparent p-0 ms-1" aria-label="Next set of map results"${(mappage * 5000) >= mapData[0].count ? ' disabled' : ""}>
+                    <i class="fas fa-angle-double-right" aria-hidden="true" title="Next set of map results"></i>
                 </button>
-                `;
-            }
-            legend += `</div>`;
+            </div>
+            `);
         }
-        legend += `
-        </div>
-        </div>
-        `;
-        $("#big-map").after(legend);
+        $(".map-previous").on("click.fashionCalendar", function (event) {
+            let queryParams = new URLSearchParams(window.location.search);
+            mappage = mappage - 1;
+            mapData = null;
+            bigMap.remove();
+            bigMap = null;
+            $("#map-legend").remove();
+            drawMap();
+        });
         $(".map-next").on("click.fashionCalendar", function (event) {
             let queryParams = new URLSearchParams(window.location.search);
             mappage = mappage + 1;
@@ -877,6 +1068,22 @@ $(document).ready(function () {
             $("#map-legend").remove();
             drawMap();
         });
+        $('.map-remove-query').on("click.fashionCalendar", function (event) {
+            event.preventDefault();
+            mapSearch = true;
+            mappage = 1;
+            // Update URL Query.
+            let queryParams = new URLSearchParams($(this).attr('href'));
+            history.pushState(null, null, $(this).attr('href'));
+            mapData = null;
+            bigMap.remove();
+            bigMap = null;
+            $("#map-legend").remove();
+            drawMap();
+        });
+        const tooltip = new bootstrap.Tooltip(document.getElementById('map-results-info'));
+
+
 
         bigMap.on('popupopen', function (event) {
             // Remove any old listeners

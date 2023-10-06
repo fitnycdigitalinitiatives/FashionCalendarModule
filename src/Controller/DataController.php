@@ -111,6 +111,22 @@ class DataController extends AbstractActionController
                             $skip,
                             $limit
                         ],
+                        'range' => [
+                            [
+                                '$group' => [
+                                    '_id' => null,
+                                    'earliest' => ['$min' => '$start_date_iso'],
+                                    'latest' => ['$max' => '$start_date_iso']
+                                ]
+                            ],
+                            [
+                                '$project' => [
+                                    '_id' => 0,
+                                    'earliest' => ['$year' => '$earliest'],
+                                    'latest' => ['$year' => '$latest']
+                                ]
+                            ]
+                        ],
                         'count' => [
                             [
                                 '$count' => 'count'
@@ -122,8 +138,8 @@ class DataController extends AbstractActionController
                     array_unshift($facet['$facet']['results'], $sort);
                 }
                 $aggregation[] = $facet;
-                $aggregation[] = ['$project' => ['results' => 1, 'count' => ['$first' => '$count']]];
-                $aggregation[] = ['$project' => ['results' => 1, 'count' => '$count.count']];
+                $aggregation[] = ['$project' => ['results' => 1, 'range' => ['$first' => '$range'], 'count' => ['$first' => '$count']]];
+                $aggregation[] = ['$project' => ['results' => 1, 'range' => 1, 'count' => '$count.count']];
             } else {
                 if (array_key_exists('page', $params) && ($page = $params['page']) && is_numeric($page)) {
                     $skip = ['$skip' => $docs_per_page * ($page - 1)];
@@ -225,47 +241,21 @@ class DataController extends AbstractActionController
                 $page_id = $id . '_' . sprintf('%03d', $page);
                 $api = $this->api();
                 $identifier = $api->searchOne('properties', ['term' => 'dcterms:identifier'])->getContent();
-                // $item = $api->searchOne('items', [
-                //     'property' => [
-                //         [
-                //             'property' => $identifier->id(),
-                //             'type' => 'eq',
-                //             'text' => $id,
-                //         ],
-                //     ],
-                // ])->getContent();
-                // if ($item && ($media = $item->media()) && isset($media[$page])) {
-                //     $miradorViewer = $this->viewHelpers()->get('miradorViewer');
-                //     $media = $item->media();
-                //     $response->setContent(json_encode([
-                //         'html' => $miradorViewer($item, $media[$page]->id()),
-                //         'item-link' => $item->siteUrl(),
-                //     ]));
-                //     $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
-                //     return $response;
-                // } else {
-                //     $error = array('error' => ["code" => 500, "message" => "Media not found: " . $page_id]);
-                //     $response->setStatusCode(500);
-                //     $response->setContent(json_encode($error));
-                //     $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
-                //     return $response;
-                // }
-
-                // If using this method be sure query is not slowed down by resource link subquery
-                $media = $api->searchOne('media', [
+                $item = $api->searchOne('items', [
                     'property' => [
                         [
                             'property' => $identifier->id(),
                             'type' => 'eq',
-                            'text' => $page_id,
+                            'text' => $id,
                         ],
                     ],
                 ])->getContent();
-                if ($media) {
+                if ($item && ($media = $item->media()) && isset($media[$page])) {
                     $miradorViewer = $this->viewHelpers()->get('miradorViewer');
+                    $media = $item->media();
                     $response->setContent(json_encode([
-                        'html' => $miradorViewer($media->item(), $media->id()),
-                        'item-link' => $media->item()->siteUrl(),
+                        'html' => $miradorViewer($item, $media[$page]->id()),
+                        'item-link' => $item->siteUrl(),
                     ]));
                     $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
                     return $response;
@@ -276,6 +266,32 @@ class DataController extends AbstractActionController
                     $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
                     return $response;
                 }
+
+                // If using this method be sure query is not slowed down by resource link subquery
+                // $media = $api->searchOne('media', [
+                //     'property' => [
+                //         [
+                //             'property' => $identifier->id(),
+                //             'type' => 'eq',
+                //             'text' => $page_id,
+                //         ],
+                //     ],
+                // ])->getContent();
+                // if ($media) {
+                //     $miradorViewer = $this->viewHelpers()->get('miradorViewer');
+                //     $response->setContent(json_encode([
+                //         'html' => $miradorViewer($media->item(), $media->id()),
+                //         'item-link' => $media->item()->siteUrl(),
+                //     ]));
+                //     $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
+                //     return $response;
+                // } else {
+                //     $error = array('error' => ["code" => 500, "message" => "Media not found: " . $page_id]);
+                //     $response->setStatusCode(500);
+                //     $response->setContent(json_encode($error));
+                //     $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
+                //     return $response;
+                // }
             } else {
                 $error = array('error' => ["code" => 500, "message" => "Invalid request"]);
                 $response->setStatusCode(500);
