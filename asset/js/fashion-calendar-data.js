@@ -8,6 +8,7 @@ $(document).ready(function () {
     let eventsData = null;
     let mapData = null;
     let graphsData = null;
+    let dateRange = null;
     let bigMap = null;
     let singleMap = null;
     let singleMarker = null;
@@ -79,6 +80,9 @@ $(document).ready(function () {
         }
         if (namesList) {
             namesList = null;
+        }
+        if (dateRange) {
+            dateRange = null;
         }
         mappage = 1;
         $('.pagination-row').remove();
@@ -958,9 +962,40 @@ $(document).ready(function () {
                 `);
             }
         }
-        if (mapData[0].range && ("earliest" in mapData[0].range) && ("latest" in mapData[0].range) && (mapData[0].range.earliest != mapData[0].range.latest)) {
-            const first_year = mapData[0].range.earliest;
-            const last_year = mapData[0].range.latest;
+
+        if (!dateRange) {
+            let rangeQueryParams = new URLSearchParams(window.location.search);
+            rangeQueryParams.set('date_range', 'true');
+            rangeQueryParams.delete('date_range_start');
+            rangeQueryParams.delete('date_range_end');
+            rangeQueryParams.delete('year');
+            rangeQueryParams.delete('year_month');
+            const url = "/data-api/events?" + rangeQueryParams.toString();
+            try {
+                const res = await fetch(url);
+                dateRange = await res.json();
+            } catch (error) {
+                console.log('There was an error', error);
+                $("#map-legend .card-body").append("Sorry. There was an error fetching the date range.");
+            }
+        }
+        if (dateRange && dateRange[0] && ("earliest" in dateRange[0]) && ("latest" in dateRange[0]) && (dateRange[0].earliest != dateRange[0].latest)) {
+            const first_year = dateRange[0].earliest;
+            const last_year = dateRange[0].latest;
+            let date_range_start = first_year;
+            let date_range_end = last_year;
+            if (queryParams.has('date_range_start') && queryParams.has('date_range_end')) {
+                date_range_start = queryParams.get('date_range_start');
+                date_range_end = queryParams.get('date_range_end');
+            }
+            if (queryParams.has('year')) {
+                date_range_start = queryParams.get('year');
+                date_range_end = queryParams.get('year');
+            }
+            if (queryParams.has('year_month')) {
+                date_range_start = queryParams.get('year_month').substring(0, 4);
+                date_range_end = queryParams.get('year_month').substring(0, 4);
+            }
             $("#map-legend .card-body").append(`
             <div class="mt-2 pt-2 border-top">
                 <h3 class="fs-5">Date Range</h3>
@@ -992,7 +1027,7 @@ $(document).ready(function () {
             let minInput = document.getElementById('dateRangeMapMin');
             let maxInput = document.getElementById('dateRangeMapMax');
             noUiSlider.create(slider, {
-                start: [first_year, last_year],
+                start: [date_range_start, date_range_end],
                 step: 1,
                 range: {
                     'min': first_year,
@@ -1022,6 +1057,8 @@ $(document).ready(function () {
                 // Set because there can only be one date range
                 queryParams.set("date_range_start", minInput.value);
                 queryParams.set("date_range_end", maxInput.value);
+                queryParams.delete("year");
+                queryParams.delete("year_month");
                 queryParams.delete("page");
                 history.pushState(null, null, "?" + queryParams.toString());
                 mapSearch = true;
@@ -1072,6 +1109,7 @@ $(document).ready(function () {
             event.preventDefault();
             mapSearch = true;
             mappage = 1;
+            dateRange = null;
             // Update URL Query.
             let queryParams = new URLSearchParams($(this).attr('href'));
             history.pushState(null, null, $(this).attr('href'));
@@ -1093,6 +1131,7 @@ $(document).ready(function () {
             $(".map-name-search").on("click.fashionCalendar", function (event) {
                 event.preventDefault();
                 mapSearch = true;
+                dateRange = null;
                 let names = decodeURIComponent($(this).data("label"));
                 // Update URL Query.
                 let queryParams = new URLSearchParams();
@@ -1108,6 +1147,7 @@ $(document).ready(function () {
             $(".map-category-search").on("click.fashionCalendar", function (event) {
                 event.preventDefault();
                 mapSearch = true;
+                dateRange = null;
                 let category = decodeURIComponent($(this).data("label"));
                 // Update URL Query.
                 let queryParams = new URLSearchParams();
@@ -1123,6 +1163,7 @@ $(document).ready(function () {
             $(".map-issue-search").on("click.fashionCalendar", function (event) {
                 event.preventDefault();
                 mapSearch = true;
+                dateRange = null;
                 let issue = decodeURIComponent($(this).data("calendar_id"));
                 // Update URL Query.
                 let queryParams = new URLSearchParams();
@@ -1189,8 +1230,17 @@ $(document).ready(function () {
         }
     }
 
-    function createFacets() {
-        let hasFacets = false;
+    async function createFacets() {
+        $('#facet').html(`
+            <button id="facet-button" class="btn btn-fit-pink floating-action" type="button" data-bs-toggle="offcanvas"
+              data-bs-target="#facets" aria-controls="facets" aria-label="Facet results" disabled>
+              <span class="action-container">
+                <i class="fas fa-filter" aria-hidden="true" title="Facet results">
+                </i>
+                Facet
+              </span>
+            </button>
+        `);
         let offCanvas = $(`
         <div class="offcanvas offcanvas-start shadow border-end-0" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="facets" aria-labelledby="facetsLabel">
             <div class="offcanvas-header border-bottom">
@@ -1210,10 +1260,39 @@ $(document).ready(function () {
             </ul>
         </div>
         `);
-        if (eventsData[0].facets.years.length > 1) {
-            hasFacets = true;
-            const first_year = eventsData[0].facets.years[0].year;
-            const last_year = eventsData[0].facets.years[eventsData[0].facets.years.length - 1].year;
+        if (!dateRange) {
+            let rangeQueryParams = new URLSearchParams(window.location.search);
+            rangeQueryParams.set('date_range', 'true');
+            rangeQueryParams.delete('date_range_start');
+            rangeQueryParams.delete('date_range_end');
+            rangeQueryParams.delete('year');
+            rangeQueryParams.delete('year_month');
+            const url = "/data-api/events?" + rangeQueryParams.toString();
+            try {
+                const res = await fetch(url);
+                dateRange = await res.json();
+            } catch (error) {
+                console.log('There was an error getting the date range', error);
+            }
+        }
+        if (dateRange && dateRange[0] && ("earliest" in dateRange[0]) && ("latest" in dateRange[0]) && (dateRange[0].earliest != dateRange[0].latest)) {
+            const first_year = dateRange[0].earliest;
+            const last_year = dateRange[0].latest;
+            let date_range_start = first_year;
+            let date_range_end = last_year;
+            let queryParams = new URLSearchParams(window.location.search);
+            if (queryParams.has('date_range_start') && queryParams.has('date_range_end')) {
+                date_range_start = queryParams.get('date_range_start');
+                date_range_end = queryParams.get('date_range_end');
+            }
+            if (queryParams.has('year')) {
+                date_range_start = queryParams.get('year');
+                date_range_end = queryParams.get('year');
+            }
+            if (queryParams.has('year_month')) {
+                date_range_start = queryParams.get('year_month').substring(0, 4);
+                date_range_end = queryParams.get('year_month').substring(0, 4);
+            }
             let dateRangeCard = $(`
             <div class="card rounded-0 border-start-0 border-end-0">
                 <h4 class="card-header">Date</h4>
@@ -1245,7 +1324,7 @@ $(document).ready(function () {
             let minInput = dateRangeCard.find('#dateRangeMin')[0];
             let maxInput = dateRangeCard.find('#dateRangeMax')[0];
             noUiSlider.create(slider, {
-                start: [first_year, last_year],
+                start: [date_range_start, date_range_end],
                 step: 1,
                 range: {
                     'min': first_year,
@@ -1276,6 +1355,8 @@ $(document).ready(function () {
                 // Set because there can only be one date range
                 queryParams.set("date_range_start", minInput.value);
                 queryParams.set("date_range_end", maxInput.value);
+                queryParams.delete("year");
+                queryParams.delete("year_month");
                 queryParams.delete("page");
                 history.pushState(null, null, "?" + queryParams.toString());
                 openedCanvas.hide();
@@ -1286,7 +1367,6 @@ $(document).ready(function () {
             offCanvas.children('.offcanvas-body').append(dateRangeCard);
         }
         if (eventsData[0].facets.titles.length) {
-            hasFacets = true;
             let titlesCard = card.clone();
             titlesCard.children('.card-header').text("Titles");
             const titleDisplayFacets = eventsData[0].facets.titles;
@@ -1319,7 +1399,6 @@ $(document).ready(function () {
 
         }
         if (eventsData[0].facets.names.length) {
-            hasFacets = true;
             let namesCard = card.clone();
             namesCard.children('.card-header').text("Names");
             const nameDisplayFacets = eventsData[0].facets.names.slice(0, 10);
@@ -1382,7 +1461,6 @@ $(document).ready(function () {
 
         }
         if (eventsData[0].facets.categories.length) {
-            hasFacets = true;
             let categoriesCard = card.clone();
             categoriesCard.children('.card-header').text("Categories");
             const categoriesDisplayFacets = eventsData[0].facets.categories.slice(0, 10);
@@ -1445,7 +1523,6 @@ $(document).ready(function () {
 
         }
         if (eventsData[0].facets.years.length) {
-            hasFacets = true;
             let yearsCard = card.clone();
             yearsCard.children('.card-header').text("Years");
             const yearsDisplayFacets = eventsData[0].facets.years.slice(0, 10);
@@ -1511,19 +1588,8 @@ $(document).ready(function () {
             });
             offCanvas.children('.offcanvas-body').append(yearsCard);
         }
-        if (hasFacets) {
-            $('#facet').html(`
-            <button id="facet-button" class="btn btn-fit-pink floating-action" type="button" data-bs-toggle="offcanvas"
-              data-bs-target="#facets" aria-controls="facets" aria-label="Facet results">
-              <span class="action-container">
-                <i class="fas fa-filter" aria-hidden="true" title="Facet results">
-                </i>
-                Facet
-              </span>
-            </button>
-            `);
-            $('#modal-container').append(offCanvas);
-        }
+        $('#modal-container').append(offCanvas);
+        $('#facet-button').prop("disabled", false);
     }
 
     function createGraphs(url) {

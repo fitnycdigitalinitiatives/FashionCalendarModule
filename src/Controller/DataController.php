@@ -111,22 +111,6 @@ class DataController extends AbstractActionController
                             $skip,
                             $limit
                         ],
-                        'range' => [
-                            [
-                                '$group' => [
-                                    '_id' => null,
-                                    'earliest' => ['$min' => '$start_date_iso'],
-                                    'latest' => ['$max' => '$start_date_iso']
-                                ]
-                            ],
-                            [
-                                '$project' => [
-                                    '_id' => 0,
-                                    'earliest' => ['$year' => '$earliest'],
-                                    'latest' => ['$year' => '$latest']
-                                ]
-                            ]
-                        ],
                         'count' => [
                             [
                                 '$count' => 'count'
@@ -138,8 +122,11 @@ class DataController extends AbstractActionController
                     array_unshift($facet['$facet']['results'], $sort);
                 }
                 $aggregation[] = $facet;
-                $aggregation[] = ['$project' => ['results' => 1, 'range' => ['$first' => '$range'], 'count' => ['$first' => '$count']]];
-                $aggregation[] = ['$project' => ['results' => 1, 'range' => 1, 'count' => '$count.count']];
+                $aggregation[] = ['$project' => ['results' => 1, 'count' => ['$first' => '$count']]];
+                $aggregation[] = ['$project' => ['results' => 1, 'count' => '$count.count']];
+            } elseif (array_key_exists('date_range', $params) && ($params['date_range'] == 'true')) {
+                $aggregation[] = ['$group' => ['_id' => null, 'earliest' => ['$min' => '$start_date_iso'], 'latest' => ['$max' => '$start_date_iso']]];
+                $aggregation[] = ['$project' => ['_id' => 0, 'earliest' => ['$year' => '$earliest'], 'latest' => ['$year' => '$latest']]];
             } else {
                 if (array_key_exists('page', $params) && ($page = $params['page']) && is_numeric($page)) {
                     $skip = ['$skip' => $docs_per_page * ($page - 1)];
