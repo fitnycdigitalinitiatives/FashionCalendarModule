@@ -43,10 +43,45 @@ class DataController extends AbstractActionController
                     $match['$match']['$and'][] = ['names.label' => $name];
                 }
             }
+            if (array_key_exists('adv_name', $params) && ($names = $params['adv_name'])) {
+                $names = is_array($names) ? $names : [$names];
+                //AND
+                if (array_key_exists('adv_name_type', $params) && ($params['adv_name_type'] == "AND")) {
+                    foreach ($names as $name) {
+                        $match['$match']['$and'][] = ['names.label' => $name];
+                    }
+                }
+                //OR
+                else {
+                    $orList = [];
+                    foreach ($names as $name) {
+                        $orList[] = ['names.label' => $name];
+                    }
+                    $match['$match']['$and'][] = ['$or' => $orList];
+                }
+            }
+
             if (array_key_exists('categories', $params) && ($categories = $params['categories'])) {
                 $categories = is_array($categories) ? $categories : [$categories];
                 foreach ($categories as $category) {
                     $match['$match']['$and'][] = ['names.categories.label' => $category];
+                }
+            }
+            if (array_key_exists('adv_category', $params) && ($categories = $params['adv_category'])) {
+                $categories = is_array($categories) ? $categories : [$categories];
+                //AND
+                if (array_key_exists('adv_category_type', $params) && ($params['adv_category_type'] == "AND")) {
+                    foreach ($categories as $category) {
+                        $match['$match']['$and'][] = ['names.categories.label' => $category];
+                    }
+                }
+                //OR
+                else {
+                    $orList = [];
+                    foreach ($categories as $category) {
+                        $orList[] = ['names.categories.label' => $category];
+                    }
+                    $match['$match']['$and'][] = ['$or' => $orList];
                 }
             }
             if (array_key_exists('issue', $params) && ($issue = $params['issue'])) {
@@ -164,6 +199,8 @@ class DataController extends AbstractActionController
                 $cursor = $collection->aggregate($aggregation);
                 $response->setContent(json_encode($cursor->toArray()));
                 $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
+                $response->getHeaders()->addHeaderLine('Cache-Control', 'public, max-age=86400, immutable');
+                $response->getHeaders()->addHeaderLine('Pragma', '');
                 return $response;
             } catch (Exception $e) {
                 $error = array('error' => ["code" => 500, "message" => $e->getMessage()]);

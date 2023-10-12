@@ -17,24 +17,14 @@ $(document).ready(function () {
     let mappage = 1;
     initiateStartup();
     window.onpopstate = function () {
-        $('#data-search input').typeahead('destroy');
+        $("#search-container").empty();
+        $("#advanced-search-data .modal-body").empty();
         initiateStartup();
     }
     function initiateStartup() {
         let queryParams = new URLSearchParams(window.location.search);
         listEvents(queryParams);
-        initializeTypeahead();
-        $("#data-search").submit(function (event) {
-            event.preventDefault();
-            $(this).find('input').blur();
-            $(this).find('button').blur();
-            let text = $(this).find('input').val();
-            // Update URL Query.
-            let queryParams = new URLSearchParams();
-            queryParams.set("text", text);
-            history.pushState(null, null, "?" + queryParams.toString());
-            listEvents(queryParams);
-        });
+        initializeSearch();
     }
 
     function listEvents(queryParams) {
@@ -84,6 +74,17 @@ $(document).ready(function () {
         if (dateRange) {
             dateRange = null;
         }
+        if (document.getElementById("advanced-search-data-form")) {
+            $("#adv_text").val("");
+            $("#adv_date_range input").val("");
+            $('#advanced-search-data-form input:radio').prop('checked', false);
+            $('#adv_name').prop("selectedIndex", -1);
+            $('#adv_name').trigger('chosen:updated');
+            $('#adv_category').prop("selectedIndex", -1);
+            $('#adv_category').trigger('chosen:updated');
+            $('#adv_name_type_any').prop('checked', true);
+            $('#adv_category_type_any').prop('checked', true);
+        }
         mappage = 1;
         $('.pagination-row').remove();
         $('.page-load-status').remove();
@@ -106,20 +107,9 @@ $(document).ready(function () {
         $('#graph').empty().hide();
         $('#map').empty().hide();
         $('#data-search input').val("");
-        let text = "";
-        let names = "";
-        let categories = "";
-        let issue = "";
-        let location = "";
-        let year = "";
-        let year_month = "";
-        let date_range_start = "";
-        let date_range_end = "";
-        let titles = "";
-        let page = "";
         if (queryParams.toString()) {
             if (queryParams.has('text')) {
-                text = queryParams.get('text');
+                let text = queryParams.get('text');
                 if (text) {
                     let newQueryParams = new URLSearchParams(window.location.search);
                     newQueryParams.delete('text')
@@ -132,7 +122,7 @@ $(document).ready(function () {
 
             }
             if (queryParams.has('names[]')) {
-                names = queryParams.getAll('names[]');
+                let names = queryParams.getAll('names[]');
                 names.forEach(name => {
                     let newQueryParams = new URLSearchParams();
                     queryParams.forEach((value, key) => {
@@ -147,8 +137,25 @@ $(document).ready(function () {
                     `);
                 });
             }
+            if (queryParams.has('adv_name[]')) {
+                let names = queryParams.getAll('adv_name[]');
+                names.forEach((name, index) => {
+                    let newQueryParams = new URLSearchParams();
+                    queryParams.forEach((value, key) => {
+                        if (!((key == "adv_name[]") && (value == name))) {
+                            newQueryParams.append(key, value);
+                        }
+                    });
+                    $('#query').append(`
+                    <li class="list-inline-item">
+                        <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${name}</a>
+                        ${(queryParams.has('adv_name_type') && (queryParams.get('adv_name_type') == "OR") && (names.length > 1) && (index != (names.length - 1))) ? "<span class='ms-1 text-black'>OR</span>" : ""}
+                    </li>
+                    `);
+                });
+            }
             if (queryParams.has('categories[]')) {
-                categories = queryParams.getAll('categories[]');
+                let categories = queryParams.getAll('categories[]');
                 categories.forEach(category => {
                     let newQueryParams = new URLSearchParams();
                     queryParams.forEach((value, key) => {
@@ -163,8 +170,25 @@ $(document).ready(function () {
                     `);
                 });
             }
+            if (queryParams.has('adv_category[]')) {
+                let categories = queryParams.getAll('adv_category[]');
+                categories.forEach((category, index) => {
+                    let newQueryParams = new URLSearchParams();
+                    queryParams.forEach((value, key) => {
+                        if (!((key == "adv_category[]") && (value == category))) {
+                            newQueryParams.append(key, value);
+                        }
+                    });
+                    $('#query').append(`
+                    <li class="list-inline-item">
+                        <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${category}</a>
+                        ${(queryParams.has('adv_category_type') && (queryParams.get('adv_category_type') == "OR") && (categories.length > 1) && (index != (categories.length - 1))) ? "<span class='ms-1 text-black'>OR</span>" : ""}
+                    </li>
+                    `);
+                });
+            }
             if (queryParams.has('issue[]')) {
-                issue = queryParams.getAll('issue[]');
+                let issue = queryParams.getAll('issue[]');
                 issue.forEach(this_issue => {
                     let newQueryParams = new URLSearchParams();
                     queryParams.forEach((value, key) => {
@@ -180,19 +204,21 @@ $(document).ready(function () {
                 });
             }
             if (queryParams.has('date_range_start') && queryParams.has('date_range_end')) {
-                date_range_start = queryParams.get('date_range_start');
-                date_range_end = queryParams.get('date_range_end');
-                let newQueryParams = new URLSearchParams(window.location.search);
-                newQueryParams.delete('date_range_start');
-                newQueryParams.delete('date_range_end');
-                $('#query').append(`
-                <li class="list-inline-item">
-                    <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${date_range_start}-${date_range_end}</a>
-                </li>
-                `);
+                let date_range_start = queryParams.get('date_range_start');
+                let date_range_end = queryParams.get('date_range_end');
+                if (date_range_start && date_range_end) {
+                    let newQueryParams = new URLSearchParams(window.location.search);
+                    newQueryParams.delete('date_range_start');
+                    newQueryParams.delete('date_range_end');
+                    $('#query').append(`
+                    <li class="list-inline-item">
+                        <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${date_range_start}-${date_range_end}</a>
+                    </li>
+                    `);
+                }
             }
             if (queryParams.has('titles')) {
-                titles = queryParams.get('titles');
+                let titles = queryParams.get('titles');
                 let newQueryParams = new URLSearchParams(window.location.search);
                 newQueryParams.delete('titles');
                 $('#query').append(`
@@ -202,7 +228,7 @@ $(document).ready(function () {
                 `);
             }
             if (queryParams.has('year')) {
-                year = queryParams.get('year');
+                let year = queryParams.get('year');
                 let newQueryParams = new URLSearchParams(window.location.search);
                 newQueryParams.delete('year');
                 $('#query').append(`
@@ -212,7 +238,7 @@ $(document).ready(function () {
                 `);
             }
             if (queryParams.has('year_month')) {
-                year_month = queryParams.get('year_month');
+                let year_month = queryParams.get('year_month');
                 let newQueryParams = new URLSearchParams(window.location.search);
                 newQueryParams.delete('year_month');
                 $('#query').append(`
@@ -222,7 +248,7 @@ $(document).ready(function () {
                 `);
             }
             if (queryParams.has('location')) {
-                location = queryParams.get('location');
+                let location = queryParams.get('location');
                 let newQueryParams = new URLSearchParams(window.location.search);
                 newQueryParams.delete('location');
                 $('#query').append(`
@@ -232,7 +258,7 @@ $(document).ready(function () {
                 `);
             }
             if (queryParams.has('page')) {
-                page = queryParams.get('page');
+                let page = queryParams.get('page');
                 let newQueryParams = new URLSearchParams(window.location.search);
                 newQueryParams.delete('page');
                 $('#query').append(`
@@ -849,7 +875,7 @@ $(document).ready(function () {
         if (currentQueryParams.toString()) {
             $("#map-legend .card-body").append(`<ul id="map-query" class="list-inline"></ul>`);
             if (currentQueryParams.has('text')) {
-                text = currentQueryParams.get('text');
+                let text = currentQueryParams.get('text');
                 if (text) {
                     let newcurrentQueryParams = new URLSearchParams(window.location.search);
                     newcurrentQueryParams.delete('text');
@@ -862,7 +888,7 @@ $(document).ready(function () {
 
             }
             if (currentQueryParams.has('names[]')) {
-                names = currentQueryParams.getAll('names[]');
+                let names = currentQueryParams.getAll('names[]');
                 names.forEach(name => {
                     let newcurrentQueryParams = new URLSearchParams();
                     currentQueryParams.forEach((value, key) => {
@@ -877,8 +903,25 @@ $(document).ready(function () {
                     `);
                 });
             }
+            if (currentQueryParams.has('adv_name[]')) {
+                let names = currentQueryParams.getAll('adv_name[]');
+                names.forEach((name, index) => {
+                    let newcurrentQueryParams = new URLSearchParams();
+                    currentQueryParams.forEach((value, key) => {
+                        if (!((key == "adv_name[]") && (value == name))) {
+                            newcurrentQueryParams.append(key, value);
+                        }
+                    });
+                    $('#map-query').append(`
+                    <li class="list-inline-item">
+                        <a href="?${newcurrentQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${name}</a>
+                        ${(currentQueryParams.has('adv_name_type') && (currentQueryParams.get('adv_name_type') == "OR") && (names.length > 1) && (index != (names.length - 1))) ? "<span class='ms-1 text-black'>OR</span>" : ""}
+                    </li>
+                    `);
+                });
+            }
             if (currentQueryParams.has('categories[]')) {
-                categories = currentQueryParams.getAll('categories[]');
+                let categories = currentQueryParams.getAll('categories[]');
                 categories.forEach(category => {
                     let newcurrentQueryParams = new URLSearchParams();
                     currentQueryParams.forEach((value, key) => {
@@ -893,8 +936,25 @@ $(document).ready(function () {
                     `);
                 });
             }
+            if (currentQueryParams.has('adv_category[]')) {
+                let categories = currentQueryParams.getAll('adv_category[]');
+                categories.forEach((category, index) => {
+                    let newcurrentQueryParams = new URLSearchParams();
+                    currentQueryParams.forEach((value, key) => {
+                        if (!((key == "adv_category[]") && (value == category))) {
+                            newcurrentQueryParams.append(key, value);
+                        }
+                    });
+                    $('#map-query').append(`
+                    <li class="list-inline-item">
+                        <a href="?${newcurrentQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${category}</a>
+                        ${(currentQueryParams.has('adv_category_type') && (currentQueryParams.get('adv_category_type') == "OR") && (categories.length > 1) && (index != (categories.length - 1))) ? "<span class='ms-1 text-black'>OR</span>" : ""}
+                    </li>
+                    `);
+                });
+            }
             if (currentQueryParams.has('issue[]')) {
-                issue = currentQueryParams.getAll('issue[]');
+                let issue = currentQueryParams.getAll('issue[]');
                 issue.forEach(this_issue => {
                     let newcurrentQueryParams = new URLSearchParams();
                     currentQueryParams.forEach((value, key) => {
@@ -910,19 +970,21 @@ $(document).ready(function () {
                 });
             }
             if (currentQueryParams.has('date_range_start') && currentQueryParams.has('date_range_end')) {
-                date_range_start = currentQueryParams.get('date_range_start');
-                date_range_end = currentQueryParams.get('date_range_end');
-                let newcurrentQueryParams = new URLSearchParams(window.location.search);
-                newcurrentQueryParams.delete('date_range_start');
-                newcurrentQueryParams.delete('date_range_end');
-                $("#map-query").append(`
-                <li class="list-inline-item">
-                    <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${date_range_start}-${date_range_end}</a>
-                </li>
-                `);
+                let date_range_start = currentQueryParams.get('date_range_start');
+                let date_range_end = currentQueryParams.get('date_range_end');
+                if (date_range_start && date_range_end) {
+                    let newcurrentQueryParams = new URLSearchParams(window.location.search);
+                    newcurrentQueryParams.delete('date_range_start');
+                    newcurrentQueryParams.delete('date_range_end');
+                    $("#map-query").append(`
+                    <li class="list-inline-item">
+                        <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${date_range_start}-${date_range_end}</a>
+                    </li>
+                    `);
+                }
             }
             if (currentQueryParams.has('titles')) {
-                titles = currentQueryParams.get('titles');
+                let titles = currentQueryParams.get('titles');
                 let newcurrentQueryParams = new URLSearchParams(window.location.search);
                 newcurrentQueryParams.delete('titles');
                 $("#map-query").append(`
@@ -932,7 +994,7 @@ $(document).ready(function () {
                 `);
             }
             if (currentQueryParams.has('year')) {
-                year = currentQueryParams.get('year');
+                let year = currentQueryParams.get('year');
                 let newcurrentQueryParams = new URLSearchParams(window.location.search);
                 newcurrentQueryParams.delete('year');
                 $("#map-query").append(`
@@ -942,7 +1004,7 @@ $(document).ready(function () {
                 `);
             }
             if (currentQueryParams.has('year_month')) {
-                year_month = currentQueryParams.get('year_month');
+                let year_month = currentQueryParams.get('year_month');
                 let newcurrentQueryParams = new URLSearchParams(window.location.search);
                 newcurrentQueryParams.delete('year_month');
                 $("#map-query").append(`
@@ -952,7 +1014,7 @@ $(document).ready(function () {
                 `);
             }
             if (currentQueryParams.has('location')) {
-                location = currentQueryParams.get('location');
+                let location = currentQueryParams.get('location');
                 let newcurrentQueryParams = new URLSearchParams(window.location.search);
                 newcurrentQueryParams.delete('location');
                 $("#map-query").append(`
@@ -1833,7 +1895,79 @@ $(document).ready(function () {
     }
 
 
-    function initializeTypeahead() {
+    function initializeSearch() {
+        $("#search-container").append(`
+        <form id="data-search">
+            <div class="input-group">
+                <input type="search" class="form-control" aria-label="<?php echo $translate('Search'); ?>"
+                    autocomplete="off" placeholder="Search by keyword or select names/categories via autocomplete">
+                <button class="btn btn-secondary" type="submit" aria-label="Search">
+                    <i class="fas fa-search" title="<?php echo $translate('Search'); ?>" aria-hidden="true"></i>
+                </button>
+            </div>
+        </form>
+        <div class="search-info d-flex justify-content-end mt-2 small">
+            <button class="border-0 bg-transparent p-0 link-secondary me-2" data-bs-toggle="modal"
+                data-bs-target="#advanced-search-data">
+                <i class="fas fa-search me-1" aria-hidden="true"></i>
+                <span>Advanced Search</span>
+            </button>
+            |
+            <button class="border-0 bg-transparent p-0 link-secondary ms-2" data-bs-toggle="modal"
+                data-bs-target="#search-tips">
+                <i class="fas fa-info-circle me-1" aria-hidden="true"></i>
+                <span>Search Tips</span>
+            </button>
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="advanced-search-data" tabindex="-1" aria-labelledby="advanced-search-data-label"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title" id="advanced-search-data-label">Advanced Search</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                    </div>
+                    <div class="modal-footer">
+                        <button id="advanced-search-data-button" type="submit" class="btn btn-secondary"
+                            form="advanced-search-data-form">Search</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="search-tips" tabindex="-1" aria-labelledby="search-tips-label"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title fs-5" id="search-tips-label">Search Tips</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body placeholder-glow">
+                        <span class="placeholder col-7"></span>
+                        <span class="placeholder col-4"></span>
+                        <span class="placeholder col-4"></span>
+                        <span class="placeholder col-6"></span>
+                        <span class="placeholder col-8"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `);
+        $("#data-search").on("submit.fashioncalendar", function (event) {
+            event.preventDefault();
+            $(this).find('input').blur();
+            $(this).find('button').blur();
+            let text = $(this).find('input').val();
+            // Update URL Query.
+            let queryParams = new URLSearchParams();
+            queryParams.set("text", text);
+            history.pushState(null, null, "?" + queryParams.toString());
+            listEvents(queryParams);
+        });
         const names = new Bloodhound({
             datumTokenizer: Bloodhound.tokenizers.whitespace,
             queryTokenizer: Bloodhound.tokenizers.whitespace,
@@ -1881,6 +2015,125 @@ $(document).ready(function () {
             history.pushState(null, null, "?" + queryParams.toString());
             termSuggester.typeahead('val', '')
             listEvents(queryParams);
+        });
+
+        // Advanced Search
+        $('#advanced-search-data .modal-body').append(`
+        <form id="advanced-search-data-form">
+            <div class="row mb-4 pb-4 border-bottom">
+                <label for="adv_text" class="col-form-label col-sm-3 col-lg-2">Full-Text</label>
+                <div class="col-sm-9 col-lg-10">
+                    <input type="search" class="form-control" id="adv_text" name="text">
+                    <div class="form-text">Searches the entire event listing.</div>
+                </div>
+            </div>
+            <div class="row mb-4 pb-4 border-bottom">
+                <div class="col-form-label col-sm-3 col-lg-2">Names</div>
+                <div class="col-sm-9 col-lg-10">
+                    <select class="form-select" id="adv_name" name="adv_name[]" aria-label="Names" multiple>
+                    </select>
+                    <div class="form-check form-check-inline mt-2">
+                        <input class="form-check-input" type="radio" name="adv_name_type" id="adv_name_type_any" value="OR" checked>
+                        <label class="form-check-label" for="adv_name_type_any">Match any</label>
+                    </div>
+                    <div class="form-check form-check-inline mt-2">
+                        <input class="form-check-input" type="radio" name="adv_name_type" id="adv_name_type_all" value="AND">
+                        <label class="form-check-label" for="adv_name_type_all">Match all</label>
+                    </div>
+                    <div class="form-text">Choose 'Match any' to search for results with <em>any</em> of those names and chooose 'Match all' to search for results with <em>all</em> of those names.</div>
+                </div>
+            </div>
+            <div class="row mb-4 pb-4 border-bottom">
+                <div class="col-form-label col-sm-3 col-lg-2">Categories</div>
+                <div class="col-sm-9 col-lg-10">
+                    <select class="form-select" id="adv_category" name="adv_category[]" aria-label="Categories" multiple>
+                    </select>
+                    <div class="form-check form-check-inline mt-2">
+                        <input class="form-check-input" type="radio" name="adv_category_type" id="adv_category_type_any" value="OR" checked>
+                        <label class="form-check-label" for="adv_category_type_any">Match any</label>
+                    </div>
+                    <div class="form-check form-check-inline mt-2">
+                        <input class="form-check-input" type="radio" name="adv_category_type" id="adv_category_type_all" value="AND">
+                        <label class="form-check-label" for="adv_category_type_all">Match all</label>
+                    </div>
+                    <div class="form-text">Choose 'Match any' to search for results with <em>any</em> of those categories and chooose 'Match all' to search for results with <em>all</em> of those categories.</div>
+                </div>
+            </div>
+            <div class="row">
+            <div class="col-form-label col-sm-3 col-lg-2">Date Range</div>
+            <div class="col-sm-9 col-lg-10">
+                <div class="value input-group" id="adv_date_range">
+                    <input name="date_range_start" type="number" step="1" class="form-control" placeholder="1941" min="1941" max="2015" aria-label="Start Year">
+                    <span class="input-group-text">TO</span>
+                    <input name="date_range_end" type="number" step="1" class="form-control" placeholder="2015" min="1941" max="2015" aria-label="End Year">
+                </div>
+                <div class="form-text">Limit your search between a range of years. The entire Fashion Calendar ranges from 1941 to 2015.</div>
+            </div>
+            </div>
+        </form>
+        `);
+        // add select
+        Object.values(names.index.datums).forEach(name => {
+            $('#adv_name').append(`
+            <option value="${encodeURIComponent(name)}">${name}</option>
+            `);
+        });
+        Object.values(categories.index.datums).forEach(category => {
+            $('#adv_category').append(`
+            <option value="${encodeURIComponent(category)}">${category}</option>
+            `);
+        });
+        $('#adv_name').chosen(
+            {
+                placeholder_text_multiple: 'Select one or more names by typing or choosing from the list, e.g. Bloomingdale\'s, Calvin Klein',
+                width: '100%',
+            }
+        );
+        $('#adv_category').chosen(
+            {
+                placeholder_text_multiple: 'Select one or more categories by typing or choosing from the list, e.g. trade association, LGBT',
+                width: '100%'
+            }
+        );
+        $("#advanced-search-data-form").on("submit.fashioncalendar", function (event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            $(this).find('input').blur();
+            $("#advanced-search-data-button").blur();
+            // Update URL Query.
+            let queryParams = new URLSearchParams();
+            if (formData.has("text") && formData.get("text")) {
+                queryParams.set("text", formData.get("text"));
+            }
+            if (formData.has("adv_name[]") && formData.getAll("adv_name[]").length) {
+                formData.getAll("adv_name[]").forEach(name => {
+                    //decode so they don't get double-encoded
+                    queryParams.append("adv_name[]", decodeURIComponent(name));
+                });
+                queryParams.set("adv_name_type", formData.get("adv_name_type"));
+            }
+            if (formData.has("adv_category[]") && formData.getAll("adv_category[]").length) {
+                formData.getAll("adv_category[]").forEach(category => {
+                    queryParams.append("adv_category[]", decodeURIComponent(category));
+                });
+                queryParams.set("adv_category_type", formData.get("adv_category_type"));
+            }
+            if (formData.has("date_range_start") && formData.has("date_range_end") && formData.get("date_range_start") && formData.get("date_range_end")) {
+                const date_range_start = formData.get("date_range_start");
+                const date_range_end = formData.get("date_range_end");
+                if (date_range_end >= date_range_start) {
+                    if (!(date_range_start == 1941 && date_range_end == 2015)) {
+                        queryParams.set("date_range_start", date_range_start);
+                        queryParams.set("date_range_end", date_range_end);
+                    }
+                }
+            }
+            history.pushState(null, null, "?" + queryParams.toString());
+            const advSearchModal = $('#advanced-search-data');
+            advSearchModal.modal('hide');
+            advSearchModal[0].addEventListener('hidden.bs.modal', event => {
+                listEvents(queryParams);
+            }, { once: true });
         });
     }
 
