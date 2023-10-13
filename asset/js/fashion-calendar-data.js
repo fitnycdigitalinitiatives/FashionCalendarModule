@@ -1857,7 +1857,7 @@ $(document).ready(function () {
         a.setAttribute('download', name + '.csv');
 
         // Performing a download with click
-        a.on("click",);
+        a.click();
         URL.revokeObjectURL(url);
     }
 
@@ -1872,6 +1872,7 @@ $(document).ready(function () {
     }
 
     const graphDownload = async function (event) {
+        console.log("happening");
         const type = event.currentTarget.getAttribute('data-type');
         switch (type) {
             case 'by-year-chart': {
