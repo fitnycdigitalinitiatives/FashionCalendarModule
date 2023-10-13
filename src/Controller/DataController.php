@@ -162,6 +162,12 @@ class DataController extends AbstractActionController
             } elseif (array_key_exists('date_range', $params) && ($params['date_range'] == 'true')) {
                 $aggregation[] = ['$group' => ['_id' => null, 'earliest' => ['$min' => '$start_date_iso'], 'latest' => ['$max' => '$start_date_iso']]];
                 $aggregation[] = ['$project' => ['_id' => 0, 'earliest' => ['$year' => '$earliest'], 'latest' => ['$year' => '$latest']]];
+            } elseif (array_key_exists('download', $params) && ($params['download'] == 'true')) {
+                if ($sort) {
+                    $aggregation[] = $sort;
+                }
+                $aggregation[] = ['$limit' => 5000];
+                $response->getHeaders()->addHeaderLine('Content-Disposition', 'attachment; filename="fashion-calendar-results.json"');
             } else {
                 if (array_key_exists('page', $params) && ($page = $params['page']) && is_numeric($page)) {
                     $skip = ['$skip' => $docs_per_page * ($page - 1)];

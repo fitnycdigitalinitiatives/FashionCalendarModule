@@ -106,6 +106,7 @@ $(document).ready(function () {
         $('#facet').empty().hide();
         $('#graph').empty().hide();
         $('#map').empty().hide();
+        $('#download').empty().hide();
         $('#data-search input').val("");
         if (queryParams.toString()) {
             if (queryParams.has('text')) {
@@ -297,12 +298,14 @@ $(document).ready(function () {
                 createFacets();
                 createGraphs(url);
                 createMap();
+                createDownload();
                 $('#results').hide().text(resultsText).fadeIn();
                 $('#query').fadeIn();
                 $('#data-container').fadeIn();
                 $('#facet').fadeIn();
                 $('#graph').fadeIn();
                 $('#map').fadeIn();
+                $('#download').fadeIn();
                 $('#modal-container').append(createViewerModal());
                 $('#modal-container').append(createSingleMapModal());
                 attachClicks();
@@ -1894,6 +1897,26 @@ $(document).ready(function () {
         }
     }
 
+    function createDownload() {
+        $('#download').html(`
+        <button id="download-button" class="btn btn-secondary floating-action" type="button" aria-label="Download results as JSON file" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Note: downloads are currently limited to the first 5,000 results. Access to the complete data set will be made available for download in the future." >
+            <span class="action-container">
+            <i class="fas fa-download" aria-hidden="true" title="Download results as JSON file">
+            </i>
+            Data
+            </span>
+        </button>
+        `);
+        const tooltip = new bootstrap.Tooltip(document.getElementById('download-button'));
+
+        $("#download-button").on("click.fashioncalendar", function () {
+            let queryParams = new URLSearchParams(window.location.search);
+            queryParams.set('download', 'true');
+            const url = "/data-api/events?" + queryParams.toString();
+            window.location.href = url;
+        });
+    }
+
 
     function initializeSearch() {
         $("#search-container").append(`
@@ -1911,6 +1934,12 @@ $(document).ready(function () {
                 data-bs-target="#advanced-search-data">
                 <i class="fas fa-search me-1" aria-hidden="true"></i>
                 <span>Advanced Search</span>
+            </button>
+            |
+            <button class="border-0 bg-transparent p-0 link-secondary mx-2" data-bs-toggle="modal"
+                data-bs-target="#category-list">
+                <i class="fas fa-tags me-1" aria-hidden="true"></i>
+                <span>Category List</span>
             </button>
             |
             <button class="border-0 bg-transparent p-0 link-secondary ms-2" data-bs-toggle="modal"
@@ -1933,6 +1962,21 @@ $(document).ready(function () {
                     <div class="modal-footer">
                         <button id="advanced-search-data-button" type="submit" class="btn btn-secondary"
                             form="advanced-search-data-form">Search</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="category-list" tabindex="-1" aria-labelledby="category-list-label"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title fs-5" id="category-list-label">Category List</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <ul id="category-list-columns"></ul>
                     </div>
                 </div>
             </div>
@@ -2078,9 +2122,16 @@ $(document).ready(function () {
             <option value="${encodeURIComponent(name)}">${name}</option>
             `);
         });
-        Object.values(categories.index.datums).forEach(category => {
+        Object.values(categories.index.datums).sort(function (a, b) {
+            return a.toLowerCase().localeCompare(b.toLowerCase());
+        }).forEach(category => {
             $('#adv_category').append(`
             <option value="${encodeURIComponent(category)}">${category}</option>
+            `);
+            $("#category-list-columns").append(`
+            <li class="mb-1">
+            <a class="category-list-search link-dark text-decoration-none" href="?categories%5B%5D=${encodeURIComponent(category)}">${category}</a>
+            </li>
             `);
         });
         $('#adv_name').chosen(
@@ -2135,6 +2186,17 @@ $(document).ready(function () {
                 listEvents(queryParams);
             }, { once: true });
         });
+        $(".category-list-search").on("click.fashioncalendar", function (event) {
+            event.preventDefault();
+            const url = $(this).attr('href');
+            history.pushState(null, null, url);
+            const categoryListModal = $('#category-list');
+            categoryListModal.modal('hide');
+            categoryListModal[0].addEventListener('hidden.bs.modal', event => {
+                let queryParams = new URLSearchParams(url);
+                listEvents(queryParams);
+            }, { once: true });
+        })
     }
 
     function initiateScroll() {
