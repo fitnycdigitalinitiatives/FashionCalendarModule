@@ -1990,12 +1990,14 @@ $(document).ready(function () {
                         <h2 class="modal-title fs-5" id="search-tips-label">Search Tips</h2>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body placeholder-glow">
-                        <span class="placeholder col-7"></span>
-                        <span class="placeholder col-4"></span>
-                        <span class="placeholder col-4"></span>
-                        <span class="placeholder col-6"></span>
-                        <span class="placeholder col-8"></span>
+                    <div class="modal-body">
+                    <h3>Basic Search</h3>
+                    <p>Search terms inputted into the search bar can search the entirety of the captured text in the calendars (full text) when typing the word and completing the search. This includes words or names that appear in the description category. By using “ ” quotation marks the search engine will pull up only the search terms in the quotation marks, without them the search engine will pull up all results that include the word.</p>
+                    <p>Example: search term “Eartha Kitt”</p>
+                    <p>Eartha Kitt does not show up in the drop down menu because the actress and singer did not host any events that were listed in <em>Fashion Calendar</em>. Eartha Kitt does show up as a noted guest in the descriptions of at least two fashion shows.</p>
+                    <p>The Basic Search also includes “categorized” terms and names that populate in the drop down menu. The terms are known tagged or categorized entities that appear multiple times in the material.</p>
+                    <h3>Advanced Search</h3>
+                    <p>Advanced search enables users to search the “full text” and or search tagged names, categories and set a date range. The names and categories correspond to names and their associated identity attributes.</p>
                     </div>
                 </div>
             </div>
