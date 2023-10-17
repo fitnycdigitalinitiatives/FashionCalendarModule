@@ -1,0 +1,35 @@
+<?php
+$this->headLink()->appendStylesheet($this->assetUrl('css/fashion-calendar-browse.css', 'FashionCalendarModule'));
+$this->headScript()->appendFile($this->assetUrl('js/fashion-calendar-browse.js', 'FashionCalendarModule'));
+$translate = $this->plugin('translate');
+$escape = $this->plugin('escapeHtml');
+?>
+<div class="data-header">
+    <div class="row justify-content-end">
+        <div class="col-12 col-sm">
+            <h2>Data</h2>
+            <div id="results">Fetching data...</div>
+            <ul id="query" class="list-inline"></ul>
+        </div>
+        <div class="col-12 col-sm-6" id="search-container">
+        </div>
+    </div>
+    <div class="row">
+        <div id="facet" class="col-auto"></div>
+        <div id="graph" class="col-auto"></div>
+        <div id="map" class="col-auto"></div>
+        <div id="download" class="col-auto"></div>
+    </div>
+</div>
+<div id="data-container">
+    <div id="loader" class="d-flex justify-content-center align-items-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+<div id="modal-container" class="p-0 m-0"></div>
+<button id="top-button" type="button" class="btn btn-secondary" title="Go to top">
+    <i class="fas fa-long-arrow-alt-up me-1" aria-hidden="true"></i>
+    Top
+</button>

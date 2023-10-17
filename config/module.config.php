@@ -10,6 +10,7 @@ return [
     'block_layouts' => [
         'invokables' => [
             'dataTable' => Site\BlockLayout\FashionCalendarData::class,
+            'fashionBrowse' => Site\BlockLayout\FashionCalendarBrowse::class,
         ],
     ],
     'router' => [

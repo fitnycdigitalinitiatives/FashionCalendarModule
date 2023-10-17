@@ -4,6 +4,7 @@ $this->headLink()->appendStylesheet('https://unpkg.com/leaflet@1.9.4/dist/leafle
 $this->headLink()->appendStylesheet('https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css', 'screen', null);
 $this->headLink()->appendStylesheet('https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css', 'screen', null);
 $this->headLink()->appendStylesheet('https://cdn.jsdelivr.net/npm/chosen-js@1.8.7/chosen.min.css', 'screen', null);
+$this->headLink()->appendStylesheet('https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.6.0/nouislider.css', 'screen', null, ['integrity' => 'sha512-MKxcSu/LDtbIYHBNAWUQwfB3iVoG9xeMCm32QV5hZ/9lFaQZJVaXfz9aFa0IZExWzCpm7OWvp9zq9gVip/nLMg==', 'crossorigin' => 'anonymous']);
 $this->headScript()->appendFile($this->assetUrl('js/fashion-calendar-data.js', 'FashionCalendarModule'));
 $this->headScript()->appendFile('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', 'text/javascript', ['integrity' => 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=', 'crossorigin' => '']);
 $this->headScript()->appendFile('https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster-src.js', 'text/javascript');

@@ -604,7 +604,7 @@ $(document).ready(function () {
         return viewerModal;
     }
     function initiateViewer() {
-        const viewerModal = document.getElementById('viewerModal')
+        const viewerModal = document.getElementById('viewerModal');
         if (viewerModal) {
             viewerModal.addEventListener('show.bs.modal', event => {
                 if (miradorViewer) {

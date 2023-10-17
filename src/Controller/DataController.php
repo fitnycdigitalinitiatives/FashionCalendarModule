@@ -334,4 +334,14 @@ class DataController extends AbstractActionController
         }
 
     }
+
+    public function browseAction()
+    {
+        if ($this->currentSite()->slug() == "fashioncalendar") {
+
+        } else {
+            throw new RuntimeException("Invalid Page");
+        }
+
+    }
 }
