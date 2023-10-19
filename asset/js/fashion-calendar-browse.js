@@ -4,8 +4,8 @@ $(document).ready(function () {
             const id = 'glider-' + index;
             $(this).parent().parent().attr('id', id);
             new Glider(this, {
-                slidesToShow: 1.5,
-                slidesToScroll: 1,
+                slidesToShow: 2.5,
+                slidesToScroll: 2,
                 draggable: true,
                 arrows: {
                     prev: '#' + id + ' .btnPrevious',
@@ -16,13 +16,6 @@ $(document).ready(function () {
                     breakpoint: 576,
                     settings: {
                         // Set to `auto` and provide item width to adjust to viewport
-                        slidesToShow: 2,
-                        slidesToScroll: 2
-                    }
-                }, {
-                    // screens greater than >= 768px
-                    breakpoint: 768,
-                    settings: {
                         slidesToShow: 3,
                         slidesToScroll: 3
                     }
@@ -108,8 +101,8 @@ $(document).ready(function () {
                     const id = 'glider-' + $(this).data("number");
                     thisGlider.attr('id', id);
                     const gliderInstance = new Glider(thisGlider[0], {
-                        slidesToShow: 1.5,
-                        slidesToScroll: 1,
+                        slidesToShow: 2.5,
+                        slidesToScroll: 2,
                         draggable: true,
                         arrows: {
                             prev: '#' + id + ' .btnPrevious',
@@ -120,13 +113,6 @@ $(document).ready(function () {
                             breakpoint: 576,
                             settings: {
                                 // Set to `auto` and provide item width to adjust to viewport
-                                slidesToShow: 2,
-                                slidesToScroll: 2
-                            }
-                        }, {
-                            // screens greater than >= 768px
-                            breakpoint: 768,
-                            settings: {
                                 slidesToShow: 3,
                                 slidesToScroll: 3
                             }
