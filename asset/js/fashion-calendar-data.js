@@ -1298,11 +1298,11 @@ $(document).ready(function () {
     async function createFacets() {
         $('#facet').html(`
             <button id="facet-button" class="btn btn-fit-pink floating-action" type="button" data-bs-toggle="offcanvas"
-              data-bs-target="#facets" aria-controls="facets" aria-label="Facet results" disabled>
+              data-bs-target="#facets" aria-controls="facets" aria-label="Refine results" disabled>
               <span class="action-container">
-                <i class="fas fa-filter" aria-hidden="true" title="Facet results">
+                <i class="fas fa-filter" aria-hidden="true" title="Refine results">
                 </i>
-                Facet
+                Refine
               </span>
             </button>
         `);
@@ -1310,7 +1310,7 @@ $(document).ready(function () {
         <div class="offcanvas offcanvas-start shadow border-end-0" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="facets" aria-labelledby="facetsLabel">
             <div class="offcanvas-header border-bottom">
             <h3 class="offcanvas-title" id="facetsLabel">
-                Facets
+                Refine
             </h3>
             <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>

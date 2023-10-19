@@ -338,6 +338,47 @@ class DataController extends AbstractActionController
     public function browseAction()
     {
         if ($this->currentSite()->slug() == "fashioncalendar") {
+            $response = $this->getResponse();
+            $params = $this->params()->fromQuery();
+            if (array_key_exists('type', $params) && ($type = $params['type']) && array_key_exists('number', $params) && ($number = $params['number']) && array_key_exists('collection', $params) && ($collection = $params['collection'])) {
+                $api = $this->plugin('api');
+                $dateProperty = $api->searchOne('properties', ['term' => 'dcterms:date'])->getContent();
+                switch ($type) {
+                    case 'decade':
+                        $data = [];
+                        for ($i = 0; $i < 10; $i++) {
+                            $item = $api->searchOne('items', [
+                                'item_set_id' => $collection,
+                                'property' => [
+                                    [
+                                        'property' => $dateProperty->id(),
+                                        'type' => 'sw',
+                                        'text' => $number + $i,
+                                    ],
+                                ],
+                            ])->getContent();
+                            if ($item) {
+                                $primaryMedia = $item->primaryMedia();
+                                if ($primaryMedia && ($primaryMedia->ingester() == 'remoteFile') && ($thumbnailURL = $primaryMedia->mediaData()['thumbnail'])) {
+                                    $data[] = ['time' => $number + $i, "thumbnail" => $thumbnailURL];
+                                }
+                            }
+                        }
+                        $response->setContent(json_encode($data));
+                        $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
+                        return $response;
+                    case 'year':
+                        # code...
+                        break;
+
+
+                }
+            }
+            $error = array('error' => ["code" => 500, "message" => "Invalid request"]);
+            $response->setStatusCode(500);
+            $response->setContent(json_encode($error));
+            $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
+            return $response;
 
         } else {
             throw new RuntimeException("Invalid Page");

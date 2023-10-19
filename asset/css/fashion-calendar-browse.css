@@ -1,0 +1,70 @@
+.page .browse-preview .btn-arrow {
+    font-size: 1.5rem;
+    /* margin matches the height of the card body */
+    margin-bottom: 78px;
+}
+
+.page .browse-preview .btn-arrow.disabled {
+    opacity: 0;
+    color: #666;
+    cursor: default;
+}
+
+.page .browse-preview .glider {
+    scrollbar-width: none;
+}
+
+.page .browse-preview .glider .glider-track {
+    align-items: center;
+}
+
+
+.page .browse-preview .glider .card {
+    padding-left: .75rem;
+    padding-right: .75rem;
+}
+
+.page .browse-preview .glider .card img {
+    width: 100%;
+}
+
+@media (min-width:576px) {
+
+    .page .browse-preview .browse-header>*:first-child {
+        margin-left: calc(21px + 1rem);
+    }
+}
+
+@media (min-width:768px) {}
+
+
+
+@media (min-width:1200px) {
+
+    .page .browse-preview .browse-header>*:first-child {
+        margin-left: calc(21px + 1.5rem);
+    }
+}
+
+button.card:disabled {
+    opacity: 50%;
+}
+
+.deselect-icon {
+    position: absolute;
+    top: 1rem;
+    right: 1.75rem;
+    font-size: 1.5rem;
+}
+
+@media (min-width:576px) {
+    .deselect-icon {
+        right: 2rem;
+    }
+}
+
+@media (min-width:1200px) {
+    .deselect-icon {
+        right: 2.5rem;
+    }
+}

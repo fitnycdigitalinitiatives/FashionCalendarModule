@@ -1,35 +1,206 @@
 <?php
 $this->headLink()->appendStylesheet($this->assetUrl('css/fashion-calendar-browse.css', 'FashionCalendarModule'));
+$this->headLink()->appendStylesheet('https://cdn.jsdelivr.net/npm/glider-js@1.7.7/glider.min.css', 'screen', null, ['integrity' => 'sha256-o2HrB5EL5AdkNI2+9n8NzI0p6VflIDQiimYGrayGE30=', 'crossorigin' => 'anonymous']);
 $this->headScript()->appendFile($this->assetUrl('js/fashion-calendar-browse.js', 'FashionCalendarModule'));
+$this->headScript()->appendFile('https://cdn.jsdelivr.net/npm/glider-js@1.7.7/glider.min.js', 'text/javascript', ['integrity' => 'sha256-3/0U+/cLec+S2/6Gu2VYTzbA/2gaBACu5f7fGacrvAY=', 'crossorigin' => 'anonymous']);
 $translate = $this->plugin('translate');
 $escape = $this->plugin('escapeHtml');
+$api = $this->plugin('api');
+$titleProperty = $api->searchOne('properties', ['term' => 'dcterms:title'])->getContent();
+$dateProperty = $api->searchOne('properties', ['term' => 'dcterms:date'])->getContent();
 ?>
-<div class="data-header">
-    <div class="row justify-content-end">
-        <div class="col-12 col-sm">
-            <h2>Data</h2>
-            <div id="results">Fetching data...</div>
-            <ul id="query" class="list-inline"></ul>
-        </div>
-        <div class="col-12 col-sm-6" id="search-container">
+<div class="col-12 browse-preview" id="fashion-calendar" data-title="Fashion Calendar">
+    <div class="row align-items-center mb-3 browse-header">
+        <div class="col-auto pe-0">
+            <h2 class="mb-0">Fashion Calendar</h2>
         </div>
     </div>
-    <div class="row">
-        <div id="facet" class="col-auto"></div>
-        <div id="graph" class="col-auto"></div>
-        <div id="map" class="col-auto"></div>
-        <div id="download" class="col-auto"></div>
+    <div class="row align-items-center justify-content-around">
+        <div class="col-auto order-first pe-0 d-none d-sm-block">
+            <button class="btn-arrow btnPrevious ps-0 border-0 bg-transparent text-secondary" type="button"
+                aria-label="Previous">
+                <i class="fas fa-chevron-left" aria-hidden="true" title="Previous">
+                </i>
+            </button>
+        </div>
+        <div class="col-auto order-last ps-0 d-none d-sm-block">
+            <button class="btn-arrow btnNext pe-0 border-0 bg-transparent text-secondary" type="button"
+                aria-label="Next">
+                <i class="fas fa-chevron-right" aria-hidden="true" title="Next">
+                </i>
+            </button>
+        </div>
+        <div class="col overflow-hidden px-0">
+            <div class="glider">
+                <?php
+                $collection = $api->searchOne('item_sets', [
+                    'property' => [
+                        [
+                            'property' => $titleProperty->id(),
+                            'type' => 'eq',
+                            'text' => "Fashion Calendar",
+                        ],
+                    ],
+                ])->getContent();
+                foreach (["1940", "1950", "1960", "1970", "1980", "1990", "2000", "2010"] as $decade):
+                    $item = $api->searchOne('items', [
+                        'item_set_id' => $collection->id(),
+                        'property' => [
+                            [
+                                'property' => $dateProperty->id(),
+                                'type' => 'sw',
+                                'text' => substr($decade, 0, 3),
+                            ],
+                        ],
+                    ])->getContent();
+                    if ($item):
+                        ?>
+                        <button class="card border-0 px-sm-3 px-xl-4 expander" data-type="decade"
+                            data-collection="<?php echo $collection->id(); ?>" data-number="<?php echo $decade; ?>"
+                            data-date-property="<?php echo $dateProperty->id(); ?>">
+                            <div class="card-img">
+                                <?php echo $this->thumbnail($item, 'medium', ['class' => 'browse-thumbnail shadow-sm rounded', 'alt' => $decade . " Cover"]); ?>
+                            </div>
+                            <div class="card-body overflow-hidden">
+                                <h3>
+                                    <?php echo $decade . "'s"; ?>
+                                </h3>
+                            </div>
+                        </button>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+        </div>
     </div>
 </div>
-<div id="data-container">
-    <div id="loader" class="d-flex justify-content-center align-items-center">
-        <div class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
+
+<div class="col-12 browse-preview" id="fashion-international" data-title="Fashion International">
+    <div class="row align-items-center mb-3 browse-header">
+        <div class="col-auto pe-0">
+            <h2 class="mb-0">Fashion International</h2>
+        </div>
+    </div>
+    <div class="row align-items-center justify-content-around">
+        <div class="col-auto order-first pe-0 d-none d-sm-block">
+            <button class="btn-arrow btnPrevious ps-0 border-0 bg-transparent text-secondary" type="button"
+                aria-label="Previous">
+                <i class="fas fa-chevron-left" aria-hidden="true" title="Previous">
+                </i>
+            </button>
+        </div>
+        <div class="col-auto order-last ps-0 d-none d-sm-block">
+            <button class="btn-arrow btnNext pe-0 border-0 bg-transparent text-secondary" type="button"
+                aria-label="Next">
+                <i class="fas fa-chevron-right" aria-hidden="true" title="Next">
+                </i>
+            </button>
+        </div>
+        <div class="col overflow-hidden px-0">
+            <div class="glider">
+                <?php
+                $collection = $api->searchOne('item_sets', [
+                    'property' => [
+                        [
+                            'property' => $titleProperty->id(),
+                            'type' => 'eq',
+                            'text' => "Fashion International",
+                        ],
+                    ],
+                ])->getContent();
+                foreach (["1970", "1980", "1990", "2000"] as $decade):
+                    $item = $api->searchOne('items', [
+                        'item_set_id' => $collection->id(),
+                        'property' => [
+                            [
+                                'property' => $dateProperty->id(),
+                                'type' => 'sw',
+                                'text' => substr($decade, 0, 3),
+                            ],
+                        ],
+                    ])->getContent();
+                    if ($item):
+                        ?>
+                        <button class="card border-0 px-sm-3 px-xl-4 expander" data-type="decade"
+                            data-collection="<?php echo $collection->id(); ?>" data-number="<?php echo $decade; ?>"
+                            data-date-property="<?php echo $dateProperty->id(); ?>">
+                            <div class="card-img">
+                                <?php echo $this->thumbnail($item, 'medium', ['class' => 'browse-thumbnail shadow-sm rounded', 'alt' => $decade . " Cover"]); ?>
+                            </div>
+                            <div class="card-body overflow-hidden">
+                                <h3>
+                                    <?php echo $decade . "'s"; ?>
+                                </h3>
+                            </div>
+                        </button>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </div>
         </div>
     </div>
 </div>
-<div id="modal-container" class="p-0 m-0"></div>
-<button id="top-button" type="button" class="btn btn-secondary" title="Go to top">
-    <i class="fas fa-long-arrow-alt-up me-1" aria-hidden="true"></i>
-    Top
-</button>
+
+<div class="col-12 browse-preview" id="home-furnishings-calendar" data-title="Home Furnishings Calendar">
+    <div class="row align-items-center mb-3 browse-header">
+        <div class="col-auto pe-0">
+            <h2 class="mb-0">Home Furnishings Calendar</h2>
+        </div>
+    </div>
+    <div class="row align-items-center justify-content-around">
+        <div class="col-auto order-first pe-0 d-none d-sm-block">
+            <button class="btn-arrow btnPrevious ps-0 border-0 bg-transparent text-secondary" type="button"
+                aria-label="Previous">
+                <i class="fas fa-chevron-left" aria-hidden="true" title="Previous">
+                </i>
+            </button>
+        </div>
+        <div class="col-auto order-last ps-0 d-none d-sm-block">
+            <button class="btn-arrow btnNext pe-0 border-0 bg-transparent text-secondary" type="button"
+                aria-label="Next">
+                <i class="fas fa-chevron-right" aria-hidden="true" title="Next">
+                </i>
+            </button>
+        </div>
+        <div class="col overflow-hidden px-0">
+            <div class="glider">
+                <?php
+                $collection = $api->searchOne('item_sets', [
+                    'property' => [
+                        [
+                            'property' => $titleProperty->id(),
+                            'type' => 'eq',
+                            'text' => "Home Furnishings Calendar",
+                        ],
+                    ],
+                ])->getContent();
+                foreach (["1947", "1948", "1949", "1950", "1951"] as $year):
+                    $item = $api->searchOne('items', [
+                        'item_set_id' => $collection->id(),
+                        'property' => [
+                            [
+                                'property' => $dateProperty->id(),
+                                'type' => 'sw',
+                                'text' => $year,
+                            ],
+                        ],
+                    ])->getContent();
+                    $url = "/item?sort_by=dcterms%3Adate&property%5B0%5D%5Bjoiner%5D=and&property%5B0%5D%5Bproperty%5D=" . $dateProperty->id() . "&property%5B0%5D%5Btype%5D=sw&property%5B0%5D%5Btext%5D=" . $year . "&item_set_id%5B0%5D=" . $collection->id() . "&sort_order=asc";
+                    if ($item):
+                        ?>
+                        <div class="card border-0 px-sm-3 px-xl-4" data-type="year" data-number="<?php echo $year; ?>">
+                            <a href="<?php echo $url; ?>" class="card-img">
+                                <?php echo $this->thumbnail($item, 'medium', ['class' => 'browse-thumbnail shadow-sm rounded', 'alt' => $year . " Cover"]); ?>
+                            </a>
+                            <div class="card-body overflow-hidden">
+                                <h3>
+                                    <a href="<?php echo $url; ?>" class="text-dark text-decoration-none">
+                                        <?php echo $year; ?>
+                                    </a>
+                                </h3>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+</div>
