@@ -79,9 +79,9 @@ $(document).ready(function () {
             $("#adv_date_range input").val("");
             $('#advanced-search-data-form input:radio').prop('checked', false);
             $('#adv_name').prop("selectedIndex", -1);
-            $('#adv_name').trigger('chosen:updated');
+            $('#adv_name').trigger('change');
             $('#adv_category').prop("selectedIndex", -1);
-            $('#adv_category').trigger('chosen:updated');
+            $('#adv_category').trigger('change');
             $('#adv_name_type_any').prop('checked', true);
             $('#adv_category_type_any').prop('checked', true);
         }
@@ -298,7 +298,9 @@ $(document).ready(function () {
                 createFacets();
                 createGraphs(url);
                 createMap();
-                createDownload();
+                if (window.matchMedia("(min-width: 768px)").matches && window.matchMedia("(min-height: 768px)").matches) {
+                    createDownload();
+                };
                 $('#results').hide().text(resultsText).fadeIn();
                 $('#query').fadeIn();
                 $('#data-container').fadeIn();
@@ -350,7 +352,7 @@ $(document).ready(function () {
                     <i class="fas fa-search" aria-hidden="true" title="Search for this name">
                     </i>
                 </a>
-                <button class="name-info border-0 bg-transparent p-0 ms-1" data-bs-toggle="modal" data-bs-target="#nameInfo-${name._id}" aria-label="Name information">
+                <button class="text-dark name-info border-0 bg-transparent p-0 ms-1" data-bs-toggle="modal" data-bs-target="#nameInfo-${name._id}" aria-label="Name information">
                     <i class="fas fa-info-circle" aria-hidden="true" title="Name information">
                     </i>
                 </button>
@@ -368,7 +370,7 @@ $(document).ready(function () {
                 <i class="fas fa-search" aria-hidden="true" title="Search for this location">
                 </i>
             </a>
-            <button class="location-map border-0 bg-transparent p-0 ms-1" data-bs-toggle="modal" data-bs-target="#singleMapModal" data-longitude="${event.location.coordinates[0]}" data-latitude="${event.location.coordinates[1]}" data-formattedAddress="${encodeURIComponent(event.formatted_address)}" aria-label="See this location on a map">
+            <button class="text-dark location-map border-0 bg-transparent p-0 ms-1" data-bs-toggle="modal" data-bs-target="#singleMapModal" data-longitude="${event.location.coordinates[0]}" data-latitude="${event.location.coordinates[1]}" data-formattedAddress="${encodeURIComponent(event.formatted_address)}" aria-label="See this location on a map">
                 <i class="fas fa-map-marker-alt" aria-hidden="true" title="See this location on a map">
                 </i>
             </button>
@@ -393,7 +395,7 @@ $(document).ready(function () {
                 <i class="fas fa-search" aria-hidden="true" title="Search for this issue">
                 </i>
                 </a>
-                <button class="page-view border-0 bg-transparent p-0 ms-1" data-bs-toggle="modal" data-bs-target="#viewerModal" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" data-displayTitle="${encodeURIComponent(displayTitle)}" aria-label="See this page">
+                <button class="text-dark page-view border-0 bg-transparent p-0 ms-1" data-bs-toggle="modal" data-bs-target="#viewerModal" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" data-displayTitle="${encodeURIComponent(displayTitle)}" aria-label="See this page">
                 <i class="fas fa-file" aria-hidden="true" title="See this page">
                 </i>
                 </button>
@@ -789,42 +791,43 @@ $(document).ready(function () {
                     }
                     popup_content += '</ul>';
                 }
-                if (event.description) {
+                if (event.description && window.matchMedia("(min-width: 768px)").matches && window.matchMedia("(min-height: 768px)").matches) {
                     popup_content += `<p class="source">${event.description}</p>`;
                 }
-                popup_content += '<dl>';
-                if (event.appears_in) {
-                    popup_content += '<dt>Appears in</dt>';
-                    event.appears_in.forEach(issue => {
-                        const date = new Date(issue.calendar_date);
-                        const options = {
-                            year: 'numeric',
-                            month: 'long',
-                            timeZone: 'UTC'
-                        };
-                        if (issue.calendar_date.length == 10) {
-                            options["day"] = 'numeric';
-                        }
-                        const displayTitle = `${issue.calendar_title}, ${date.toLocaleDateString('en-US', options)}`;
-                        popup_content += `
+                if (window.matchMedia("(min-width: 768px)").matches && window.matchMedia("(min-height: 768px)").matches) {
+                    popup_content += '<dl>';
+                    if (event.appears_in) {
+                        popup_content += '<dt>Appears in</dt>';
+                        event.appears_in.forEach(issue => {
+                            const date = new Date(issue.calendar_date);
+                            const options = {
+                                year: 'numeric',
+                                month: 'long',
+                                timeZone: 'UTC'
+                            };
+                            if (issue.calendar_date.length == 10) {
+                                options["day"] = 'numeric';
+                            }
+                            const displayTitle = `${issue.calendar_title}, ${date.toLocaleDateString('en-US', options)}`;
+                            popup_content += `
                                     <dd>
                                     <span>${displayTitle} (page ${issue.calendar_page})</span>
                                     <a href="?issue[]=${encodeURIComponent(issue.calendar_id)}" class="map-issue-search link-dark ms-1 text-decoration-none" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" aria-label="Search for this issue">
                                     <i class="fas fa-search" aria-hidden="true" title="Search for this issue">
                                     </i>
                                     </a>
-                                    <button class="page-view border-0 bg-transparent p-0 ms-1" data-bs-toggle="modal" data-bs-target="#viewerModal" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" data-displayTitle="${encodeURIComponent(displayTitle)}" aria-label="See this page">
+                                    <button class="text-dark page-view border-0 bg-transparent p-0 ms-1" data-bs-toggle="modal" data-bs-target="#viewerModal" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" data-displayTitle="${encodeURIComponent(displayTitle)}" aria-label="See this page">
                                     <i class="fas fa-file" aria-hidden="true" title="See this page">
                                     </i>
                                     </button>
                                     </dd>
                                 `;
-                    });
-                }
-                if (event.names.length) {
-                    popup_content += '<dt>Names</dt>';
-                    event.names.forEach(name => {
-                        popup_content += `
+                        });
+                    }
+                    if (event.names.length) {
+                        popup_content += '<dt>Names</dt>';
+                        event.names.forEach(name => {
+                            popup_content += `
                                 <dd>
                                 <a href="?names[]=${encodeURIComponent(name.label)}" class="map-name-search link-dark text-decoration-none" data-id="${name._id}" data-label="${encodeURIComponent(name.label)}">
                                     <span>${name.label}</span>
@@ -833,10 +836,10 @@ $(document).ready(function () {
                                 </a>
                                 </dd>
                                 `;
-                        if (name.categories.length) {
-                            popup_content += `<ul class="list-inline ms-3 mt-1">`;
-                            name.categories.forEach(category => {
-                                popup_content += `
+                            if (name.categories.length) {
+                                popup_content += `<ul class="list-inline ms-3 mt-1">`;
+                                name.categories.forEach(category => {
+                                    popup_content += `
                                         <li class="list-inline-item">
                                             <a href="?categories[]=${encodeURIComponent(category.label)}" class="map-category-search link-dark  text-decoration-none" data-modal="#nameInfo-${name._id}" data-id="${category._id}" data-label="${encodeURIComponent(category.label)}">
                                                 <span>${category.label}</span>
@@ -844,14 +847,16 @@ $(document).ready(function () {
                                                 </i>
                                             </a>
                                         </li>`
-                            });
-                            popup_content += `</ul>`;
-                        }
-                    });
+                                });
+                                popup_content += `</ul>`;
+                            }
+                        });
+                    }
+                    popup_content += '</dl>';
                 }
-                popup_content += '</dl>';
+
                 let popup = L.popup({
-                    maxWidth: 500
+                    maxWidth: 400
                 }).setContent(popup_content);
                 marker.bindPopup(popup);
                 featureGroup.addLayer(marker);
@@ -863,6 +868,7 @@ $(document).ready(function () {
         bigMap.fitBounds(featureGroup.getBounds());
         featureGroup.addTo(bigMap);
         $("#big-map").after(`
+        <button type="button" class="btn-close sm-close" data-bs-dismiss="modal" aria-label="Close"></button>
         <div class="card" id="map-legend">
             <div class="card-body">
                 <div class="legend-header d-flex align-items-center">
@@ -1900,11 +1906,11 @@ $(document).ready(function () {
 
     function createDownload() {
         $('#download').html(`
-        <button id="download-button" class="btn btn-secondary floating-action" type="button" aria-label="Download results as JSON file" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Note: downloads are currently limited to the first 5,000 results. Access to the complete data set will be made available for download in the future." >
+        <button id="download-button" class="btn btn-secondary floating-action d-none d-md-inline-block" type="button" aria-label="Download results as JSON file" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Note: downloads are currently limited to the first 5,000 results. Access to the complete data set will be made available for download in the future." >
             <span class="action-container">
             <i class="fas fa-download" aria-hidden="true" title="Download results as JSON file">
             </i>
-            Data
+            Raw Data
             </span>
         </button>
         `);
@@ -1930,23 +1936,26 @@ $(document).ready(function () {
                 </button>
             </div>
         </form>
-        <div class="search-info d-flex justify-content-end mt-2 small">
+        <div class="search-info d-flex mt-2 small">
             <button class="border-0 bg-transparent p-0 link-secondary me-2" data-bs-toggle="modal"
                 data-bs-target="#advanced-search-data">
                 <i class="fas fa-search me-1" aria-hidden="true"></i>
-                <span>Advanced Search</span>
+                <span class="d-md-none">Advanced</span>
+                <span class="d-none d-md-inline">Advanced Search</span>
             </button>
             |
             <button class="border-0 bg-transparent p-0 link-secondary mx-2" data-bs-toggle="modal"
                 data-bs-target="#category-list">
                 <i class="fas fa-tags me-1" aria-hidden="true"></i>
-                <span>Category List</span>
+                <span class="d-md-none">Categories</span>
+                <span class="d-none d-md-inline">Category List</span>
             </button>
             |
             <button class="border-0 bg-transparent p-0 link-secondary ms-2" data-bs-toggle="modal"
                 data-bs-target="#search-tips">
                 <i class="fas fa-info-circle me-1" aria-hidden="true"></i>
-                <span>Search Tips</span>
+                <span class="d-md-none">Tips</span>
+                <span class="d-none d-md-inline">Search Tips</span>
             </button>
         </div>
         <!-- Modal -->
@@ -2068,15 +2077,15 @@ $(document).ready(function () {
         $('#advanced-search-data .modal-body').append(`
         <form id="advanced-search-data-form">
             <div class="row mb-4 pb-4 border-bottom">
-                <label for="adv_text" class="col-form-label col-sm-3 col-lg-2">Full-Text</label>
-                <div class="col-sm-9 col-lg-10">
+                <label for="adv_text" class="col-form-label col-12 col-lg-2">Full-Text</label>
+                <div class="col-12 col-lg-10">
                     <input type="search" class="form-control" id="adv_text" name="text">
                     <div class="form-text">Searches the entire event listing.</div>
                 </div>
             </div>
             <div class="row mb-4 pb-4 border-bottom">
-                <div class="col-form-label col-sm-3 col-lg-2">Names</div>
-                <div class="col-sm-9 col-lg-10">
+                <div class="col-form-label col-12 col-lg-2">Names</div>
+                <div class="col-12 col-lg-10">
                     <select class="form-select" id="adv_name" name="adv_name[]" aria-label="Names" multiple>
                     </select>
                     <div class="form-check form-check-inline mt-2">
@@ -2087,12 +2096,13 @@ $(document).ready(function () {
                         <input class="form-check-input" type="radio" name="adv_name_type" id="adv_name_type_all" value="AND">
                         <label class="form-check-label" for="adv_name_type_all">Match all</label>
                     </div>
+                    <div class="form-text d-md-none">Select one or more names by typing or choosing from the list, e.g. Bloomingdale's, Calvin Klein.</div>
                     <div class="form-text">Choose 'Match any' to search for results with <em>any</em> of those names and chooose 'Match all' to search for results with <em>all</em> of those names.</div>
                 </div>
             </div>
             <div class="row mb-4 pb-4 border-bottom">
-                <div class="col-form-label col-sm-3 col-lg-2">Categories</div>
-                <div class="col-sm-9 col-lg-10">
+                <div class="col-form-label col-12 col-lg-2">Categories</div>
+                <div class="col-12 col-lg-10">
                     <select class="form-select" id="adv_category" name="adv_category[]" aria-label="Categories" multiple>
                     </select>
                     <div class="form-check form-check-inline mt-2">
@@ -2103,12 +2113,13 @@ $(document).ready(function () {
                         <input class="form-check-input" type="radio" name="adv_category_type" id="adv_category_type_all" value="AND">
                         <label class="form-check-label" for="adv_category_type_all">Match all</label>
                     </div>
+                    <div class="form-text d-md-none">Select one or more categories by typing or choosing from the list, e.g. trade association, LGBT.</div>
                     <div class="form-text">Choose 'Match any' to search for results with <em>any</em> of those categories and chooose 'Match all' to search for results with <em>all</em> of those categories.</div>
                 </div>
             </div>
             <div class="row">
-            <div class="col-form-label col-sm-3 col-lg-2">Date Range</div>
-            <div class="col-sm-9 col-lg-10">
+            <div class="col-form-label col-12 col-lg-2">Date Range</div>
+            <div class="col-12 col-lg-10">
                 <div class="value input-group" id="adv_date_range">
                     <input name="date_range_start" type="number" step="1" class="form-control" placeholder="1941" min="1941" max="2015" aria-label="Start Year">
                     <span class="input-group-text">TO</span>
@@ -2137,18 +2148,20 @@ $(document).ready(function () {
             </li>
             `);
         });
-        $('#adv_name').chosen(
-            {
-                placeholder_text_multiple: 'Select one or more names by typing or choosing from the list, e.g. Bloomingdale\'s, Calvin Klein',
-                width: '100%',
-            }
-        );
-        $('#adv_category').chosen(
-            {
-                placeholder_text_multiple: 'Select one or more categories by typing or choosing from the list, e.g. trade association, LGBT',
-                width: '100%'
-            }
-        );
+        const nameConfig = {
+            dropdownParent: $('#advanced-search-data'),
+            width: "100%"
+        };
+        const categoryConfig = {
+            dropdownParent: $('#advanced-search-data'),
+            width: "100%"
+        };
+        if (window.matchMedia("(min-width: 768px)").matches) {
+            nameConfig['placeholder'] = 'Select one or more names by typing or choosing from the list, e.g. Bloomingdale\'s, Calvin Klein';
+            categoryConfig['placeholder'] = 'Select one or more categories by typing or choosing from the list, e.g. trade association, LGBT';
+        };
+        $('#adv_name').select2(nameConfig);
+        $('#adv_category').select2(categoryConfig);
         $("#advanced-search-data-form").on("submit.fashioncalendar", function (event) {
             event.preventDefault();
             const formData = new FormData(event.target);
