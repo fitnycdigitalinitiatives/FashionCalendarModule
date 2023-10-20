@@ -78,10 +78,10 @@ $(document).ready(function () {
             $("#adv_text").val("");
             $("#adv_date_range input").val("");
             $('#advanced-search-data-form input:radio').prop('checked', false);
-            $('#adv_name').prop("selectedIndex", -1);
-            $('#adv_name').trigger('change');
-            $('#adv_category').prop("selectedIndex", -1);
-            $('#adv_category').trigger('change');
+            $('#adv_name').val('');
+            $('#adv_name_list').empty();
+            $('#adv_category').val('');
+            $('#adv_category_list').empty();
             $('#adv_name_type_any').prop('checked', true);
             $('#adv_category_type_any').prop('checked', true);
         }
@@ -2062,7 +2062,8 @@ $(document).ready(function () {
                         return `<div>${data}</div>`;
                     }
                 }
-            });
+            }
+        );
         termSuggester.on('typeahead:select', function (ev, data, dataset) {
             $(this).blur();
             // Update URL Query.
@@ -2086,8 +2087,8 @@ $(document).ready(function () {
             <div class="row mb-4 pb-4 border-bottom">
                 <div class="col-form-label col-12 col-lg-2">Names</div>
                 <div class="col-12 col-lg-10">
-                    <select class="form-select" id="adv_name" name="adv_name[]" aria-label="Names" multiple>
-                    </select>
+                    <textarea class="form-control" id="adv_name" aria-label="Names" placeholder="Start typing to choose one or more names from the list, e.g. Bloomingdale\'s, Calvin Klein"></textarea>
+                    <ul id="adv_name_list" class="list-inline m-0"></ul>
                     <div class="form-check form-check-inline mt-2">
                         <input class="form-check-input" type="radio" name="adv_name_type" id="adv_name_type_any" value="OR" checked>
                         <label class="form-check-label" for="adv_name_type_any">Match any</label>
@@ -2096,15 +2097,14 @@ $(document).ready(function () {
                         <input class="form-check-input" type="radio" name="adv_name_type" id="adv_name_type_all" value="AND">
                         <label class="form-check-label" for="adv_name_type_all">Match all</label>
                     </div>
-                    <div class="form-text d-md-none">Select one or more names by typing or choosing from the list, e.g. Bloomingdale's, Calvin Klein.</div>
                     <div class="form-text">Choose 'Match any' to search for results with <em>any</em> of those names and chooose 'Match all' to search for results with <em>all</em> of those names.</div>
                 </div>
             </div>
             <div class="row mb-4 pb-4 border-bottom">
                 <div class="col-form-label col-12 col-lg-2">Categories</div>
                 <div class="col-12 col-lg-10">
-                    <select class="form-select" id="adv_category" name="adv_category[]" aria-label="Categories" multiple>
-                    </select>
+                    <textarea class="form-control" id="adv_category" aria-label="Categories" placeholder="Start typing to choose one or more categories from the list, e.g. trade association, LGBT"></textarea>
+                    <ul id="adv_category_list" class="list-inline m-0"></ul>
                     <div class="form-check form-check-inline mt-2">
                         <input class="form-check-input" type="radio" name="adv_category_type" id="adv_category_type_any" value="OR" checked>
                         <label class="form-check-label" for="adv_category_type_any">Match any</label>
@@ -2113,7 +2113,6 @@ $(document).ready(function () {
                         <input class="form-check-input" type="radio" name="adv_category_type" id="adv_category_type_all" value="AND">
                         <label class="form-check-label" for="adv_category_type_all">Match all</label>
                     </div>
-                    <div class="form-text d-md-none">Select one or more categories by typing or choosing from the list, e.g. trade association, LGBT.</div>
                     <div class="form-text">Choose 'Match any' to search for results with <em>any</em> of those categories and chooose 'Match all' to search for results with <em>all</em> of those categories.</div>
                 </div>
             </div>
@@ -2131,39 +2130,84 @@ $(document).ready(function () {
         </form>
         `);
         // add select
-        Object.values(names.index.datums).forEach(name => {
-            $('#adv_name').append(`
-            <option value="${encodeURIComponent(name)}">${name}</option>
-            `);
-        });
-        Object.values(categories.index.datums).sort(function (a, b) {
-            return a.toLowerCase().localeCompare(b.toLowerCase());
-        }).forEach(category => {
-            $('#adv_category').append(`
-            <option value="${encodeURIComponent(category)}">${category}</option>
-            `);
-            $("#category-list-columns").append(`
-            <li class="mb-1">
-            <a class="category-list-search link-dark text-decoration-none" href="?categories%5B%5D=${encodeURIComponent(category)}">${category}</a>
+        const nameTypeahead = $("#adv_name").typeahead(
+            {
+                hint: false,
+                highlight: true,
+                minLength: 2
+
+            },
+            {
+                name: 'names',
+                source: names,
+                limit: 10,
+                templates: {
+                    suggestion: function (data) {
+                        return `<div>${data}</div>`;
+                    }
+                }
+            }
+        );
+        nameTypeahead.on('typeahead:select', function (ev, data) {
+            ev.preventDefault();
+            console.log("selected");
+            const thisSelection = $(`
+            <li class="list-inline-item my-1">
+                <button class="remove-adv text-secondary border-0 bg-transparent p-0">
+                <i aria-hidden="true" title="Remove selection:" class="far fa-times-circle"></i>
+                <span class="visually-hidden">Remove selection:</span>
+                <span> ${data}</span>
+                </button>
+                <input type="hidden" name="adv_name[]" value="${encodeURIComponent(data)}">
             </li>
             `);
+            thisSelection.children(".remove-adv").on("click.fashioncalendar", function () {
+                $(this).parent().remove();
+            });
+            $("#adv_name_list").append(thisSelection);
+            $("#adv_name").typeahead('val', "");
         });
-        const nameConfig = {
-            dropdownParent: $('#advanced-search-data'),
-            width: "100%"
-        };
-        const categoryConfig = {
-            dropdownParent: $('#advanced-search-data'),
-            width: "100%"
-        };
-        if (window.matchMedia("(min-width: 768px)").matches) {
-            nameConfig['placeholder'] = 'Select one or more names by typing or choosing from the list, e.g. Bloomingdale\'s, Calvin Klein';
-            categoryConfig['placeholder'] = 'Select one or more categories by typing or choosing from the list, e.g. trade association, LGBT';
-        };
-        $('#adv_name').select2(nameConfig);
-        $('#adv_category').select2(categoryConfig);
+        const categoryTypeahead = $("#adv_category").typeahead(
+            {
+                hint: false,
+                highlight: true,
+                minLength: 2
+
+            },
+            {
+                category: 'categories',
+                source: categories,
+                limit: 10,
+                templates: {
+                    suggestion: function (data) {
+                        return `<div>${data}</div>`;
+                    }
+                }
+            }
+        );
+        categoryTypeahead.on('typeahead:select', function (ev, data) {
+            ev.preventDefault();
+            console.log("selected");
+            const thisSelection = $(`
+            <li class="list-inline-item my-1">
+                <button class="remove-adv text-secondary border-0 bg-transparent p-0">
+                <i aria-hidden="true" title="Remove selection:" class="far fa-times-circle"></i>
+                <span class="visually-hidden">Remove selection:</span>
+                <span> ${data}</span>
+                </button>
+                <input type="hidden" name="adv_category[]" value="${encodeURIComponent(data)}">
+            </li>
+            `);
+            thisSelection.children(".remove-adv").on("click.fashioncalendar", function () {
+                $(this).parent().remove();
+            });
+            $("#adv_category_list").append(thisSelection);
+            $("#adv_category").typeahead('val', "");
+        });
         $("#advanced-search-data-form").on("submit.fashioncalendar", function (event) {
             event.preventDefault();
+            $("#adv_name").typeahead('val', "");
+            $("#adv_category").typeahead('val', "");
             const formData = new FormData(event.target);
             $(this).find('input').blur();
             $("#advanced-search-data-button").blur();
