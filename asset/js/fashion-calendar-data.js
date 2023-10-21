@@ -91,7 +91,7 @@ $(document).ready(function () {
         $('.modal').modal('hide');
         $('.modal').modal('dispose');
         $('.offcanvas').offcanvas('dispose');
-        $('#data-container').empty();
+        $('#data-container').empty().css("min-height", "50vh");
         $('#data-container').html(`
         <div id="loader" class="d-flex justify-content-center align-items-center">
             <div class="spinner-border" role="status">
@@ -303,7 +303,7 @@ $(document).ready(function () {
                 };
                 $('#results').hide().text(resultsText).fadeIn();
                 $('#query').fadeIn();
-                $('#data-container').fadeIn();
+                $('#data-container').css("min-height", "none").fadeIn();
                 $('#facet').fadeIn();
                 $('#graph').fadeIn();
                 $('#map').fadeIn();
@@ -2203,6 +2203,15 @@ $(document).ready(function () {
             });
             $("#adv_category_list").append(thisSelection);
             $("#adv_category").typeahead('val', "");
+        });
+        Object.values(categories.index.datums).sort(function (a, b) {
+            return a.toLowerCase().localeCompare(b.toLowerCase());
+        }).forEach(category => {
+            $("#category-list-columns").append(`
+            <li class="mb-1">
+            <a class="category-list-search link-dark text-decoration-none" href="?categories%5B%5D=${encodeURIComponent(category)}">${category}</a>
+            </li>
+            `);
         });
         $("#advanced-search-data-form").on("submit.fashioncalendar", function (event) {
             event.preventDefault();

@@ -1,0 +1,122 @@
+#hero {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+#tag {
+    margin-top: 2rem;
+    font-size: calc(1.375rem + 1.5vw);
+    color: black;
+    font-weight: bold;
+    font-style: italic;
+    line-height: 1.2;
+    margin-bottom: .5rem;
+    font-family: "halyard-display", sans-serif;
+}
+
+
+#lead {
+    font-size: 1.25rem;
+    color: #212529bf;
+    text-align: justify;
+}
+
+#features h2 {
+    text-align: center;
+}
+
+#features h2 span {
+    position: relative;
+}
+
+#features h2 i {
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    transform: translateX(-1rem) translateY(-45%);
+}
+
+.feature:not(:first-of-type) {
+    margin-top: 1rem;
+}
+
+
+
+@media (min-width:768px) {
+    #hero {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    #tag {
+        margin-top: 0;
+        font-size: 1.7rem;
+    }
+
+    #lead {
+        font-size: 1.05rem;
+    }
+
+    #features {
+        margin-top: 4rem;
+    }
+
+    #features h2 {
+        font-size: 1.3rem;
+    }
+
+    .feature {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .feature:not(:first-of-type) {
+        margin-top: 0;
+    }
+}
+
+@media (min-width:992px) {
+    #tag {
+        font-size: 2.3rem;
+    }
+
+    #lead {
+        font-size: 1.25rem;
+    }
+
+    #features h2 {
+        font-size: 1.75rem;
+    }
+
+    #features p {
+        text-align: justify;
+    }
+}
+
+@media (min-width:1200px) {
+    #tag {
+        font-size: 2.75rem;
+    }
+
+    #lead {
+        font-size: 1.5rem;
+    }
+
+    #features h2 {
+        font-size: 2rem;
+    }
+}
+
+@media (min-width:1400px) {
+    #tag {
+        font-size: 3.25rem;
+    }
+
+    #lead {
+        font-size: 1.5rem;
+    }
+
+    #features h2 {
+        font-size: 2.25rem;
+    }
+}

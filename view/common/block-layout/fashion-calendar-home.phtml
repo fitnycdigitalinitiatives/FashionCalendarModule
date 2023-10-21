@@ -1,0 +1,91 @@
+<?php
+$this->headLink()->appendStylesheet($this->assetUrl('css/fashion-calendar-home.css', 'FashionCalendarModule'));
+?>
+<div id="hero" class="col-12">
+    <div class="row align-items-center">
+        <div class="col-md-6">
+            <img class="img-fluid" src="<?php echo $this->assetUrl('img/finley.png'); ?>"
+                alt="Drawing of Ruth Finley on the telephone">
+        </div>
+        <div class="col-md-6">
+            <div id="tag">70 Years of Fashion History</div>
+            <p id="lead">
+                From 1941 to 2014, Ruth Finley published the <em>Fashion Calendar</em>, an independent, weekly
+                periodical
+                that served as the official scheduling clearinghouse for the American fashion industry. Digitized by the
+                Fashion Institute of Technology, the <em>Fashion Calendar</em> is now searchable,
+                graphable and mappable.
+            </p>
+        </div>
+    </div>
+</div>
+<div id="features" class="col-12">
+    <div class="row row-cols-1 row-cols-md-3 gx-lg-5">
+        <div class="col feature">
+            <h2><span><i class="fas fa-book-open"></i>Browse Issues</span></h2>
+            <p>
+                Included are three periodicals published by Ruth Finley: Fashion Calendar (1941-2014), Home Furnishings
+                Calendar (1947-1951), and Fashion International (1972-2008). For researchers, this method is the closest
+                to handling the material directly. Each issue is directly searchable and can
+                be freely downloaded as a PDF.
+            </p>
+            <div class="button-container d-flex">
+                <a href="/page/issues" class="btn btn-fit-pink floating-action mx-auto" aria-label="Browse Issues">
+                    <span class="action-container">
+                        Issues
+                        <i class="fas fa-arrow-right me-0 ms-1" aria-hidden="true" title="Browse Issues">
+                        </i>
+                    </span>
+                </a>
+            </div>
+        </div>
+        <div class="col feature">
+            <h2><span><i class="fas fa-table"></i>Explore Data</span></h2>
+            <p>
+                Each listing in the <em>Fashion Calendar</em> contains information about an event: when, what, who,
+                where, etc. Using AI and machine learning software developed for this project by <a
+                    href="https://explor.ai/en">Explor.ai</a>, granular
+                data was extracted and parsed from each issue, allowing users to search the <em>Fashion
+                    Calendar</em> at a scale previously impossible. To enhance the data, the project team tagged persons
+                and entities listed in the data (i.e. designers and brands) with associated identity or information
+                categories, allowing users to highlight gender, race, social class, sexual identity, nationality, etc.
+                Finally, data visualization tools such as graphs, word frequencies and mapping are integrated in the
+                user interface, allowing researchers to discover patterns in the data.
+            </p>
+            <div class="button-container d-flex">
+                <a href="/page/data" class="btn btn-fit-blue floating-action mx-auto" aria-label="Explore Data">
+                    <span class="action-container">
+                        Data
+                        <i class="fas fa-arrow-right me-0 ms-1" aria-hidden="true" title="Explore Data">
+                        </i>
+                    </span>
+                </a>
+            </div>
+        </div>
+        <div class="col feature">
+            <h2><span><i class="fas fa-info-circle"></i>About</span></h2>
+            <p>
+                In 2020, FIT was awarded a "Hidden Collections" grant from the Council on Library and Information
+                Resources to the digitize the Ruth Finley Collection, which is housed in the FIT Library's Special
+                Collections
+                and College Archives. The project culminated in this site, the Fashion Calendar Research Database, a
+                joint initiative of the <a href="https://www.fitnyc.edu/academics/library/">Gladys
+                    Marcus Library</a> and the <a
+                    href="https://www.fitnyc.edu/academics/academic-divisions/liberal-arts/history-of-art/">FIT History
+                    of Art
+                    Department</a>.
+            </p>
+            <div class="button-container d-flex">
+                <a href="/page/about" class="btn btn-fit-green floating-action mx-auto"
+                    aria-label="Learn more about this project">
+                    <span class="action-container">
+                        Learn More
+                        <i class="fas fa-arrow-right me-0 ms-1" aria-hidden="true"
+                            title="Learn more about this project">
+                        </i>
+                    </span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

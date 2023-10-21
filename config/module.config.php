@@ -11,6 +11,7 @@ return [
         'invokables' => [
             'dataTable' => Site\BlockLayout\FashionCalendarData::class,
             'fashionBrowse' => Site\BlockLayout\FashionCalendarBrowse::class,
+            'fashionHome' => Site\BlockLayout\FashionCalendarHome::class,
         ],
     ],
     'router' => [
