@@ -4,11 +4,11 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(255, 255, 255, 0.75);
 }
 
 #graph-loader,
-#map-loader {
+#map-loader,
+#category-list-loader {
     position: absolute;
     top: 0;
     left: 0;
@@ -390,6 +390,10 @@
 }
 
 /* categories  */
+#category-list .modal-body {
+    min-height: 50vh;
+}
+
 #category-list-columns {
     column-count: 2;
     -webkit-column-count: 2;

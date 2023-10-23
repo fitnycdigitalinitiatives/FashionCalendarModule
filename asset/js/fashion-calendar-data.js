@@ -1986,6 +1986,11 @@ $(document).ready(function () {
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
+                    <div id="category-list-loader" class="d-flex justify-content-center align-items-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Fetching data...</span>
+                        </div>
+                    </div>
                         <ul id="category-list-columns"></ul>
                     </div>
                 </div>
@@ -2030,10 +2035,12 @@ $(document).ready(function () {
             prefetch: "/data-api/suggester?type=names"
         });
         const categories = new Bloodhound({
+            initialize: false,
             datumTokenizer: Bloodhound.tokenizers.whitespace,
             queryTokenizer: Bloodhound.tokenizers.whitespace,
             prefetch: "/data-api/suggester?type=categories"
         });
+        const categoryPromise = categories.initialize();
         let termSuggester = $('#data-search input').typeahead(
             {
                 hint: false,
@@ -2204,14 +2211,19 @@ $(document).ready(function () {
             $("#adv_category_list").append(thisSelection);
             $("#adv_category").typeahead('val', "");
         });
-        Object.values(categories.index.datums).sort(function (a, b) {
-            return a.toLowerCase().localeCompare(b.toLowerCase());
-        }).forEach(category => {
-            $("#category-list-columns").append(`
-            <li class="mb-1">
-            <a class="category-list-search link-dark text-decoration-none" href="?categories%5B%5D=${encodeURIComponent(category)}">${category}</a>
-            </li>
-            `);
+        categoryPromise.done(function () {
+            $("#category-list-loader").remove();
+            Object.values(categories.index.datums).sort(function (a, b) {
+                return a.toLowerCase().localeCompare(b.toLowerCase());
+            }).forEach(category => {
+                $("#category-list-columns").append(`
+                <li class="mb-1">
+                <a class="category-list-search link-dark text-decoration-none" href="?categories%5B%5D=${encodeURIComponent(category)}">${category}</a>
+                </li>
+                `);
+            });
+        }).fail(function () {
+            console.log('Error loading categories');
         });
         $("#advanced-search-data-form").on("submit.fashioncalendar", function (event) {
             event.preventDefault();
