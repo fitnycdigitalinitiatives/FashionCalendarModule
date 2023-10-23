@@ -564,9 +564,21 @@ $(document).ready(function () {
                 `;
             }
             if (name["research-sources"]) {
-                wikilink = `
-                <dd>${name["research-sources"]}</dd>
-                `;
+                name["research-sources"].forEach(source => {
+                    try {
+                        let url = new URL(source);
+                        otherlinks += `
+                        <dd><a class="link-dark text-decoration-none" href="${source}" target="_blank">${url.hostname}<i class="fas fa-external-link-alt ms-2"></i></a></dd>
+                        `;
+
+                    }
+                    catch (e) {
+                        otherlinks += `
+                        <dd>${source}</dd>
+                        `;
+                    }
+
+                });
             }
             modalBody.append(`
             <dl>

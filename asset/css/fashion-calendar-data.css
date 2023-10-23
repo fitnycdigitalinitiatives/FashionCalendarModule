@@ -389,6 +389,11 @@
     border-bottom: 1px solid #dee2e6;
 }
 
+.name-modal dd {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
 /* categories  */
 #category-list .modal-body {
     min-height: 50vh;
