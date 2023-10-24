@@ -60,6 +60,28 @@
     height: 100%;
 }
 
+#viewerModal .openseadragon-canvas:before {
+    content: "";
+    position: absolute;
+    top: calc(50% - 1rem);
+    left: calc(50% - 1rem);
+    border: 0.25em solid currentcolor;
+    border-right-color: transparent;
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    vertical-align: -0.125em;
+    border-radius: 50%;
+    animation: spinner-border 0.75s linear infinite;
+    z-index: 0;
+}
+
+@keyframes spinner-border {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 /* viewerMap */
 #big-map {
     height: 75%;
