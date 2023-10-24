@@ -188,21 +188,34 @@ $(document).ready(function () {
                     `);
                 });
             }
-            if (queryParams.has('issue[]')) {
-                let issue = queryParams.getAll('issue[]');
-                issue.forEach(this_issue => {
-                    let newQueryParams = new URLSearchParams();
-                    queryParams.forEach((value, key) => {
-                        if (!((key == "issue[]") && (value == this_issue))) {
-                            newQueryParams.append(key, value);
-                        }
-                    });
-                    $('#query').append(`
-                    <li class="list-inline-item">
-                        <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${this_issue}</a>
-                    </li>
-                    `);
-                });
+            if (queryParams.has('issue')) {
+                let issue = queryParams.get('issue');
+                let newQueryParams = new URLSearchParams(window.location.search);
+                newQueryParams.delete('issue');
+                newQueryParams.delete('issue_date');
+                let issueTitle = issue;
+                if (queryParams.has('issue_date') && queryParams.get('issue_date')) {
+                    const issueDate = queryParams.get('issue_date');
+                    const date = new Date(issueDate);
+                    const options = {
+                        year: 'numeric',
+                        month: 'long',
+                        timeZone: 'UTC'
+                    };
+                    if (issueDate.length == 10) {
+                        options["day"] = 'numeric';
+                    }
+                    if (issue.startsWith("US.NN.FIT.SC.362.1")) {
+                        issueTitle = `Fashion Calendar, ${date.toLocaleDateString('en-US', options)}`;
+                    } else if (issue.startsWith("US.NN.FIT.SC.362.3")) {
+                        issueTitle = `Home Furnishings Calendar, ${date.toLocaleDateString('en-US', options)}`;
+                    }
+                }
+                $('#query').append(`
+                <li class="list-inline-item">
+                    <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${issueTitle}</a>
+                </li>
+                `);
             }
             if (queryParams.has('date_range_start') && queryParams.has('date_range_end')) {
                 let date_range_start = queryParams.get('date_range_start');
@@ -391,7 +404,7 @@ $(document).ready(function () {
             const displayTitle = `${issue.calendar_title}, ${date.toLocaleDateString('en-US', options)}`;
             let issueHtml = `
                 <span>${displayTitle} (page ${issue.calendar_page})</span>
-                <a href="?issue[]=${encodeURIComponent(issue.calendar_id)}" class="issue-search link-dark ms-1 text-decoration-none" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" aria-label="Search for this issue">
+                <a href="?issue=${encodeURIComponent(issue.calendar_id)}&issue_date=${encodeURIComponent(issue.calendar_date)}" class="issue-search link-dark ms-1 text-decoration-none" data-calendar_date="${encodeURIComponent(issue.calendar_date)}" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" aria-label="Search for this issue">
                 <i class="fas fa-search" aria-hidden="true" title="Search for this issue">
                 </i>
                 </a>
@@ -466,10 +479,12 @@ $(document).ready(function () {
         });
         $(".issue-search").on("click.fashionCalendar", function (event) {
             event.preventDefault();
-            let issue = decodeURIComponent($(this).data("calendar_id"));
+            const issue = decodeURIComponent($(this).data("calendar_id"));
+            const calendar_date = decodeURIComponent($(this).data("calendar_date"));
             // Update URL Query.
             let queryParams = new URLSearchParams();
-            queryParams.set("issue[]", issue);
+            queryParams.set("issue", issue);
+            queryParams.set("issue_date", calendar_date);
             history.pushState(null, null, "?" + queryParams.toString());
             listEvents(queryParams);
         });
@@ -824,7 +839,7 @@ $(document).ready(function () {
                             popup_content += `
                                     <dd>
                                     <span>${displayTitle} (page ${issue.calendar_page})</span>
-                                    <a href="?issue[]=${encodeURIComponent(issue.calendar_id)}" class="map-issue-search link-dark ms-1 text-decoration-none" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" aria-label="Search for this issue">
+                                    <a href="?issue=${encodeURIComponent(issue.calendar_id)}&issue_date=${encodeURIComponent(issue.calendar_date)}" class="map-issue-search link-dark ms-1 text-decoration-none" data-calendar_date="${encodeURIComponent(issue.calendar_date)}" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" aria-label="Search for this issue">
                                     <i class="fas fa-search" aria-hidden="true" title="Search for this issue">
                                     </i>
                                     </a>
@@ -974,21 +989,34 @@ $(document).ready(function () {
                     `);
                 });
             }
-            if (currentQueryParams.has('issue[]')) {
-                let issue = currentQueryParams.getAll('issue[]');
-                issue.forEach(this_issue => {
-                    let newcurrentQueryParams = new URLSearchParams();
-                    currentQueryParams.forEach((value, key) => {
-                        if (!((key == "issue[]") && (value == this_issue))) {
-                            newcurrentQueryParams.append(key, value);
-                        }
-                    });
-                    $("#map-query").append(`
+            if (currentQueryParams.has('issue')) {
+                let issue = currentQueryParams.get('issue');
+                let newcurrentQueryParams = new URLSearchParams();
+                newcurrentQueryParams.delete('issue');
+                newcurrentQueryParams.delete('issue_date');
+                let issueTitle = issue;
+                if (currentQueryParams.has('issue_date') && currentQueryParams.get('issue_date')) {
+                    const issueDate = currentQueryParams.get('issue_date');
+                    const date = new Date(issueDate);
+                    const options = {
+                        year: 'numeric',
+                        month: 'long',
+                        timeZone: 'UTC'
+                    };
+                    if (issueDate.length == 10) {
+                        options["day"] = 'numeric';
+                    }
+                    if (issue.startsWith("US.NN.FIT.SC.362.1")) {
+                        issueTitle = `Fashion Calendar, ${date.toLocaleDateString('en-US', options)}`;
+                    } else if (issue.startsWith("US.NN.FIT.SC.362.3")) {
+                        issueTitle = `Home Furnishings Calendar, ${date.toLocaleDateString('en-US', options)}`;
+                    }
+                }
+                $("#map-query").append(`
                     <li class="list-inline-item">
-                        <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${this_issue}</a>
+                        <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${issueTitle}</a>
                     </li>
                     `);
-                });
             }
             if (currentQueryParams.has('date_range_start') && currentQueryParams.has('date_range_end')) {
                 let date_range_start = currentQueryParams.get('date_range_start');
@@ -1248,10 +1276,12 @@ $(document).ready(function () {
                 mapSearch = true;
                 dateRange = null;
                 let issue = decodeURIComponent($(this).data("calendar_id"));
+                const calendar_date = decodeURIComponent($(this).data("calendar_date"));
                 // Update URL Query.
                 let queryParams = new URLSearchParams();
                 mappage = 1;
-                queryParams.set("issue[]", issue);
+                queryParams.set("issue", issue);
+                queryParams.set("issue_date", calendar_date);
                 history.pushState(null, null, "?" + queryParams.toString());
                 mapData = null;
                 bigMap.remove();

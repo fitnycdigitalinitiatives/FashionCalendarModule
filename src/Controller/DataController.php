@@ -85,10 +85,7 @@ class DataController extends AbstractActionController
                 }
             }
             if (array_key_exists('issue', $params) && ($issue = $params['issue'])) {
-                $issue = is_array($issue) ? $issue : [$issue];
-                foreach ($issue as $this_issue) {
-                    $match['$match']['$and'][] = ['appears_in.calendar_id' => $this_issue];
-                }
+                $match['$match']['$and'][] = ['appears_in.calendar_id' => $issue];
             }
             if (array_key_exists('titles', $params) && ($titles = $params['titles']) && (($titles == "Fashion Calendar") || ($titles == "Home Furnishings Calendar"))) {
                 $match['$match']['$and'][] = ['appears_in.calendar_title' => $titles];

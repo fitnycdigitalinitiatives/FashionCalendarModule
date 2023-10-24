@@ -401,6 +401,16 @@
     margin-top: 0.5rem;
 }
 
+#query li,
+#map-query li {
+    margin-left: 19px;
+}
+
+#query li i,
+#map-query li i {
+    margin-left: -19px;
+}
+
 #graphModal .modal-body {
     min-height: 100vh;
 }
