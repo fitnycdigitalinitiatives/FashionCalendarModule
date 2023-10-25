@@ -744,7 +744,7 @@ $(document).ready(function () {
         </div>
         `);
         $('#map').html(`
-        <button id="map-button" class="btn btn-fit-blue floating-action" type="button" data-bs-toggle="modal"
+        <button id="map-button" class="btn btn-dark floating-action" type="button" data-bs-toggle="modal"
             data-bs-target="#mapModal" aria-controls="mapModal" aria-label="Map results">
             <span class="action-container">
             <i class="fas fa-map" aria-hidden="true" title="Map results">
@@ -1355,7 +1355,7 @@ $(document).ready(function () {
 
     async function createFacets() {
         $('#facet').html(`
-            <button id="facet-button" class="btn btn-fit-pink floating-action" type="button" data-bs-toggle="offcanvas"
+            <button id="facet-button" class="btn btn-dark floating-action" type="button" data-bs-toggle="offcanvas"
               data-bs-target="#facets" aria-controls="facets" aria-label="Refine results">
               <span class="action-container">
                 <i class="fas fa-filter" aria-hidden="true" title="Refine results">
@@ -1765,7 +1765,7 @@ $(document).ready(function () {
             `);
         $('#modal-container').append(graphModal);
         $('#graph').html(`
-            <button id="graph-button" class="btn btn-fit-green floating-action" type="button" data-bs-toggle="modal"
+            <button id="graph-button" class="btn btn-dark floating-action" type="button" data-bs-toggle="modal"
               data-bs-target="#graphModal" aria-controls="graphModal" aria-label="Graph results">
               <span class="action-container">
                 <i class="fas fa-chart-bar" aria-hidden="true" title="Graph results">
@@ -1983,7 +1983,7 @@ $(document).ready(function () {
 
     function createDownload() {
         $('#download').html(`
-        <button id="download-button" class="btn btn-secondary floating-action d-none d-md-inline-block" type="button" aria-label="Download results as JSON file" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Note: downloads are currently limited to the first 5,000 results. Access to the complete data set will be made available for download in the future." >
+        <button id="download-button" class="btn btn-dark floating-action d-none d-md-inline-block" type="button" aria-label="Download results as JSON file" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Note: downloads are currently limited to the first 5,000 results. Access to the complete data set will be made available for download in the future." >
             <span class="action-container">
             <i class="fas fa-download" aria-hidden="true" title="Download results as JSON file">
             </i>
@@ -2004,7 +2004,7 @@ $(document).ready(function () {
         let queryParams = new URLSearchParams(window.location.search);
         let select = $(`
         <div class="input-group">
-            <span class="input-group-text"><i class="fas fa-sort" aria-hidden="true" title="Sort results"></i><span class="sr-only">Sort results</span></span>
+            <span class="input-group-text bg-dark text-white"><i class="fas fa-sort" aria-hidden="true" title="Sort results"></i><span class="sr-only">Sort results</span></span>
             <select id="sort-select" class="form-select" name="sort" aria-label="Sort order">
                 <option value="rel" id="rel">
                     Relevance
@@ -2063,7 +2063,7 @@ $(document).ready(function () {
             <div class="input-group">
                 <input type="search" class="form-control" aria-label="<?php echo $translate('Search'); ?>"
                     autocomplete="off" placeholder="Search by keyword or select names/categories via autocomplete">
-                <button class="btn btn-secondary" type="submit" aria-label="Search">
+                <button class="btn btn-dark" type="submit" aria-label="Search">
                     <i class="fas fa-search" title="<?php echo $translate('Search'); ?>" aria-hidden="true"></i>
                 </button>
             </div>
@@ -2423,7 +2423,7 @@ $(document).ready(function () {
                 let pagination = `
                 <div class="row justify-content-center pagination-row">
                     <div class="col-auto">
-                        <button id="load-button" class="btn btn-fit-green floating-action" type="button" aria-controls="searchFilters" aria-label="Load more results">
+                        <button id="load-button" class="btn btn-dark floating-action" type="button" aria-controls="searchFilters" aria-label="Load more results">
                             <span class="action-container">
                             <i class="fas fa-plus" aria-hidden="true" title="Load more results">
                             </i>
