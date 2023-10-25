@@ -38,8 +38,8 @@
     word-wrap: break-word;
 }
 
-#data-container>.row {
-    border-top: solid 1px rgb(222, 226, 230);
+#data-container>.row:last-of-type {
+    border-bottom: solid 1px rgb(108, 117, 125);
 }
 
 #data-container>.row:nth-of-type(odd) {
