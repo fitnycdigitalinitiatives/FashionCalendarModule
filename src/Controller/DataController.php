@@ -28,14 +28,31 @@ class DataController extends AbstractActionController
             $docs_per_page = 50;
             $map_docs_per_page = 5000;
             $collection = $client->selectCollection($settings->get('fcm_mongo_db'), 'events');
-            $sort = [];
             $match = [];
             $geoNear = [];
             $text = false;
             if (array_key_exists('text', $params) && ($text = $params['text'])) {
                 $match['$match']['$and'][] = ['$text' => ['$search' => $text, '$language' => 'en']];
-                $sort['$sort'] = ['score' => ['$meta' => 'textScore'], '_id' => 1];
                 $text = true;
+            }
+            // Default sort
+            $sort['$sort'] = ['start_date_iso' => 1, '_id' => 1];
+            if (array_key_exists('sort', $params) && ($sortParam = $params['sort']) && (($sortParam == "asc") || ($sortParam == "desc") || ($sortParam == "text"))) {
+                switch ($sortParam) {
+                    case 'asc':
+                        $sort['$sort'] = ['start_date_iso' => 1, '_id' => 1];
+                        break;
+                    case 'desc':
+                        $sort['$sort'] = ['start_date_iso' => -1, '_id' => 1];
+                        break;
+                    case 'text':
+                        if ($text) {
+                            $sort['$sort'] = ['score' => ['$meta' => 'textScore'], '_id' => 1];
+                        }
+                        break;
+                }
+            } elseif ($text) {
+                $sort['$sort'] = ['score' => ['$meta' => 'textScore'], '_id' => 1];
             }
             if (array_key_exists('names', $params) && ($names = $params['names'])) {
                 $names = is_array($names) ? $names : [$names];
@@ -140,6 +157,7 @@ class DataController extends AbstractActionController
                 $facet = [
                     '$facet' => [
                         'results' => [
+                            $sort,
                             $skip,
                             $limit
                         ],
@@ -150,19 +168,24 @@ class DataController extends AbstractActionController
                         ]
                     ]
                 ];
-                if ($sort) {
-                    array_unshift($facet['$facet']['results'], $sort);
-                }
                 $aggregation[] = $facet;
                 $aggregation[] = ['$project' => ['results' => 1, 'count' => ['$first' => '$count']]];
                 $aggregation[] = ['$project' => ['results' => 1, 'count' => '$count.count']];
+            } elseif (array_key_exists('facet', $params) && ($params['facet'] == 'true')) {
+                $facet = [
+                    '$facet' => [
+                        'names' => [['$unwind' => ['path' => '$names']], ['$group' => ['_id' => '$names.label', 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$limit' => 25], ['$project' => ['_id' => 0, 'name' => '$_id', 'count' => 1]]],
+                        'categories' => [['$project' => ['categories' => ['$reduce' => ['input' => '$names.categories.label', 'initialValue' => [], 'in' => ['$setUnion' => ['$$this', '$$value']]]]]], ['$unwind' => ['path' => '$categories']], ['$group' => ['_id' => '$categories', 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$limit' => 25], ['$project' => ['_id' => 0, 'category' => '$_id', 'count' => 1]]],
+                        'years' => [['$group' => ['_id' => ['$year' => '$start_date_iso'], 'count' => ['$sum' => 1]]], ['$sort' => ['_id' => 1]], ['$project' => ['_id' => 0, 'year' => '$_id', 'count' => 1]]],
+                        'titles' => [['$group' => ['_id' => ['$arrayElemAt' => ['$appears_in.calendar_title', 0]], 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$project' => ['_id' => 0, 'title' => '$_id', 'count' => 1]]]
+                    ]
+                ];
+                $aggregation[] = $facet;
             } elseif (array_key_exists('date_range', $params) && ($params['date_range'] == 'true')) {
                 $aggregation[] = ['$group' => ['_id' => null, 'earliest' => ['$min' => '$start_date_iso'], 'latest' => ['$max' => '$start_date_iso']]];
                 $aggregation[] = ['$project' => ['_id' => 0, 'earliest' => ['$year' => '$earliest'], 'latest' => ['$year' => '$latest']]];
             } elseif (array_key_exists('download', $params) && ($params['download'] == 'true')) {
-                if ($sort) {
-                    $aggregation[] = $sort;
-                }
+                $aggregation[] = $sort;
                 $aggregation[] = ['$limit' => 5000];
                 $response->getHeaders()->addHeaderLine('Content-Disposition', 'attachment; filename="fashion-calendar-results.json"');
             } else {
@@ -175,13 +198,10 @@ class DataController extends AbstractActionController
                 $facet = [
                     '$facet' => [
                         'results' => [
+                            $sort,
                             $skip,
                             $limit
                         ],
-                        'names' => [['$unwind' => ['path' => '$names']], ['$group' => ['_id' => '$names.label', 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$limit' => 25], ['$project' => ['_id' => 0, 'name' => '$_id', 'count' => 1]]],
-                        'categories' => [['$project' => ['categories' => ['$reduce' => ['input' => '$names.categories.label', 'initialValue' => [], 'in' => ['$setUnion' => ['$$this', '$$value']]]]]], ['$unwind' => ['path' => '$categories']], ['$group' => ['_id' => '$categories', 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$limit' => 25], ['$project' => ['_id' => 0, 'category' => '$_id', 'count' => 1]]],
-                        'years' => [['$group' => ['_id' => ['$year' => '$start_date_iso'], 'count' => ['$sum' => 1]]], ['$sort' => ['_id' => 1]], ['$project' => ['_id' => 0, 'year' => '$_id', 'count' => 1]]],
-                        'titles' => [['$group' => ['_id' => ['$arrayElemAt' => ['$appears_in.calendar_title', 0]], 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$project' => ['_id' => 0, 'title' => '$_id', 'count' => 1]]],
                         'count' => [
                             [
                                 '$count' => 'count'
@@ -189,12 +209,9 @@ class DataController extends AbstractActionController
                         ]
                     ]
                 ];
-                if ($sort) {
-                    array_unshift($facet['$facet']['results'], $sort);
-                }
                 $aggregation[] = $facet;
-                $aggregation[] = ['$project' => ['results' => 1, 'facets' => ['names' => '$names', 'categories' => '$categories', 'years' => '$years', 'titles' => '$titles'], 'count' => ['$first' => '$count']]];
-                $aggregation[] = ['$project' => ['results' => 1, 'facets' => 1, 'count' => '$count.count']];
+                $aggregation[] = ['$project' => ['results' => 1, 'count' => ['$first' => '$count']]];
+                $aggregation[] = ['$project' => ['results' => 1, 'count' => '$count.count']];
             }
 
 

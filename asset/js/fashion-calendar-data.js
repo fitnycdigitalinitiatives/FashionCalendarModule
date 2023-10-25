@@ -6,6 +6,7 @@ $(document).ready(function () {
     let eventsNameChart = null;
     let miradorViewer = null;
     let eventsData = null;
+    let facetData = null;
     let mapData = null;
     let graphsData = null;
     let dateRange = null;
@@ -50,6 +51,9 @@ $(document).ready(function () {
         }
         if (eventsData) {
             eventsData = null;
+        }
+        if (facetData) {
+            facetData = null;
         }
         if (mapData) {
             mapData = null;
@@ -107,13 +111,17 @@ $(document).ready(function () {
         $('#graph').empty().hide();
         $('#map').empty().hide();
         $('#download').empty().hide();
+        $('#sort').empty().hide();
         $('#data-search input').val("");
         if (queryParams.toString()) {
             if (queryParams.has('text')) {
                 let text = queryParams.get('text');
                 if (text) {
                     let newQueryParams = new URLSearchParams(window.location.search);
-                    newQueryParams.delete('text')
+                    newQueryParams.delete('text');
+                    if (newQueryParams.has('sort') && newQueryParams.get('sort') == 'rel') {
+                        newQueryParams.delete('sort');
+                    }
                     $('#query').append(`
                     <li class="list-inline-item">
                         <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${text}</a>
@@ -311,6 +319,7 @@ $(document).ready(function () {
                 createFacets();
                 createGraphs(url);
                 createMap();
+                createSort();
                 if (window.matchMedia("(min-width: 768px)").matches && window.matchMedia("(min-height: 768px)").matches) {
                     createDownload();
                 };
@@ -321,6 +330,7 @@ $(document).ready(function () {
                 $('#graph').fadeIn();
                 $('#map').fadeIn();
                 $('#download').fadeIn();
+                $('#sort').fadeIn();
                 $('#modal-container').append(createViewerModal());
                 $('#modal-container').append(createSingleMapModal());
                 attachClicks();
@@ -1346,7 +1356,7 @@ $(document).ready(function () {
     async function createFacets() {
         $('#facet').html(`
             <button id="facet-button" class="btn btn-fit-pink floating-action" type="button" data-bs-toggle="offcanvas"
-              data-bs-target="#facets" aria-controls="facets" aria-label="Refine results" disabled>
+              data-bs-target="#facets" aria-controls="facets" aria-label="Refine results">
               <span class="action-container">
                 <i class="fas fa-filter" aria-hidden="true" title="Refine results">
                 </i>
@@ -1354,7 +1364,7 @@ $(document).ready(function () {
               </span>
             </button>
         `);
-        let offCanvas = $(`
+        $('#modal-container').append(`
         <div class="offcanvas offcanvas-start shadow border-end-0" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="facets" aria-labelledby="facetsLabel">
             <div class="offcanvas-header border-bottom">
             <h3 class="offcanvas-title" id="facetsLabel">
@@ -1363,6 +1373,11 @@ $(document).ready(function () {
             <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
             <div class="offcanvas-body p-0 pb-4">
+            <div id="facet-loader" class="d-flex justify-content-center align-items-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
             </div>
         </div>
         `);
@@ -1373,6 +1388,7 @@ $(document).ready(function () {
             </ul>
         </div>
         `);
+        const offCanvas = $("#facets");
         if (!dateRange) {
             let rangeQueryParams = new URLSearchParams(window.location.search);
             rangeQueryParams.set('date_range', 'true');
@@ -1477,238 +1493,258 @@ $(document).ready(function () {
                     listEvents(queryParams);
                 });
             });
-            offCanvas.children('.offcanvas-body').append(dateRangeCard);
+            $("#facets .offcanvas-body").append(dateRangeCard);
         }
-        if (eventsData[0].facets.titles.length) {
-            let titlesCard = card.clone();
-            titlesCard.children('.card-header').text("Titles");
-            const titleDisplayFacets = eventsData[0].facets.titles;
-            titleDisplayFacets.forEach(title => {
-                let queryParams = new URLSearchParams(window.location.search);
-                queryParams.append("titles", title.title);
-                queryParams.delete("page");
-                titlesCard.children('.list-group').append(`
-                <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-title="${title.title}">
-                    ${title.title}
-                    <span class="badge bg-secondary rounded-pill">${title.count}</span>
-                </a>
-                `);
-            });
-            titlesCard.find('a').on("click", function (event) {
-                event.preventDefault();
-                let title = $(this).data("title");
-                // Update URL Query.
-                let queryParams = new URLSearchParams(window.location.search);
-                queryParams.append("titles", title);
-                queryParams.delete("page");
-                history.pushState(null, null, "?" + queryParams.toString());
-                let openedCanvas = bootstrap.Offcanvas.getInstance(offCanvas);
-                openedCanvas.hide();
-                offCanvas[0].addEventListener('hidden.bs.offcanvas', event => {
-                    listEvents(queryParams);
-                });
-            });
-            offCanvas.children('.offcanvas-body').append(titlesCard);
+        let queryParams = new URLSearchParams(window.location.search);
+        queryParams.set('facet', 'true');
+        queryParams.delete('sort');
+        const url = "/data-api/events?" + queryParams.toString();
+        fetch(url)
+            .then((response) => response.json())
+            .then((data) => {
+                facetData = data;
+                data = null;
+                $("#facet-loader").remove();
+                if (facetData[0].titles.length) {
+                    let titlesCard = card.clone();
+                    titlesCard.children('.card-header').text("Titles");
+                    const titleDisplayFacets = facetData[0].titles;
+                    titleDisplayFacets.forEach(title => {
+                        let queryParams = new URLSearchParams(window.location.search);
+                        queryParams.append("titles", title.title);
+                        queryParams.delete("page");
+                        titlesCard.children('.list-group').append(`
+                        <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-title="${title.title}">
+                            ${title.title}
+                            <span class="badge bg-secondary rounded-pill">${title.count}</span>
+                        </a>
+                        `);
+                    });
+                    titlesCard.find('a').on("click", function (event) {
+                        event.preventDefault();
+                        let title = $(this).data("title");
+                        // Update URL Query.
+                        let queryParams = new URLSearchParams(window.location.search);
+                        queryParams.append("titles", title);
+                        queryParams.delete("page");
+                        history.pushState(null, null, "?" + queryParams.toString());
+                        let openedCanvas = bootstrap.Offcanvas.getInstance(offCanvas);
+                        openedCanvas.hide();
+                        offCanvas[0].addEventListener('hidden.bs.offcanvas', event => {
+                            listEvents(queryParams);
+                        });
+                    });
+                    $("#facets .offcanvas-body").append(titlesCard);
 
-        }
-        if (eventsData[0].facets.names.length) {
-            let namesCard = card.clone();
-            namesCard.children('.card-header').text("Names");
-            const nameDisplayFacets = eventsData[0].facets.names.slice(0, 10);
-            const nameHiddenFacets = eventsData[0].facets.names.slice(10);
-            nameDisplayFacets.forEach(name => {
-                let queryParams = new URLSearchParams(window.location.search);
-                queryParams.append("names[]", name.name);
-                queryParams.delete("page");
-                namesCard.children('.list-group').append(`
-                <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-name="${name.name}">
-                    ${name.name}
-                    <span class="badge bg-secondary rounded-pill">${name.count}</span>
-                </a>
-                `);
-            });
-            if (nameHiddenFacets.length) {
-                const namesCollapse = $(`
-                <div class="collapse hidden-facets" id="collapse-names">
-                </div>
-                `);
-                namesCard.children('.list-group').append(namesCollapse);
-                namesCollapse.after(`
-                <button class="list-group-item list-group-item-action expander d-inline-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-names" aria-expanded="false" aria-controls="collapse-names">
-                More >
-                </button>
-                `);
-                namesCollapse[0].addEventListener('show.bs.collapse', event => {
-                    namesCollapse.parent().children('button').text('Less ^')
-                });
-                namesCollapse[0].addEventListener('hide.bs.collapse', event => {
-                    namesCollapse.parent().children('button').text('More >')
-                });
-                nameHiddenFacets.forEach(name => {
-                    let queryParams = new URLSearchParams(window.location.search);
-                    queryParams.append("names[]", name.name);
-                    queryParams.delete("page");
-                    namesCollapse.append(`
-                    <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-name="${name.name}">
-                        ${name.name}
-                        <span class="badge bg-secondary rounded-pill">${name.count}</span>
-                    </a>
+                }
+                if (facetData[0].names.length) {
+                    let namesCard = card.clone();
+                    namesCard.children('.card-header').text("Names");
+                    const nameDisplayFacets = facetData[0].names.slice(0, 10);
+                    const nameHiddenFacets = facetData[0].names.slice(10);
+                    nameDisplayFacets.forEach(name => {
+                        let queryParams = new URLSearchParams(window.location.search);
+                        queryParams.append("names[]", name.name);
+                        queryParams.delete("page");
+                        namesCard.children('.list-group').append(`
+                        <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-name="${name.name}">
+                            ${name.name}
+                            <span class="badge bg-secondary rounded-pill">${name.count}</span>
+                        </a>
+                        `);
+                    });
+                    if (nameHiddenFacets.length) {
+                        const namesCollapse = $(`
+                        <div class="collapse hidden-facets" id="collapse-names">
+                        </div>
+                        `);
+                        namesCard.children('.list-group').append(namesCollapse);
+                        namesCollapse.after(`
+                        <button class="list-group-item list-group-item-action expander d-inline-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-names" aria-expanded="false" aria-controls="collapse-names">
+                        More >
+                        </button>
+                        `);
+                        namesCollapse[0].addEventListener('show.bs.collapse', event => {
+                            namesCollapse.parent().children('button').text('Less ^')
+                        });
+                        namesCollapse[0].addEventListener('hide.bs.collapse', event => {
+                            namesCollapse.parent().children('button').text('More >')
+                        });
+                        nameHiddenFacets.forEach(name => {
+                            let queryParams = new URLSearchParams(window.location.search);
+                            queryParams.append("names[]", name.name);
+                            queryParams.delete("page");
+                            namesCollapse.append(`
+                            <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-name="${name.name}">
+                                ${name.name}
+                                <span class="badge bg-secondary rounded-pill">${name.count}</span>
+                            </a>
+                            `);
+                        });
+                    }
+                    namesCard.find('a').on("click", function (event) {
+                        event.preventDefault();
+                        let name = $(this).data("name");
+                        // Update URL Query.
+                        let queryParams = new URLSearchParams(window.location.search);
+                        queryParams.append("names[]", name);
+                        queryParams.delete("page");
+                        history.pushState(null, null, "?" + queryParams.toString());
+                        let openedCanvas = bootstrap.Offcanvas.getInstance(offCanvas);
+                        openedCanvas.hide();
+                        offCanvas[0].addEventListener('hidden.bs.offcanvas', event => {
+                            listEvents(queryParams);
+                        });
+                    });
+                    $("#facets .offcanvas-body").append(namesCard);
+
+                }
+                if (facetData[0].categories.length) {
+                    let categoriesCard = card.clone();
+                    categoriesCard.children('.card-header').text("Categories");
+                    const categoriesDisplayFacets = facetData[0].categories.slice(0, 10);
+                    const categoriesHiddenFacets = facetData[0].categories.slice(10);
+                    categoriesDisplayFacets.forEach(category => {
+                        let queryParams = new URLSearchParams(window.location.search);
+                        queryParams.append("categories[]", category.category);
+                        queryParams.delete("page");
+                        categoriesCard.children('.list-group').append(`
+                        <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="${category.category}">
+                            ${category.category}
+                            <span class="badge bg-secondary rounded-pill">${category.count}</span>
+                        </a>
+                        `);
+                    });
+                    if (categoriesHiddenFacets.length) {
+                        const categoriesCollapse = $(`
+                        <div class="collapse hidden-facets" id="collapse-categories">
+                        </div>
+                        `);
+                        categoriesCard.children('.list-group').append(categoriesCollapse);
+                        categoriesCollapse.after(`
+                        <button class="list-group-item list-group-item-action expander d-inline-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-categories" aria-expanded="false" aria-controls="collapse-categories">
+                        More >
+                        </button>`);
+                        categoriesCollapse[0].addEventListener('show.bs.collapse', event => {
+                            categoriesCollapse.parent().children('button').text('Less ^')
+                        });
+                        categoriesCollapse[0].addEventListener('hide.bs.collapse', event => {
+                            categoriesCollapse.parent().children('button').text('More >')
+                        });
+                        categoriesHiddenFacets.forEach(category => {
+                            let queryParams = new URLSearchParams(window.location.search);
+                            queryParams.append("categories[]", category.category);
+                            queryParams.delete("page");
+                            categoriesCollapse.append(`
+                            <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="${category.category}">
+                                ${category.category}
+                                <span class="badge bg-secondary rounded-pill">${category.count}</span>
+                            </a>
+                            `);
+                        });
+                    }
+                    categoriesCard.find('a').on("click", function (event) {
+                        event.preventDefault();
+                        let category = $(this).data("category");
+                        // Update URL Query.
+                        let queryParams = new URLSearchParams(window.location.search);
+                        queryParams.append("categories[]", category);
+                        queryParams.delete("page");
+                        history.pushState(null, null, "?" + queryParams.toString());
+                        let openedCanvas = bootstrap.Offcanvas.getInstance(offCanvas);
+                        openedCanvas.hide();
+                        offCanvas[0].addEventListener('hidden.bs.offcanvas', event => {
+                            listEvents(queryParams);
+                        });
+
+                    });
+                    $("#facets .offcanvas-body").append(categoriesCard);
+
+                }
+                if (facetData[0].years.length) {
+                    let yearsCard = card.clone();
+                    yearsCard.children('.card-header').text("Years");
+                    const yearsDisplayFacets = facetData[0].years.slice(0, 10);
+                    const yearsHiddenFacets = facetData[0].years.slice(10);
+                    yearsDisplayFacets.forEach(year => {
+                        let queryParams = new URLSearchParams(window.location.search);
+                        queryParams.append("year", year.year);
+                        queryParams.delete("date_range_start");
+                        queryParams.delete("date_range_end");
+                        queryParams.delete("page");
+                        yearsCard.children('.list-group').append(`
+                        <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-year="${year.year}">
+                            ${year.year}
+                            <span class="badge bg-secondary rounded-pill">${year.count}</span>
+                        </a>
+                        `);
+                    });
+                    if (yearsHiddenFacets.length) {
+                        const yearsCollapse = $(`
+                        <div class="collapse hidden-facets" id="collapse-years">
+                        </div>
+                        `);
+                        yearsCard.children('.list-group').append(yearsCollapse);
+                        yearsCollapse.after(`
+                        <button class="list-group-item list-group-item-action expander d-inline-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-years" aria-expanded="false" aria-controls="collapse-years">
+                        More >
+                        </button>`);
+                        yearsCollapse[0].addEventListener('show.bs.collapse', event => {
+                            yearsCollapse.parent().children('button').text('Less ^')
+                        });
+                        yearsCollapse[0].addEventListener('hide.bs.collapse', event => {
+                            yearsCollapse.parent().children('button').text('More >')
+                        });
+                        yearsHiddenFacets.forEach(year => {
+                            let queryParams = new URLSearchParams(window.location.search);
+                            queryParams.append("year", year.year);
+                            queryParams.delete("date_range_start");
+                            queryParams.delete("date_range_end");
+                            queryParams.delete("page");
+                            yearsCollapse.append(`
+                            <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-year="${year.year}">
+                                ${year.year}
+                                <span class="badge bg-secondary rounded-pill">${year.count}</span>
+                            </a>
+                            `);
+                        });
+                    }
+                    yearsCard.find('a').on("click", function (event) {
+                        event.preventDefault();
+                        let year = $(this).data("year");
+                        // Update URL Query.
+                        let queryParams = new URLSearchParams(window.location.search);
+                        queryParams.append("year", year);
+                        queryParams.delete("date_range_start");
+                        queryParams.delete("date_range_end");
+                        queryParams.delete("page");
+                        history.pushState(null, null, "?" + queryParams.toString());
+                        let openedCanvas = bootstrap.Offcanvas.getInstance(offCanvas);
+                        openedCanvas.hide();
+                        offCanvas[0].addEventListener('hidden.bs.offcanvas', event => {
+                            listEvents(queryParams);
+                        });
+                    });
+                    $("#facets .offcanvas-body").append(yearsCard);
+                }
+
+            })
+            .catch((error) => {
+                console.log(error);
+                $("#facets .offcanvas-body").append(`
+                    <div>
+                    <h2>Error</h2>
+                    <p class="lead">
+                    There was an error loading the facets. Please try again.
+                    </p>
+                    </div>
                     `);
-                });
-            }
-            namesCard.find('a').on("click", function (event) {
-                event.preventDefault();
-                let name = $(this).data("name");
-                // Update URL Query.
-                let queryParams = new URLSearchParams(window.location.search);
-                queryParams.append("names[]", name);
-                queryParams.delete("page");
-                history.pushState(null, null, "?" + queryParams.toString());
-                let openedCanvas = bootstrap.Offcanvas.getInstance(offCanvas);
-                openedCanvas.hide();
-                offCanvas[0].addEventListener('hidden.bs.offcanvas', event => {
-                    listEvents(queryParams);
-                });
             });
-            offCanvas.children('.offcanvas-body').append(namesCard);
-
-        }
-        if (eventsData[0].facets.categories.length) {
-            let categoriesCard = card.clone();
-            categoriesCard.children('.card-header').text("Categories");
-            const categoriesDisplayFacets = eventsData[0].facets.categories.slice(0, 10);
-            const categoriesHiddenFacets = eventsData[0].facets.categories.slice(10);
-            categoriesDisplayFacets.forEach(category => {
-                let queryParams = new URLSearchParams(window.location.search);
-                queryParams.append("categories[]", category.category);
-                queryParams.delete("page");
-                categoriesCard.children('.list-group').append(`
-                <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="${category.category}">
-                    ${category.category}
-                    <span class="badge bg-secondary rounded-pill">${category.count}</span>
-                </a>
-                `);
-            });
-            if (categoriesHiddenFacets.length) {
-                const categoriesCollapse = $(`
-                <div class="collapse hidden-facets" id="collapse-categories">
-                </div>
-                `);
-                categoriesCard.children('.list-group').append(categoriesCollapse);
-                categoriesCollapse.after(`
-                <button class="list-group-item list-group-item-action expander d-inline-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-categories" aria-expanded="false" aria-controls="collapse-categories">
-                More >
-                </button>`);
-                categoriesCollapse[0].addEventListener('show.bs.collapse', event => {
-                    categoriesCollapse.parent().children('button').text('Less ^')
-                });
-                categoriesCollapse[0].addEventListener('hide.bs.collapse', event => {
-                    categoriesCollapse.parent().children('button').text('More >')
-                });
-                categoriesHiddenFacets.forEach(category => {
-                    let queryParams = new URLSearchParams(window.location.search);
-                    queryParams.append("categories[]", category.category);
-                    queryParams.delete("page");
-                    categoriesCollapse.append(`
-                    <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="${category.category}">
-                        ${category.category}
-                        <span class="badge bg-secondary rounded-pill">${category.count}</span>
-                    </a>
-                    `);
-                });
-            }
-            categoriesCard.find('a').on("click", function (event) {
-                event.preventDefault();
-                let category = $(this).data("category");
-                // Update URL Query.
-                let queryParams = new URLSearchParams(window.location.search);
-                queryParams.append("categories[]", category);
-                queryParams.delete("page");
-                history.pushState(null, null, "?" + queryParams.toString());
-                let openedCanvas = bootstrap.Offcanvas.getInstance(offCanvas);
-                openedCanvas.hide();
-                offCanvas[0].addEventListener('hidden.bs.offcanvas', event => {
-                    listEvents(queryParams);
-                });
-
-            });
-            offCanvas.children('.offcanvas-body').append(categoriesCard);
-
-        }
-        if (eventsData[0].facets.years.length) {
-            let yearsCard = card.clone();
-            yearsCard.children('.card-header').text("Years");
-            const yearsDisplayFacets = eventsData[0].facets.years.slice(0, 10);
-            const yearsHiddenFacets = eventsData[0].facets.years.slice(10);
-            yearsDisplayFacets.forEach(year => {
-                let queryParams = new URLSearchParams(window.location.search);
-                queryParams.append("year", year.year);
-                queryParams.delete("date_range_start");
-                queryParams.delete("date_range_end");
-                queryParams.delete("page");
-                yearsCard.children('.list-group').append(`
-                <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-year="${year.year}">
-                    ${year.year}
-                    <span class="badge bg-secondary rounded-pill">${year.count}</span>
-                </a>
-                `);
-            });
-            if (yearsHiddenFacets.length) {
-                const yearsCollapse = $(`
-                <div class="collapse hidden-facets" id="collapse-years">
-                </div>
-                `);
-                yearsCard.children('.list-group').append(yearsCollapse);
-                yearsCollapse.after(`
-                <button class="list-group-item list-group-item-action expander d-inline-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-years" aria-expanded="false" aria-controls="collapse-years">
-                More >
-                </button>`);
-                yearsCollapse[0].addEventListener('show.bs.collapse', event => {
-                    yearsCollapse.parent().children('button').text('Less ^')
-                });
-                yearsCollapse[0].addEventListener('hide.bs.collapse', event => {
-                    yearsCollapse.parent().children('button').text('More >')
-                });
-                yearsHiddenFacets.forEach(year => {
-                    let queryParams = new URLSearchParams(window.location.search);
-                    queryParams.append("year", year.year);
-                    queryParams.delete("date_range_start");
-                    queryParams.delete("date_range_end");
-                    queryParams.delete("page");
-                    yearsCollapse.append(`
-                    <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-year="${year.year}">
-                        ${year.year}
-                        <span class="badge bg-secondary rounded-pill">${year.count}</span>
-                    </a>
-                    `);
-                });
-            }
-            yearsCard.find('a').on("click", function (event) {
-                event.preventDefault();
-                let year = $(this).data("year");
-                // Update URL Query.
-                let queryParams = new URLSearchParams(window.location.search);
-                queryParams.append("year", year);
-                queryParams.delete("date_range_start");
-                queryParams.delete("date_range_end");
-                queryParams.delete("page");
-                history.pushState(null, null, "?" + queryParams.toString());
-                let openedCanvas = bootstrap.Offcanvas.getInstance(offCanvas);
-                openedCanvas.hide();
-                offCanvas[0].addEventListener('hidden.bs.offcanvas', event => {
-                    listEvents(queryParams);
-                });
-            });
-            offCanvas.children('.offcanvas-body').append(yearsCard);
-        }
-        $('#modal-container').append(offCanvas);
-        $('#facet-button').prop("disabled", false);
     }
 
     function createGraphs(url) {
         // Only need graphs for multiple years of data?
-        if ((eventsData[0].facets.years.length > 1) || (eventsData[0].facets.names.length > 1) || (eventsData[0].facets.categories.length > 1)) {
-            let graphModal = $(`
+        let graphModal = $(`
             <div class="modal fade" id="graphModal" tabindex="-1" aria-labelledby="graphLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-xl">
                 <div class="modal-content">
@@ -1727,8 +1763,8 @@ $(document).ready(function () {
             </div>
             </div>
             `);
-            $('#modal-container').append(graphModal);
-            $('#graph').html(`
+        $('#modal-container').append(graphModal);
+        $('#graph').html(`
             <button id="graph-button" class="btn btn-fit-green floating-action" type="button" data-bs-toggle="modal"
               data-bs-target="#graphModal" aria-controls="graphModal" aria-label="Graph results">
               <span class="action-container">
@@ -1738,23 +1774,23 @@ $(document).ready(function () {
               </span>
             </button>
             `);
-            const thisGraphModal = document.getElementById('graphModal');
-            thisGraphModal.addEventListener('shown.bs.modal', event => {
-                const modalBody = $(thisGraphModal).find('.modal-body');
-                if (modalBody.children('.graph').length == 0) {
-                    let thisURL = new URL(url, "https://fashioncalendar.fitnyc.edu/");
-                    let queryParams = new URLSearchParams(thisURL.search);
-                    queryParams.set("graph", "true");
-                    queryParams.delete("page");
-                    let graphURL = "/data-api/events?" + queryParams.toString();
-                    fetch(graphURL)
-                        .then((response) => response.json())
-                        .then((data) => {
-                            modalBody.empty();
-                            graphsData = data;
-                            data = null;
-                            // Events per year
-                            modalBody.append(`
+        const thisGraphModal = document.getElementById('graphModal');
+        thisGraphModal.addEventListener('shown.bs.modal', event => {
+            const modalBody = $(thisGraphModal).find('.modal-body');
+            if (modalBody.children('.graph').length == 0) {
+                let thisURL = new URL(url, "https://fashioncalendar.fitnyc.edu/");
+                let queryParams = new URLSearchParams(thisURL.search);
+                queryParams.set("graph", "true");
+                queryParams.delete("page");
+                let graphURL = "/data-api/events?" + queryParams.toString();
+                fetch(graphURL)
+                    .then((response) => response.json())
+                    .then((data) => {
+                        modalBody.empty();
+                        graphsData = data;
+                        data = null;
+                        // Events per year
+                        modalBody.append(`
                                 <div class="graph">
                                     <h3>
                                     <span>Events Per Year</span>
@@ -1763,27 +1799,27 @@ $(document).ready(function () {
                                     <canvas id="by-year-chart" aria-label="Chart of events per year" role="img"></canvas>
                                 </div>
                             `);
-                            const byYearChart = document.getElementById('by-year-chart');
-                            yearChart = new Chart(byYearChart, {
-                                type: 'bar',
-                                data: {
-                                    labels: eventsData[0].facets.years.map(row => row.year),
-                                    datasets: [{
-                                        label: '# of Events',
-                                        data: eventsData[0].facets.years.map(row => row.count),
-                                        borderWidth: 1
-                                    }]
-                                },
-                                options: {
-                                    scales: {
-                                        y: {
-                                            beginAtZero: true
-                                        }
+                        const byYearChart = document.getElementById('by-year-chart');
+                        yearChart = new Chart(byYearChart, {
+                            type: 'bar',
+                            data: {
+                                labels: facetData[0].years.map(row => row.year),
+                                datasets: [{
+                                    label: '# of Events',
+                                    data: facetData[0].years.map(row => row.count),
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                scales: {
+                                    y: {
+                                        beginAtZero: true
                                     }
                                 }
-                            });
-                            // Hosts per year
-                            modalBody.append(`
+                            }
+                        });
+                        // Hosts per year
+                        modalBody.append(`
                             <div class="graph">
                                 <h3>
                                 <span>Unique Hosts Per Year</span>
@@ -1792,27 +1828,27 @@ $(document).ready(function () {
                                 <canvas id="hosts-by-year-chart" aria-label="Chart of unique hosts per year" role="img"></canvas>
                             </div>
                             `);
-                            const hostsByYearChart = document.getElementById('hosts-by-year-chart');
-                            hostsyearChart = new Chart(hostsByYearChart, {
-                                type: 'bar',
-                                data: {
-                                    labels: graphsData[0].uniqueHostsbyYear.map(row => row.year),
-                                    datasets: [{
-                                        label: '# of Hosts',
-                                        data: graphsData[0].uniqueHostsbyYear.map(row => row.numberOfHosts),
-                                        borderWidth: 1
-                                    }]
-                                },
-                                options: {
-                                    scales: {
-                                        y: {
-                                            beginAtZero: true
-                                        }
+                        const hostsByYearChart = document.getElementById('hosts-by-year-chart');
+                        hostsyearChart = new Chart(hostsByYearChart, {
+                            type: 'bar',
+                            data: {
+                                labels: graphsData[0].uniqueHostsbyYear.map(row => row.year),
+                                datasets: [{
+                                    label: '# of Hosts',
+                                    data: graphsData[0].uniqueHostsbyYear.map(row => row.numberOfHosts),
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                scales: {
+                                    y: {
+                                        beginAtZero: true
                                     }
                                 }
-                            });
-                            // Categories
-                            modalBody.append(`
+                            }
+                        });
+                        // Categories
+                        modalBody.append(`
                             <div class="graph">
                                 <h3>
                                 <span>Categories</span>
@@ -1821,26 +1857,26 @@ $(document).ready(function () {
                                 <canvas id="events-per-category-chart" aria-label="Chart of number of events per category" role="img"></canvas>
                             </div>
                             `);
-                            const eventsPerCategoryChart = document.getElementById('events-per-category-chart');
-                            eventsCategoryChart = new Chart(eventsPerCategoryChart, {
-                                type: 'pie',
-                                data: {
-                                    labels: graphsData[0].categories.map(row => row.category),
-                                    datasets: [{
-                                        label: '# of Events',
-                                        data: graphsData[0].categories.map(row => row.count),
-                                    }]
-                                },
-                                options: {
-                                    plugins: {
-                                        legend: {
-                                            display: false,
-                                        }
+                        const eventsPerCategoryChart = document.getElementById('events-per-category-chart');
+                        eventsCategoryChart = new Chart(eventsPerCategoryChart, {
+                            type: 'pie',
+                            data: {
+                                labels: graphsData[0].categories.map(row => row.category),
+                                datasets: [{
+                                    label: '# of Events',
+                                    data: graphsData[0].categories.map(row => row.count),
+                                }]
+                            },
+                            options: {
+                                plugins: {
+                                    legend: {
+                                        display: false,
                                     }
                                 }
-                            });
-                            // Names
-                            modalBody.append(`
+                            }
+                        });
+                        // Names
+                        modalBody.append(`
                             <div class="graph">
                                 <h3>
                                 <span>Names</span>
@@ -1849,29 +1885,29 @@ $(document).ready(function () {
                                 <canvas id="events-per-name-chart" aria-label="Chart of number of events per name" role="img"></canvas>
                             </div>
                             `);
-                            const eventsPerNameChart = document.getElementById('events-per-name-chart');
-                            eventsNameChart = new Chart(eventsPerNameChart, {
-                                type: 'pie',
-                                data: {
-                                    labels: graphsData[0].names.map(row => row.name),
-                                    datasets: [{
-                                        label: '# of Events',
-                                        data: graphsData[0].names.map(row => row.count),
-                                    }]
-                                },
-                                options: {
-                                    plugins: {
-                                        legend: {
-                                            display: false,
-                                        }
+                        const eventsPerNameChart = document.getElementById('events-per-name-chart');
+                        eventsNameChart = new Chart(eventsPerNameChart, {
+                            type: 'pie',
+                            data: {
+                                labels: graphsData[0].names.map(row => row.name),
+                                datasets: [{
+                                    label: '# of Events',
+                                    data: graphsData[0].names.map(row => row.count),
+                                }]
+                            },
+                            options: {
+                                plugins: {
+                                    legend: {
+                                        display: false,
                                     }
                                 }
-                            });
-                            $(".data-download").on("click", graphDownload);
-                        })
-                        .catch((error) => {
-                            console.log(error);
-                            modalBody.append(`
+                            }
+                        });
+                        $(".data-download").on("click", graphDownload);
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                        modalBody.append(`
                             <div>
                             <h2>Error</h2>
                             <p class="lead">
@@ -1879,10 +1915,9 @@ $(document).ready(function () {
                             </p>
                             </div>
                             `);
-                        });
-                }
-            });
-        }
+                    });
+            }
+        });
     }
 
     const download = function (data, name) {
@@ -1924,7 +1959,7 @@ $(document).ready(function () {
         const type = event.currentTarget.getAttribute('data-type');
         switch (type) {
             case 'by-year-chart': {
-                const csvdata = csvmaker(eventsData[0].facets.years);
+                const csvdata = csvmaker(facetData[0].years);
                 download(csvdata, type);
                 break;
             }
@@ -1963,6 +1998,61 @@ $(document).ready(function () {
             queryParams.set('download', 'true');
             const url = "/data-api/events?" + queryParams.toString();
             window.location.href = url;
+        });
+    }
+    function createSort() {
+        let queryParams = new URLSearchParams(window.location.search);
+        let select = $(`
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-sort" aria-hidden="true" title="Sort results"></i><span class="sr-only">Sort results</span></span>
+            <select id="sort-select" class="form-select" name="sort" aria-label="Sort order">
+                <option value="rel" id="rel">
+                    Relevance
+                </option>
+                <option value="asc" id="asc">
+                    Oldest to Newest
+                </option>
+                <option value="desc" id="desc">
+                    Newest to Oldest
+                </option>
+            </select>
+        </div>
+        `);
+        select.find(`#asc`).prop('selected', true);
+        let text = false;
+        if (queryParams.has('text') && queryParams.get('text')) {
+            text = true;
+        } else {
+            select.find(`#rel`).remove();
+        }
+        if (queryParams.has('sort')) {
+            let sortOption = queryParams.get('sort');
+            if ((sortOption == 'asc') || (sortOption == 'desc') || (sortOption == 'text')) {
+                switch (sortOption) {
+                    case "asc":
+                        select.find(`#asc`).prop('selected', true);
+                        break;
+                    case "desc":
+                        select.find(`#desc`).prop('selected', true);
+                        break;
+                    case "text":
+                        if (text) {
+                            select.find(`#text`).prop('selected', true);
+                        }
+                        break;
+                }
+
+            }
+        } else if (text) {
+            select.find(`#rel`).prop('selected', true);
+        }
+
+        $('#sort').html(select);
+        $('#sort').find('#sort-select').on('change.fashioncalendar', function () {
+            let queryParams = new URLSearchParams(window.location.search);
+            queryParams.set('sort', this.value);
+            history.pushState(null, null, "?" + queryParams.toString());
+            listEvents(queryParams);
         });
     }
 

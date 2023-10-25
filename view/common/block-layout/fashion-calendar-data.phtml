@@ -16,16 +16,18 @@ $translate = $this->plugin('translate');
 $escape = $this->plugin('escapeHtml');
 ?>
 <div class="data-header">
-    <div class="row justify-content-end">
+    <div class="row justify-content-end gy-3 gy-md-0">
+        <div class="col-12 col-md-7 order-md-last" id="search-container">
+        </div>
         <div class="col-12 col-md">
             <h2>Data</h2>
             <div id="results">Fetching data...</div>
             <ul id="query" class="list-inline mb-md-0"></ul>
         </div>
-        <div class="col-12 col-md-7" id="search-container">
-        </div>
     </div>
-    <div class="row mt-4 mt-md-3 button-row gx-2 gx-sm-3 gx-md-4">
+    <div class="row mt-md-3 button-row gx-2 gx-sm-3 gx-md-4 gy-3 gy-lg-0">
+        <div id="sort" class="col-auto ms-lg-auto order-lg-last"></div>
+        <div class="w-100 d-lg-none"></div>
         <div id="facet" class="col-auto"></div>
         <div id="graph" class="col-auto"></div>
         <div id="map" class="col-auto"></div>

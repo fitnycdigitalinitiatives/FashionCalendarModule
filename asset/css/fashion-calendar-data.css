@@ -8,7 +8,8 @@
 
 #graph-loader,
 #map-loader,
-#category-list-loader {
+#category-list-loader,
+#facet-loader {
     position: absolute;
     top: 0;
     left: 0;
@@ -273,6 +274,10 @@
 }
 
 /* facets */
+#facets .offcanvas-body {
+    position: relative;
+}
+
 #facets .card:first-of-type {
     border-top: 0;
 }
@@ -289,19 +294,13 @@
     border-top-width: 0;
 }
 
-/* buttons */
-.button-row {
-    justify-content: center;
-}
+
 
 .button-row button .action-container i {
     display: none;
 }
 
 @media (min-width: 768px) {
-    .button-row {
-        justify-content: flex-start;
-    }
 
     .button-row button .action-container i {
         display: inline-block;
