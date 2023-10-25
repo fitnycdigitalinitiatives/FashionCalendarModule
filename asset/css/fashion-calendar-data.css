@@ -38,12 +38,12 @@
     word-wrap: break-word;
 }
 
-#data-container>.row:last-of-type {
-    border-bottom: solid 1px rgb(108, 117, 125);
+#data-container>.row {
+    border-top: solid 1px rgb(108, 117, 125);
 }
 
-#data-container>.row:nth-of-type(odd) {
-    background-color: rgba(0, 0, 0, 0.05);
+#data-container>.row:last-of-type {
+    border-bottom: solid 1px rgb(108, 117, 125);
 }
 
 #viewerModal #mirador-viewer-frame {
