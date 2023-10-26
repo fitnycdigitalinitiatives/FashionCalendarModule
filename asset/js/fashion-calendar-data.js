@@ -2061,10 +2061,10 @@ $(document).ready(function () {
         $("#search-container").append(`
         <form id="data-search">
             <div class="input-group">
-                <input type="search" class="form-control" aria-label="<?php echo $translate('Search'); ?>"
+                <input type="search" class="form-control" aria-label="Search"
                     autocomplete="off" placeholder="Search by keyword or select names/categories via autocomplete">
                 <button class="btn btn-dark" type="submit" aria-label="Search">
-                    <i class="fas fa-search" title="<?php echo $translate('Search'); ?>" aria-hidden="true"></i>
+                    <i class="fas fa-search" title="Search" aria-hidden="true"></i>
                 </button>
             </div>
         </form>
