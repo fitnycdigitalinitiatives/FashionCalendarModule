@@ -2230,13 +2230,13 @@ $(document).ready(function () {
                     <ul id="adv_name_list" class="list-inline m-0"></ul>
                     <div class="form-check form-check-inline mt-2">
                         <input class="form-check-input" type="radio" name="adv_name_type" id="adv_name_type_any" value="OR" checked>
-                        <label class="form-check-label" for="adv_name_type_any">Match any</label>
+                        <label class="form-check-label" for="adv_name_type_any">Or</label>
                     </div>
                     <div class="form-check form-check-inline mt-2">
                         <input class="form-check-input" type="radio" name="adv_name_type" id="adv_name_type_all" value="AND">
-                        <label class="form-check-label" for="adv_name_type_all">Match all</label>
+                        <label class="form-check-label" for="adv_name_type_all">And</label>
                     </div>
-                    <div class="form-text">Choose 'Match any' to search for results with <em>any</em> of those names and chooose 'Match all' to search for results with <em>all</em> of those names.</div>
+                    <div class="form-text">Choose 'Or' to search for results with <em>any</em> of those names and chooose 'And' to search for results with <em>all</em> of those names.</div>
                 </div>
             </div>
             <div class="row mb-4 pb-4 border-bottom">
@@ -2246,13 +2246,13 @@ $(document).ready(function () {
                     <ul id="adv_category_list" class="list-inline m-0"></ul>
                     <div class="form-check form-check-inline mt-2">
                         <input class="form-check-input" type="radio" name="adv_category_type" id="adv_category_type_any" value="OR" checked>
-                        <label class="form-check-label" for="adv_category_type_any">Match any</label>
+                        <label class="form-check-label" for="adv_category_type_any">Or</label>
                     </div>
                     <div class="form-check form-check-inline mt-2">
                         <input class="form-check-input" type="radio" name="adv_category_type" id="adv_category_type_all" value="AND">
-                        <label class="form-check-label" for="adv_category_type_all">Match all</label>
+                        <label class="form-check-label" for="adv_category_type_all">And</label>
                     </div>
-                    <div class="form-text">Choose 'Match any' to search for results with <em>any</em> of those categories and chooose 'Match all' to search for results with <em>all</em> of those categories.</div>
+                    <div class="form-text">Choose 'Or' to search for results with <em>any</em> of those categories and chooose 'And' to search for results with <em>all</em> of those categories.</div>
                 </div>
             </div>
             <div class="row">
@@ -2289,14 +2289,13 @@ $(document).ready(function () {
         );
         nameTypeahead.on('typeahead:select', function (ev, data) {
             ev.preventDefault();
-            console.log("selected");
             const thisSelection = $(`
             <li class="list-inline-item my-1">
-                <button class="remove-adv text-dark border-0 bg-transparent p-0">
+                <a class="remove-adv link-dark text-decoration-none">
                 <i aria-hidden="true" title="Remove selection:" class="far fa-times-circle"></i>
                 <span class="visually-hidden">Remove selection:</span>
                 <span> ${data}</span>
-                </button>
+                </a>
                 <input type="hidden" name="adv_name[]" value="${encodeURIComponent(data)}">
             </li>
             `);
@@ -2329,11 +2328,11 @@ $(document).ready(function () {
             console.log("selected");
             const thisSelection = $(`
             <li class="list-inline-item my-1">
-                <button class="remove-adv text-dark border-0 bg-transparent p-0">
+                <a class="remove-adv link-dark text-decoration-none">
                 <i aria-hidden="true" title="Remove selection:" class="far fa-times-circle"></i>
                 <span class="visually-hidden">Remove selection:</span>
                 <span> ${data}</span>
-                </button>
+                </a>
                 <input type="hidden" name="adv_category[]" value="${encodeURIComponent(data)}">
             </li>
             `);
@@ -2382,9 +2381,9 @@ $(document).ready(function () {
                 });
                 queryParams.set("adv_category_type", formData.get("adv_category_type"));
             }
-            if (formData.has("date_range_start") && formData.has("date_range_end") && formData.get("date_range_start") && formData.get("date_range_end")) {
-                const date_range_start = formData.get("date_range_start");
-                const date_range_end = formData.get("date_range_end");
+            if (formData.has("date_range_start") && formData.has("date_range_end") && (formData.get("date_range_start") || formData.get("date_range_end"))) {
+                const date_range_start = formData.get("date_range_start") ? formData.get("date_range_start") : "1941";
+                const date_range_end = formData.get("date_range_end") ? formData.get("date_range_end") : "2015";
                 if (date_range_end >= date_range_start) {
                     if (!(date_range_start == 1941 && date_range_end == 2015)) {
                         queryParams.set("date_range_start", date_range_start);

@@ -401,6 +401,10 @@
     height: 38px;
 }
 
+#advanced-search-data .remove-adv {
+    cursor: pointer;
+}
+
 #results {
     font-family: "halyard-display", sans-serif;
     font-size: 1.25rem;
