@@ -88,13 +88,19 @@
 #big-map {
     height: 75%;
     width: 100%;
+    border: 1px solid rgb(33, 37, 41);
+}
+
+@media (min-width: 768px) {
+    #big-map {
+        border: none;
+    }
 }
 
 #map-results {
     font-family: "halyard-display", sans-serif;
     font-size: 1.25rem;
     font-weight: bold;
-    color: #6c757d;
 }
 
 #single-map {
@@ -234,7 +240,7 @@
 
 #date-map-slider.noUi-target {
     height: 0.5rem;
-    background: #dee2e6;
+    background: #fec2be;
     cursor: pointer;
     border-color: transparent;
     border-radius: 1rem;
@@ -246,7 +252,7 @@
     height: 1rem;
     right: -8px;
     top: -5px;
-    background-color: #0036f9;
+    background-color: #212529;
     border: 0;
     border-radius: 1rem;
     cursor: pointer;
@@ -255,13 +261,13 @@
 }
 
 #date-map-slider .noUi-handle.noUi-active {
-    background-color: #b6d4fe;
+    background-color: #424649;
 }
 
 #date-map-slider .noUi-handle:focus,
 #date-map-slider .noUi-handle:focus-visible {
     outline: 0;
-    box-shadow: 0 0 0 1px #fff, 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    box-shadow: 0 0 0 1px #fff, 0 0 0 0.25rem #424649;
 }
 
 #date-map-slider .noUi-handle:before,
@@ -272,6 +278,11 @@
 /* facets */
 #facets .offcanvas-body {
     position: relative;
+}
+
+#facets .card,
+#facets .card-header {
+    border-color: var(--bs-list-group-border-color);
 }
 
 #facets .card:first-of-type {
@@ -380,6 +391,10 @@
 }
 
 /* advanced search */
+.form-text {
+    color: #212529;
+}
+
 #advanced-search-data textarea {
     resize: none;
     height: 38px;
@@ -389,7 +404,6 @@
     font-family: "halyard-display", sans-serif;
     font-size: 1.25rem;
     font-weight: bold;
-    color: #6c757d;
 }
 
 #query,
@@ -397,7 +411,6 @@
     font-family: "halyard-display", sans-serif;
     font-size: 1rem;
     font-weight: bold;
-    color: #6c757d;
     margin-top: 0.5rem;
 }
 
@@ -418,7 +431,7 @@
 #graphModal .graph:not(:last-of-type) {
     padding-bottom: 1.5rem;
     margin-bottom: 1.5rem;
-    border-bottom: 1px solid #dee2e6;
+    border-bottom: 1px solid rgb(33, 37, 41);
 }
 
 .name-modal dd {

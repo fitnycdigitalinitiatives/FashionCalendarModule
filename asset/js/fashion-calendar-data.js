@@ -124,7 +124,7 @@ $(document).ready(function () {
                     }
                     $('#query').append(`
                     <li class="list-inline-item">
-                        <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${text}</a>
+                        <a href="?${newQueryParams.toString()}" class="remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${text}</a>
                     </li>
                     `);
                 }
@@ -141,7 +141,7 @@ $(document).ready(function () {
                     });
                     $('#query').append(`
                     <li class="list-inline-item">
-                        <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${name}</a>
+                        <a href="?${newQueryParams.toString()}" class="remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${name}</a>
                     </li>
                     `);
                 });
@@ -157,7 +157,7 @@ $(document).ready(function () {
                     });
                     $('#query').append(`
                     <li class="list-inline-item">
-                        <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${name}</a>
+                        <a href="?${newQueryParams.toString()}" class="remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${name}</a>
                         ${(queryParams.has('adv_name_type') && (queryParams.get('adv_name_type') == "OR") && (names.length > 1) && (index != (names.length - 1))) ? "<span class='ms-1 text-black'>OR</span>" : ""}
                     </li>
                     `);
@@ -174,7 +174,7 @@ $(document).ready(function () {
                     });
                     $('#query').append(`
                     <li class="list-inline-item">
-                        <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${category}</a>
+                        <a href="?${newQueryParams.toString()}" class="remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${category}</a>
                     </li>
                     `);
                 });
@@ -190,7 +190,7 @@ $(document).ready(function () {
                     });
                     $('#query').append(`
                     <li class="list-inline-item">
-                        <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${category}</a>
+                        <a href="?${newQueryParams.toString()}" class="remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${category}</a>
                         ${(queryParams.has('adv_category_type') && (queryParams.get('adv_category_type') == "OR") && (categories.length > 1) && (index != (categories.length - 1))) ? "<span class='ms-1 text-black'>OR</span>" : ""}
                     </li>
                     `);
@@ -221,7 +221,7 @@ $(document).ready(function () {
                 }
                 $('#query').append(`
                 <li class="list-inline-item">
-                    <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${issueTitle}</a>
+                    <a href="?${newQueryParams.toString()}" class="remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${issueTitle}</a>
                 </li>
                 `);
             }
@@ -234,7 +234,7 @@ $(document).ready(function () {
                     newQueryParams.delete('date_range_end');
                     $('#query').append(`
                     <li class="list-inline-item">
-                        <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${date_range_start}-${date_range_end}</a>
+                        <a href="?${newQueryParams.toString()}" class="remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${date_range_start}-${date_range_end}</a>
                     </li>
                     `);
                 }
@@ -245,7 +245,7 @@ $(document).ready(function () {
                 newQueryParams.delete('titles');
                 $('#query').append(`
                 <li class="list-inline-item">
-                    <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${titles}</a>
+                    <a href="?${newQueryParams.toString()}" class="remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${titles}</a>
                 </li>
                 `);
             }
@@ -255,7 +255,7 @@ $(document).ready(function () {
                 newQueryParams.delete('year');
                 $('#query').append(`
                 <li class="list-inline-item">
-                    <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${year}</a>
+                    <a href="?${newQueryParams.toString()}" class="remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${year}</a>
                 </li>
                 `);
             }
@@ -265,7 +265,7 @@ $(document).ready(function () {
                 newQueryParams.delete('year_month');
                 $('#query').append(`
                 <li class="list-inline-item">
-                    <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${year_month}</a>
+                    <a href="?${newQueryParams.toString()}" class="remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${year_month}</a>
                 </li>
                 `);
             }
@@ -275,7 +275,7 @@ $(document).ready(function () {
                 newQueryParams.delete('location');
                 $('#query').append(`
                 <li class="list-inline-item">
-                    <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${location}</a>
+                    <a href="?${newQueryParams.toString()}" class="remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${location}</a>
                 </li>
                 `);
             }
@@ -285,7 +285,7 @@ $(document).ready(function () {
                 newQueryParams.delete('page');
                 $('#query').append(`
                 <li class="list-inline-item">
-                    <a href="?${newQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> Page ${page}</a>
+                    <a href="?${newQueryParams.toString()}" class="remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> Page ${page}</a>
                 </li>
                 `);
             }
@@ -736,7 +736,7 @@ $(document).ready(function () {
         <div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapLabel" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered modal-fullscreen">
             <div class="modal-content">
-              <div class="modal-body">
+              <div class="modal-body p-md-0">
               <div id="big-map"></div>
               </div>
             </div>
@@ -927,7 +927,7 @@ $(document).ready(function () {
                     newcurrentQueryParams.delete('text');
                     $("#map-query").append(`
                     <li class="list-inline-item">
-                        <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${text}</a>
+                        <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${text}</a>
                     </li>
                     `);
                 }
@@ -944,7 +944,7 @@ $(document).ready(function () {
                     });
                     $("#map-query").append(`
                     <li class="list-inline-item">
-                        <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${name}</a>
+                        <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${name}</a>
                     </li>
                     `);
                 });
@@ -960,7 +960,7 @@ $(document).ready(function () {
                     });
                     $('#map-query').append(`
                     <li class="list-inline-item">
-                        <a href="?${newcurrentQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${name}</a>
+                        <a href="?${newcurrentQueryParams.toString()}" class="remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${name}</a>
                         ${(currentQueryParams.has('adv_name_type') && (currentQueryParams.get('adv_name_type') == "OR") && (names.length > 1) && (index != (names.length - 1))) ? "<span class='ms-1 text-black'>OR</span>" : ""}
                     </li>
                     `);
@@ -977,7 +977,7 @@ $(document).ready(function () {
                     });
                     $("#map-query").append(`
                     <li class="list-inline-item">
-                        <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${category}</a>
+                        <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${category}</a>
                     </li>
                     `);
                 });
@@ -993,7 +993,7 @@ $(document).ready(function () {
                     });
                     $('#map-query').append(`
                     <li class="list-inline-item">
-                        <a href="?${newcurrentQueryParams.toString()}" class="remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${category}</a>
+                        <a href="?${newcurrentQueryParams.toString()}" class="remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${category}</a>
                         ${(currentQueryParams.has('adv_category_type') && (currentQueryParams.get('adv_category_type') == "OR") && (categories.length > 1) && (index != (categories.length - 1))) ? "<span class='ms-1 text-black'>OR</span>" : ""}
                     </li>
                     `);
@@ -1024,7 +1024,7 @@ $(document).ready(function () {
                 }
                 $("#map-query").append(`
                     <li class="list-inline-item">
-                        <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${issueTitle}</a>
+                        <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${issueTitle}</a>
                     </li>
                     `);
             }
@@ -1037,7 +1037,7 @@ $(document).ready(function () {
                     newcurrentQueryParams.delete('date_range_end');
                     $("#map-query").append(`
                     <li class="list-inline-item">
-                        <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${date_range_start}-${date_range_end}</a>
+                        <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${date_range_start}-${date_range_end}</a>
                     </li>
                     `);
                 }
@@ -1048,7 +1048,7 @@ $(document).ready(function () {
                 newcurrentQueryParams.delete('titles');
                 $("#map-query").append(`
                 <li class="list-inline-item">
-                    <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${titles}</a>
+                    <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${titles}</a>
                 </li>
                 `);
             }
@@ -1058,7 +1058,7 @@ $(document).ready(function () {
                 newcurrentQueryParams.delete('year');
                 $("#map-query").append(`
                 <li class="list-inline-item">
-                    <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${year}</a>
+                    <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${year}</a>
                 </li>
                 `);
             }
@@ -1068,7 +1068,7 @@ $(document).ready(function () {
                 newcurrentQueryParams.delete('year_month');
                 $("#map-query").append(`
                 <li class="list-inline-item">
-                    <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${year_month}</a>
+                    <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${year_month}</a>
                 </li>
                 `);
             }
@@ -1078,7 +1078,7 @@ $(document).ready(function () {
                 newcurrentQueryParams.delete('location');
                 $("#map-query").append(`
                 <li class="list-inline-item">
-                    <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-secondary text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${location}</a>
+                    <a href="?${newcurrentQueryParams.toString()}" class="map-remove-query link-dark text-decoration-none"><i aria-hidden="true" title="Remove facet:" class="far fa-times-circle"></i><span class="visually-hidden">Remove facet:</span> ${location}</a>
                 </li>
                 `);
             }
@@ -1138,7 +1138,7 @@ $(document).ready(function () {
                     </div>
                     <div class="row justify-content-end">
                     <div class="col-auto">
-                        <button type="submit" class="btn btn-secondary btn-sm">Set Range</button>
+                        <button type="submit" class="btn btn-dark btn-sm">Set Range</button>
                     </div>
                     </div>
                 </form>
@@ -1365,7 +1365,7 @@ $(document).ready(function () {
             </button>
         `);
         $('#modal-container').append(`
-        <div class="offcanvas offcanvas-start shadow border-end-0" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="facets" aria-labelledby="facetsLabel">
+        <div class="offcanvas offcanvas-start shadow border-dark" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="facets" aria-labelledby="facetsLabel">
             <div class="offcanvas-header border-bottom">
             <h3 class="offcanvas-title" id="facetsLabel">
                 Refine
@@ -1443,7 +1443,7 @@ $(document).ready(function () {
                     </div>
                     <div class="row justify-content-end">
                     <div class="col-auto">
-                        <button type="submit" class="btn btn-secondary btn-sm">Set Date Range</button>
+                        <button type="submit" class="btn btn-dark btn-sm">Set Date Range</button>
                     </div>
                     </div>
                 </form>
@@ -1516,7 +1516,7 @@ $(document).ready(function () {
                         titlesCard.children('.list-group').append(`
                         <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-title="${title.title}">
                             ${title.title}
-                            <span class="badge bg-secondary rounded-pill">${title.count}</span>
+                            <span class="badge bg-dark rounded-pill">${title.count}</span>
                         </a>
                         `);
                     });
@@ -1549,7 +1549,7 @@ $(document).ready(function () {
                         namesCard.children('.list-group').append(`
                         <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-name="${name.name}">
                             ${name.name}
-                            <span class="badge bg-secondary rounded-pill">${name.count}</span>
+                            <span class="badge bg-dark rounded-pill">${name.count}</span>
                         </a>
                         `);
                     });
@@ -1577,7 +1577,7 @@ $(document).ready(function () {
                             namesCollapse.append(`
                             <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-name="${name.name}">
                                 ${name.name}
-                                <span class="badge bg-secondary rounded-pill">${name.count}</span>
+                                <span class="badge bg-dark rounded-pill">${name.count}</span>
                             </a>
                             `);
                         });
@@ -1611,7 +1611,7 @@ $(document).ready(function () {
                         categoriesCard.children('.list-group').append(`
                         <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="${category.category}">
                             ${category.category}
-                            <span class="badge bg-secondary rounded-pill">${category.count}</span>
+                            <span class="badge bg-dark rounded-pill">${category.count}</span>
                         </a>
                         `);
                     });
@@ -1638,7 +1638,7 @@ $(document).ready(function () {
                             categoriesCollapse.append(`
                             <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-category="${category.category}">
                                 ${category.category}
-                                <span class="badge bg-secondary rounded-pill">${category.count}</span>
+                                <span class="badge bg-dark rounded-pill">${category.count}</span>
                             </a>
                             `);
                         });
@@ -1675,7 +1675,7 @@ $(document).ready(function () {
                         yearsCard.children('.list-group').append(`
                         <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-year="${year.year}">
                             ${year.year}
-                            <span class="badge bg-secondary rounded-pill">${year.count}</span>
+                            <span class="badge bg-dark rounded-pill">${year.count}</span>
                         </a>
                         `);
                     });
@@ -1704,7 +1704,7 @@ $(document).ready(function () {
                             yearsCollapse.append(`
                             <a href="?${queryParams.toString()}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-year="${year.year}">
                                 ${year.year}
-                                <span class="badge bg-secondary rounded-pill">${year.count}</span>
+                                <span class="badge bg-dark rounded-pill">${year.count}</span>
                             </a>
                             `);
                         });
@@ -2069,21 +2069,21 @@ $(document).ready(function () {
             </div>
         </form>
         <div class="search-info d-flex mt-2 small">
-            <button class="border-0 bg-transparent p-0 link-secondary me-2" data-bs-toggle="modal"
+            <button class="border-0 bg-transparent p-0 link-dark me-2" data-bs-toggle="modal"
                 data-bs-target="#advanced-search-data">
                 <i class="fas fa-search me-1" aria-hidden="true"></i>
                 <span class="d-md-none">Advanced</span>
                 <span class="d-none d-md-inline">Advanced Search</span>
             </button>
             |
-            <button class="border-0 bg-transparent p-0 link-secondary mx-2" data-bs-toggle="modal"
+            <button class="border-0 bg-transparent p-0 link-dark mx-2" data-bs-toggle="modal"
                 data-bs-target="#category-list">
                 <i class="fas fa-tags me-1" aria-hidden="true"></i>
                 <span class="d-md-none">Categories</span>
                 <span class="d-none d-md-inline">Category List</span>
             </button>
             |
-            <button class="border-0 bg-transparent p-0 link-secondary ms-2" data-bs-toggle="modal"
+            <button class="border-0 bg-transparent p-0 link-dark ms-2" data-bs-toggle="modal"
                 data-bs-target="#search-tips">
                 <i class="fas fa-info-circle me-1" aria-hidden="true"></i>
                 <span class="d-md-none">Tips</span>
@@ -2102,7 +2102,7 @@ $(document).ready(function () {
                     <div class="modal-body">
                     </div>
                     <div class="modal-footer">
-                        <button id="advanced-search-data-button" type="submit" class="btn btn-secondary"
+                        <button id="advanced-search-data-button" type="submit" class="btn btn-dark"
                             form="advanced-search-data-form">Search</button>
                     </div>
                 </div>
@@ -2260,7 +2260,7 @@ $(document).ready(function () {
             <div class="col-12 col-lg-10">
                 <div class="value input-group" id="adv_date_range">
                     <input name="date_range_start" type="number" step="1" class="form-control" placeholder="1941" min="1941" max="2015" aria-label="Start Year">
-                    <span class="input-group-text">TO</span>
+                    <span class="input-group-text bg-dark text-white">TO</span>
                     <input name="date_range_end" type="number" step="1" class="form-control" placeholder="2015" min="1941" max="2015" aria-label="End Year">
                 </div>
                 <div class="form-text">Limit your search between a range of years. The entire Fashion Calendar ranges from 1941 to 2015.</div>
@@ -2292,7 +2292,7 @@ $(document).ready(function () {
             console.log("selected");
             const thisSelection = $(`
             <li class="list-inline-item my-1">
-                <button class="remove-adv text-secondary border-0 bg-transparent p-0">
+                <button class="remove-adv text-dark border-0 bg-transparent p-0">
                 <i aria-hidden="true" title="Remove selection:" class="far fa-times-circle"></i>
                 <span class="visually-hidden">Remove selection:</span>
                 <span> ${data}</span>
@@ -2329,7 +2329,7 @@ $(document).ready(function () {
             console.log("selected");
             const thisSelection = $(`
             <li class="list-inline-item my-1">
-                <button class="remove-adv text-secondary border-0 bg-transparent p-0">
+                <button class="remove-adv text-dark border-0 bg-transparent p-0">
                 <i aria-hidden="true" title="Remove selection:" class="far fa-times-circle"></i>
                 <span class="visually-hidden">Remove selection:</span>
                 <span> ${data}</span>
