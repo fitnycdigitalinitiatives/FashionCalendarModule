@@ -1807,7 +1807,7 @@ $(document).ready(function () {
                             modalBody.append(`
                             <div class="graph">
                                 <h3>
-                                <span>Ngram — "${queryParams.get("text")}"</span>
+                                <span>Ngram — "${queryParams.get("text").replace(/^"(.*)"$/, '$1')}"</span>
                                 <button class="data-download btn btn-link link-dark ms-1 text-decoration-none p-0" data-type="ngram-chart" aria-label="Download data as csv"><i class="fas fa-download" aria-hidden="true" title="Download data as csv"></i></button>
                                 </h3>
                                 <canvas id="ngram-chart" aria-label="Chart of word frequency (Ngram)" role="img"></canvas>
