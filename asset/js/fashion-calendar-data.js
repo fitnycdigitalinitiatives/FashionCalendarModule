@@ -2,6 +2,7 @@ $(document).ready(function () {
     // define vars
     let yearChart = null;
     let hostsyearChart = null;
+    let thisngramChart = null;
     let eventsCategoryChart = null;
     let eventsNameChart = null;
     let miradorViewer = null;
@@ -36,6 +37,10 @@ $(document).ready(function () {
         if (hostsyearChart) {
             hostsyearChart.destroy();
             hostsyearChart = null;
+        }
+        if (thisngramChart) {
+            thisngramChart.destroy();
+            thisngramChart = null;
         }
         if (eventsCategoryChart) {
             eventsCategoryChart.destroy();
@@ -316,27 +321,29 @@ $(document).ready(function () {
                         }
                     });
                 });
-                createFacets();
-                createGraphs(url);
-                createMap();
-                createSort();
-                if (window.matchMedia("(min-width: 768px)").matches && window.matchMedia("(min-height: 768px)").matches) {
-                    createDownload();
-                };
                 $('#results').hide().text(resultsText).fadeIn();
                 $('#query').fadeIn();
                 $('#data-container').css("min-height", "none").fadeIn();
-                $('#facet').fadeIn();
-                $('#graph').fadeIn();
-                $('#map').fadeIn();
-                $('#download').fadeIn();
-                $('#sort').fadeIn();
-                $('#modal-container').append(createViewerModal());
-                $('#modal-container').append(createSingleMapModal());
-                attachClicks();
-                initiateViewer();
-                initiateSingleMap();
-                initiateScroll();
+                if (totalResults > 0) {
+                    createFacets();
+                    createGraphs(url);
+                    createMap();
+                    createSort();
+                    if (window.matchMedia("(min-width: 768px)").matches && window.matchMedia("(min-height: 768px)").matches) {
+                        createDownload();
+                    };
+                    $('#facet').fadeIn();
+                    $('#graph').fadeIn();
+                    $('#map').fadeIn();
+                    $('#download').fadeIn();
+                    $('#sort').fadeIn();
+                    $('#modal-container').append(createViewerModal());
+                    $('#modal-container').append(createSingleMapModal());
+                    attachClicks();
+                    initiateViewer();
+                    initiateSingleMap();
+                    initiateScroll();
+                }
             })
             .catch((error) => {
                 console.log(error);
@@ -1789,8 +1796,62 @@ $(document).ready(function () {
                         modalBody.empty();
                         graphsData = data;
                         data = null;
+                        // Ngram
+                        if (queryParams.get("text") && ('ngram' in graphsData[0]) && (graphsData[0].ngram.length > 0)) {
+                            for (let index = 1941; index < 2016; index++) {
+                                if (!graphsData[0].ngram.find((element) => element.year == index.toString())) {
+                                    graphsData[0].ngram.push({ "year": index.toString(), "count": 0 });
+                                }
+                            }
+                            graphsData[0].ngram.sort((a, b) => a.year - b.year);
+                            modalBody.append(`
+                            <div class="graph">
+                                <h3>
+                                <span>Ngram — "${queryParams.get("text")}"</span>
+                                <button class="data-download btn btn-link link-dark ms-1 text-decoration-none p-0" data-type="ngram-chart" aria-label="Download data as csv"><i class="fas fa-download" aria-hidden="true" title="Download data as csv"></i></button>
+                                </h3>
+                                <canvas id="ngram-chart" aria-label="Chart of word frequency (Ngram)" role="img"></canvas>
+                            </div>
+                            `);
+                            const ngramChart = document.getElementById('ngram-chart');
+                            thisngramChart = new Chart(ngramChart, {
+                                type: 'line',
+                                data: {
+                                    labels: graphsData[0].ngram.map(row => row.year),
+                                    datasets: [{
+                                        label: 'Occurrences',
+                                        data: graphsData[0].ngram.map(row => row.count),
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    elements: {
+                                        line: {
+                                            backgroundColor: "#fec2be",
+                                            borderColor: "#212529"
+                                        },
+                                        point: {
+                                            backgroundColor: "#fec2be",
+                                            borderColor: "#212529"
+                                        }
+                                    },
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true
+                                        }
+                                    }
+                                }
+                            });
+                        }
                         // Events per year
-                        modalBody.append(`
+                        if (('years' in graphsData[0]) && (graphsData[0].years.length > 0)) {
+                            for (let index = 1941; index < 2016; index++) {
+                                if (!graphsData[0].years.find((element) => element.year == index.toString())) {
+                                    graphsData[0].years.push({ "year": index.toString(), "count": 0 });
+                                }
+                            }
+                            graphsData[0].years.sort((a, b) => a.year - b.year);
+                            modalBody.append(`
                                 <div class="graph">
                                     <h3>
                                     <span>Events Per Year</span>
@@ -1799,27 +1860,45 @@ $(document).ready(function () {
                                     <canvas id="by-year-chart" aria-label="Chart of events per year" role="img"></canvas>
                                 </div>
                             `);
-                        const byYearChart = document.getElementById('by-year-chart');
-                        yearChart = new Chart(byYearChart, {
-                            type: 'bar',
-                            data: {
-                                labels: facetData[0].years.map(row => row.year),
-                                datasets: [{
-                                    label: '# of Events',
-                                    data: facetData[0].years.map(row => row.count),
-                                    borderWidth: 1
-                                }]
-                            },
-                            options: {
-                                scales: {
-                                    y: {
-                                        beginAtZero: true
+                            const byYearChart = document.getElementById('by-year-chart');
+                            yearChart = new Chart(byYearChart, {
+                                type: 'bar',
+                                data: {
+                                    labels: graphsData[0].years.map(row => row.year),
+                                    datasets: [{
+                                        label: '# of Events',
+                                        data: graphsData[0].years.map(row => row.count),
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    elements: {
+                                        bar: {
+                                            backgroundColor: "#fec2be",
+                                            borderColor: "#212529"
+                                        },
+                                        point: {
+                                            backgroundColor: "#fec2be",
+                                            borderColor: "#212529"
+                                        }
+                                    },
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true
+                                        }
                                     }
                                 }
-                            }
-                        });
+                            });
+                        }
                         // Hosts per year
-                        modalBody.append(`
+                        if (('uniqueHostsbyYear' in graphsData[0]) && (graphsData[0].uniqueHostsbyYear.length > 0)) {
+                            for (let index = 1941; index < 2016; index++) {
+                                if (!graphsData[0].uniqueHostsbyYear.find((element) => element.year == index.toString())) {
+                                    graphsData[0].uniqueHostsbyYear.push({ "year": index.toString(), "numberOfHosts": 0 });
+                                }
+                            }
+                            graphsData[0].uniqueHostsbyYear.sort((a, b) => a.year - b.year);
+                            modalBody.append(`
                             <div class="graph">
                                 <h3>
                                 <span>Unique Hosts Per Year</span>
@@ -1828,27 +1907,39 @@ $(document).ready(function () {
                                 <canvas id="hosts-by-year-chart" aria-label="Chart of unique hosts per year" role="img"></canvas>
                             </div>
                             `);
-                        const hostsByYearChart = document.getElementById('hosts-by-year-chart');
-                        hostsyearChart = new Chart(hostsByYearChart, {
-                            type: 'bar',
-                            data: {
-                                labels: graphsData[0].uniqueHostsbyYear.map(row => row.year),
-                                datasets: [{
-                                    label: '# of Hosts',
-                                    data: graphsData[0].uniqueHostsbyYear.map(row => row.numberOfHosts),
-                                    borderWidth: 1
-                                }]
-                            },
-                            options: {
-                                scales: {
-                                    y: {
-                                        beginAtZero: true
+                            const hostsByYearChart = document.getElementById('hosts-by-year-chart');
+                            hostsyearChart = new Chart(hostsByYearChart, {
+                                type: 'bar',
+                                data: {
+                                    labels: graphsData[0].uniqueHostsbyYear.map(row => row.year),
+                                    datasets: [{
+                                        label: '# of Hosts',
+                                        data: graphsData[0].uniqueHostsbyYear.map(row => row.numberOfHosts),
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    elements: {
+                                        bar: {
+                                            backgroundColor: "#fec2be",
+                                            borderColor: "#212529"
+                                        },
+                                        point: {
+                                            backgroundColor: "#fec2be",
+                                            borderColor: "#212529"
+                                        }
+                                    },
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true
+                                        }
                                     }
                                 }
-                            }
-                        });
+                            });
+                        }
                         // Categories
-                        modalBody.append(`
+                        if (('categories' in graphsData[0]) && (graphsData[0].categories.length > 0)) {
+                            modalBody.append(`
                             <div class="graph">
                                 <h3>
                                 <span>Categories</span>
@@ -1857,26 +1948,28 @@ $(document).ready(function () {
                                 <canvas id="events-per-category-chart" aria-label="Chart of number of events per category" role="img"></canvas>
                             </div>
                             `);
-                        const eventsPerCategoryChart = document.getElementById('events-per-category-chart');
-                        eventsCategoryChart = new Chart(eventsPerCategoryChart, {
-                            type: 'pie',
-                            data: {
-                                labels: graphsData[0].categories.map(row => row.category),
-                                datasets: [{
-                                    label: '# of Events',
-                                    data: graphsData[0].categories.map(row => row.count),
-                                }]
-                            },
-                            options: {
-                                plugins: {
-                                    legend: {
-                                        display: false,
+                            const eventsPerCategoryChart = document.getElementById('events-per-category-chart');
+                            eventsCategoryChart = new Chart(eventsPerCategoryChart, {
+                                type: 'pie',
+                                data: {
+                                    labels: graphsData[0].categories.map(row => row.category),
+                                    datasets: [{
+                                        label: '# of Events',
+                                        data: graphsData[0].categories.map(row => row.count),
+                                    }]
+                                },
+                                options: {
+                                    plugins: {
+                                        legend: {
+                                            display: false,
+                                        }
                                     }
                                 }
-                            }
-                        });
+                            });
+                        }
                         // Names
-                        modalBody.append(`
+                        if (('names' in graphsData[0]) && (graphsData[0].names.length > 0)) {
+                            modalBody.append(`
                             <div class="graph">
                                 <h3>
                                 <span>Names</span>
@@ -1885,24 +1978,25 @@ $(document).ready(function () {
                                 <canvas id="events-per-name-chart" aria-label="Chart of number of events per name" role="img"></canvas>
                             </div>
                             `);
-                        const eventsPerNameChart = document.getElementById('events-per-name-chart');
-                        eventsNameChart = new Chart(eventsPerNameChart, {
-                            type: 'pie',
-                            data: {
-                                labels: graphsData[0].names.map(row => row.name),
-                                datasets: [{
-                                    label: '# of Events',
-                                    data: graphsData[0].names.map(row => row.count),
-                                }]
-                            },
-                            options: {
-                                plugins: {
-                                    legend: {
-                                        display: false,
+                            const eventsPerNameChart = document.getElementById('events-per-name-chart');
+                            eventsNameChart = new Chart(eventsPerNameChart, {
+                                type: 'pie',
+                                data: {
+                                    labels: graphsData[0].names.map(row => row.name),
+                                    datasets: [{
+                                        label: '# of Events',
+                                        data: graphsData[0].names.map(row => row.count),
+                                    }]
+                                },
+                                options: {
+                                    plugins: {
+                                        legend: {
+                                            display: false,
+                                        }
                                     }
                                 }
-                            }
-                        });
+                            });
+                        }
                         $(".data-download").on("click", graphDownload);
                     })
                     .catch((error) => {
@@ -1955,11 +2049,15 @@ $(document).ready(function () {
     }
 
     const graphDownload = async function (event) {
-        console.log("happening");
         const type = event.currentTarget.getAttribute('data-type');
         switch (type) {
+            case 'ngram-chart': {
+                const csvdata = csvmaker(graphsData[0].ngram);
+                download(csvdata, type);
+                break;
+            }
             case 'by-year-chart': {
-                const csvdata = csvmaker(facetData[0].years);
+                const csvdata = csvmaker(graphsData[0].years);
                 download(csvdata, type);
                 break;
             }

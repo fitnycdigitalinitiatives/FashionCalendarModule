@@ -7,6 +7,7 @@ use Omeka\Mvc\Exception\RuntimeException;
 use MongoDB\Client;
 use MongoDB\Driver\ServerApi;
 use MongoDB\BSON\UTCDateTime;
+use MongoDB\BSON\Regex;
 
 class DataController extends AbstractActionController
 {
@@ -30,10 +31,10 @@ class DataController extends AbstractActionController
             $collection = $client->selectCollection($settings->get('fcm_mongo_db'), 'events');
             $match = [];
             $geoNear = [];
-            $text = false;
+            $hasText = false;
             if (array_key_exists('text', $params) && ($text = $params['text'])) {
                 $match['$match']['$and'][] = ['$text' => ['$search' => $text, '$language' => 'en']];
-                $text = true;
+                $hasText = true;
             }
             // Default sort
             $sort['$sort'] = ['start_date_iso' => 1, '_id' => 1];
@@ -46,12 +47,12 @@ class DataController extends AbstractActionController
                         $sort['$sort'] = ['start_date_iso' => -1, '_id' => 1];
                         break;
                     case 'text':
-                        if ($text) {
+                        if ($hasText) {
                             $sort['$sort'] = ['score' => ['$meta' => 'textScore'], '_id' => 1];
                         }
                         break;
                 }
-            } elseif ($text) {
+            } elseif ($hasText) {
                 $sort['$sort'] = ['score' => ['$meta' => 'textScore'], '_id' => 1];
             }
             if (array_key_exists('names', $params) && ($names = $params['names'])) {
@@ -131,7 +132,7 @@ class DataController extends AbstractActionController
                     $maxDistance = floatval($max_distance);
                 }
                 // text and geoNear cannot be combined so need to do this workaround
-                if ($text) {
+                if ($hasText) {
                     $match['$match']['$and'][] = ['location' => ['$geoWithin' => ['$centerSphere' => [json_decode('[' . $location . ']', true), $maxDistance]]]];
                 } else {
                     $geoNear['$geoNear'] = ['near' => ['type' => 'Point', 'coordinates' => json_decode('[' . $location . ']', true)], 'maxDistance' => $maxDistance, 'key' => 'location', 'distanceField' => 'distance'];
@@ -146,7 +147,19 @@ class DataController extends AbstractActionController
             }
             // Check if graph data is all that is needed
             if (array_key_exists('graph', $params) && ($params['graph'] == 'true')) {
-                $aggregation[] = ['$facet' => ['uniqueHostsbyYear' => [['$unwind' => ['path' => '$names']], ['$group' => ['_id' => ['$year' => '$start_date_iso'], 'names' => ['$addToSet' => '$names.label']]], ['$sort' => ['_id' => 1]], ['$project' => ['_id' => 0, 'year' => '$_id', 'numberOfHosts' => ['$size' => '$names']]]], 'names' => [['$unwind' => ['path' => '$names']], ['$group' => ['_id' => '$names.label', 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$project' => ['_id' => 0, 'name' => '$_id', 'count' => 1]]], 'categories' => [['$project' => ['categories' => ['$reduce' => ['input' => '$names.categories.label', 'initialValue' => [], 'in' => ['$setUnion' => ['$$this', '$$value']]]]]], ['$unwind' => ['path' => '$categories']], ['$group' => ['_id' => '$categories', 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$project' => ['_id' => 0, 'category' => '$_id', 'count' => 1]]]]];
+                $facet = [
+                    '$facet' => [
+                        'uniqueHostsbyYear' => [['$unwind' => ['path' => '$names']], ['$group' => ['_id' => ['$year' => '$start_date_iso'], 'names' => ['$addToSet' => '$names.label']]], ['$sort' => ['_id' => 1]], ['$project' => ['_id' => 0, 'year' => '$_id', 'numberOfHosts' => ['$size' => '$names']]]],
+                        'names' => [['$unwind' => ['path' => '$names']], ['$group' => ['_id' => '$names.label', 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$project' => ['_id' => 0, 'name' => '$_id', 'count' => 1]]],
+                        'categories' => [['$project' => ['categories' => ['$reduce' => ['input' => '$names.categories.label', 'initialValue' => [], 'in' => ['$setUnion' => ['$$this', '$$value']]]]]], ['$unwind' => ['path' => '$categories']], ['$group' => ['_id' => '$categories', 'count' => ['$sum' => 1]]], ['$sort' => ['count' => -1]], ['$project' => ['_id' => 0, 'category' => '$_id', 'count' => 1]]],
+                        'years' => [['$group' => ['_id' => ['$year' => '$start_date_iso'], 'count' => ['$sum' => 1]]], ['$sort' => ['_id' => 1]], ['$project' => ['_id' => 0, 'year' => '$_id', 'count' => 1]]]
+                    ]
+                ];
+                if ($hasText) {
+                    $regex = "\b" . preg_replace('/^(\'[^\']*\'|"[^"]*")$/', '$2$3', $text) . "\b";
+                    $facet['$facet']['ngram'] = [['$addFields' => ['occurrences' => ['$regexFindAll' => ['input' => ['$concat' => ['$what', ' ', '$when', ' ', '$who', ' ', '$where', ' ', '$description']], 'regex' => new Regex($regex, "i")]]]], ['$unwind' => ['path' => '$occurrences']], ['$group' => ['_id' => ['$year' => '$start_date_iso'], 'count' => ['$sum' => 1]]], ['$sort' => ['_id' => 1]], ['$project' => ['_id' => 0, 'year' => '$_id', 'count' => 1]]];
+                }
+                $aggregation[] = $facet;
             } elseif (array_key_exists('map', $params) && ($params['map'] == 'true')) {
                 if (array_key_exists('mappage', $params) && ($mappage = $params['mappage']) && is_numeric($mappage)) {
                     $skip = ['$skip' => $map_docs_per_page * ($mappage - 1)];
