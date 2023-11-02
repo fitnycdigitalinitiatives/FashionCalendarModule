@@ -9,6 +9,7 @@
 #graph-loader,
 #map-loader,
 #category-list-loader,
+#name-list-loader,
 #facet-loader {
     position: absolute;
     top: 0;
@@ -445,11 +446,23 @@
 }
 
 /* categories  */
-#category-list .modal-body {
+#name-list .modal-header {
+    background-color: #f8e8e7;
+}
+
+#category-list .modal-body,
+#name-list .modal-body {
     min-height: 50vh;
 }
 
-#category-list-columns {
+.category-list-search,
+.name-list-search {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
+#category-list-columns,
+#name-list-columns {
     column-count: 2;
     -webkit-column-count: 2;
     -moz-column-count: 2;
@@ -459,7 +472,9 @@
 }
 
 @media (min-width:768px) {
-    #category-list-columns {
+
+    #category-list-columns,
+    #name-list-columns {
         column-count: 3;
         -webkit-column-count: 3;
         -moz-column-count: 3;
@@ -467,7 +482,9 @@
 }
 
 @media (min-width:1200px) {
-    #category-list-columns {
+
+    #category-list-columns,
+    #name-list-columns {
         column-count: 4;
         -webkit-column-count: 4;
         -moz-column-count: 4;

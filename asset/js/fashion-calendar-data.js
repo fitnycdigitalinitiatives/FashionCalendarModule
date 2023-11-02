@@ -101,6 +101,7 @@ $(document).ready(function () {
         $('.modal').modal('dispose');
         $('.offcanvas').offcanvas('dispose');
         $('#data-container').empty().css("min-height", "50vh");
+        $(window).scrollTop(0);
         $('#data-container').html(`
         <div id="loader" class="d-flex justify-content-center align-items-center">
             <div class="spinner-border" role="status">
@@ -2085,7 +2086,7 @@ $(document).ready(function () {
             <span class="action-container">
             <i class="fas fa-download" aria-hidden="true" title="Download results as JSON file">
             </i>
-            Raw Data
+            JSON
             </span>
         </button>
         `);
@@ -2156,6 +2157,16 @@ $(document).ready(function () {
 
 
     function initializeSearch() {
+        const alphabet = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "#"];
+        let tablist = `<ul class="col-12 d-flex flex-wrap justify-content-between list-unstyled mb-0 mt-2" role="tablist" id="atoz">`;
+        alphabet.forEach(letter => {
+            tablist += `
+            <li role="presentation">
+                <button class="border-0 bg-transparent p-0 fw-bold" type="button" role="tab" data-target="${letter}" aria-controls="name-list">${letter}</button>
+            </li>
+            `
+        });
+        tablist += `</ul>`;
         $("#search-container").append(`
         <form id="data-search">
             <div class="input-group">
@@ -2170,15 +2181,20 @@ $(document).ready(function () {
             <button class="border-0 bg-transparent p-0 link-dark me-2" data-bs-toggle="modal"
                 data-bs-target="#advanced-search-data">
                 <i class="fas fa-search me-1" aria-hidden="true"></i>
-                <span class="d-md-none">Advanced</span>
-                <span class="d-none d-md-inline">Advanced Search</span>
+                <span class="d-lg-none">Advanced</span>
+                <span class="d-none d-lg-inline">Advanced Search</span>
             </button>
             |
+            <button class="border-0 bg-transparent p-0 link-dark mx-2 d-none d-md-inline" data-bs-toggle="modal"
+                data-bs-target="#name-list">
+                <i class="fas fa-user me-1" aria-hidden="true"></i>
+                <span>Names</span>
+            </button>
+            <span class="d-none d-md-inline">|</span>
             <button class="border-0 bg-transparent p-0 link-dark mx-2" data-bs-toggle="modal"
                 data-bs-target="#category-list">
                 <i class="fas fa-tags me-1" aria-hidden="true"></i>
-                <span class="d-md-none">Categories</span>
-                <span class="d-none d-md-inline">Category List</span>
+                <span>Categories</span>
             </button>
             |
             <button class="border-0 bg-transparent p-0 link-dark ms-2" data-bs-toggle="modal"
@@ -2209,7 +2225,7 @@ $(document).ready(function () {
         <!-- Modal -->
         <div class="modal fade" id="category-list" tabindex="-1" aria-labelledby="category-list-label"
             aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-xl-down">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h2 class="modal-title fs-5" id="category-list-label">Category List</h2>
@@ -2222,6 +2238,27 @@ $(document).ready(function () {
                         </div>
                     </div>
                         <ul id="category-list-columns"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="name-list" tabindex="-1" aria-labelledby="name-list-label"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-xl-down">
+                <div class="modal-content">
+                    <div class="modal-header flex-wrap sticky-xl-top">
+                        <h2 class="modal-title fs-5" id="name-list-label">Name List</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        ${tablist}
+                    </div>
+                    <div class="modal-body">
+                    <div id="name-list-loader" class="d-flex justify-content-center align-items-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Fetching data...</span>
+                        </div>
+                    </div>
+                    <ul id="name-list-columns"></ul>
                     </div>
                 </div>
             </div>
@@ -2260,10 +2297,12 @@ $(document).ready(function () {
             listEvents(queryParams);
         });
         const names = new Bloodhound({
+            initialize: false,
             datumTokenizer: Bloodhound.tokenizers.whitespace,
             queryTokenizer: Bloodhound.tokenizers.whitespace,
             prefetch: "/data-api/suggester?type=names"
         });
+        const namePromise = names.initialize();
         const categories = new Bloodhound({
             initialize: false,
             datumTokenizer: Bloodhound.tokenizers.whitespace,
@@ -2453,6 +2492,69 @@ $(document).ready(function () {
             });
         }).fail(function () {
             console.log('Error loading categories');
+        });
+        const nameListModal = document.getElementById('name-list');
+        nameListModal.addEventListener('show.bs.modal', event => {
+            namePromise.done(function () {
+                let activeLetter = "A";
+                if ($('#atoz button.active').length > 0) {
+                    activeLetter = $('#atoz button.active').data('target');
+                } else {
+                    $('#atoz button[data-target="A"]').toggleClass("active").prop("disabled", true).attr('aria-selected', "true");
+                }
+                listNames(activeLetter);
+
+                $('#atoz button').on("click.fashioncalendar", function (event) {
+                    $('#atoz button.active').toggleClass("active").prop("disabled", false).attr('aria-selected', "false");
+                    $(this).toggleClass("active").prop("disabled", true).attr('aria-selected', "true");
+                    listNames($(this).data('target'));
+                });
+                function listNames(activeLetter) {
+                    let startsWithThis = null;
+                    $("#name-list-loader").remove();
+                    $("#name-list-columns").empty();
+                    $("#name-list .modal-body").scrollTop(0);
+                    if (activeLetter == "#") {
+                        startsWithThis = Object.values(names.index.datums).filter((name) => name.normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/^"/, "").replace(/^\[/, "").toLowerCase().match(/^\d/));
+                    } else {
+                        startsWithThis = Object.values(names.index.datums).filter((name) => name.normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/^"/, "").replace(/^\[/, "").toLowerCase().startsWith(activeLetter.toLowerCase()));
+                    }
+
+                    if (startsWithThis && startsWithThis.length > 0) {
+                        startsWithThis.sort(function (a, b) {
+                            return a.toLowerCase().localeCompare(b.toLowerCase());
+                        }).forEach(name => {
+                            $("#name-list-columns").append(`
+                            <li class="mb-1">
+                            <a class="name-list-search link-dark text-decoration-none" href="?names%5B%5D=${encodeURIComponent(name)}">${name}</a>
+                            </li>
+                            `);
+                        });
+                        $(".name-list-search").on("click.fashioncalendar", function (event) {
+                            event.preventDefault();
+                            const url = $(this).attr('href');
+                            history.pushState(null, null, url);
+                            $('#name-list').modal('hide');
+                            nameListModal.addEventListener('hidden.bs.modal', event => {
+                                let queryParams = new URLSearchParams(url);
+                                listEvents(queryParams);
+                            }, { once: true });
+                        })
+                    } else {
+                        $("#name-list-columns").append(`<span class="fw-bold">There are no names for this letter.</span>`)
+                    }
+                }
+            });
+        });
+        nameListModal.addEventListener('hidden.bs.modal', event => {
+            $("#name-list-columns").empty();
+            $('#atoz').after(`
+                <div id="name-list-loader" class="d-flex justify-content-center align-items-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Fetching data...</span>
+                    </div>
+                </div>
+            `);
         });
         $("#advanced-search-data-form").on("submit.fashioncalendar", function (event) {
             event.preventDefault();
