@@ -18,6 +18,10 @@
     bottom: 0;
 }
 
+#download .dropdown-header {
+    white-space: unset;
+}
+
 #top-button {
     display: none;
     position: fixed;

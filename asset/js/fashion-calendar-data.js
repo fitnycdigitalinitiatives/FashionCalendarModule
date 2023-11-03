@@ -2106,17 +2106,28 @@ $(document).ready(function () {
 
     function createDownload() {
         $('#download').html(`
-        <button id="download-button" class="btn btn-dark floating-action d-none d-md-inline-block" type="button" aria-label="Download results as JSON file" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Note: downloads are currently limited to the first 5,000 results. Access to the complete data set will be made available for download in the future." >
+        <div class="dropdown">
+        <button id="download-button" class="btn btn-dark floating-action d-none d-md-inline-block" type="button" data-bs-toggle="dropdown">
             <span class="action-container">
             <i class="fas fa-download" aria-hidden="true" title="Download results as JSON file">
             </i>
             JSON
             </span>
         </button>
+        <ul class="dropdown-menu dropdown-menu-dark">
+            <li>
+            <span class="dropdown-header fw-bold">*JSON of search results is currently limited to the first 10,000 results. The entire dataset is also available in our Gihub repo.</span>
+            </li>
+            <li><button id="download-json" class="dropdown-item"><i class="fas fa-download me-1" aria-hidden="true" title="Download results as JSON file">
+            </i>Search Results as JSON</button></li>
+            <li><a id="text-download" class="dropdown-item"
+                href="https://github.com/fashion-calendar/fashion-calendar-data" target="_blank"><i class="fas fa-external-link-alt me-1" aria-hidden="true" title="Link to Full Dataset on Github">
+                </i>Full Dataset on Github</a></li>
+        </ul>
+        </div>
         `);
-        const tooltip = new bootstrap.Tooltip(document.getElementById('download-button'));
 
-        $("#download-button").on("click.fashioncalendar", function () {
+        $("#download-json").on("click.fashioncalendar", function () {
             let queryParams = new URLSearchParams(window.location.search);
             queryParams.set('download', 'true');
             const url = "/data-api/events?" + queryParams.toString();

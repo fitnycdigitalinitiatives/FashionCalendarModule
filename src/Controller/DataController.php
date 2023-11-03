@@ -199,8 +199,19 @@ class DataController extends AbstractActionController
                 $aggregation[] = ['$project' => ['_id' => 0, 'earliest' => ['$year' => '$earliest'], 'latest' => ['$year' => '$latest']]];
             } elseif (array_key_exists('download', $params) && ($params['download'] == 'true')) {
                 $aggregation[] = $sort;
-                $aggregation[] = ['$limit' => 5000];
+                $aggregation[] = ['$limit' => 10000];
+                $cursor = $collection->aggregate($aggregation);
+                $json = "[";
+                foreach ($cursor as $document) {
+                    $json .= json_encode($document);
+                    $json .= ", ";
+                }
+                $json = substr($json, 0, -2);
+                $json .= "]";
                 $response->getHeaders()->addHeaderLine('Content-Disposition', 'attachment; filename="fashion-calendar-results.json"');
+                $response->setContent($json);
+                return $response;
+
             } else {
                 if (array_key_exists('page', $params) && ($page = $params['page']) && is_numeric($page)) {
                     $skip = ['$skip' => $docs_per_page * ($page - 1)];
