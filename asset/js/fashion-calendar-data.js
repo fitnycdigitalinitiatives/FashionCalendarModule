@@ -680,6 +680,30 @@ $(document).ready(function () {
                     miradorViewer = Mirador.viewer(
                         {
                             id: "mirador-viewer",
+                            themes: {
+                                dark: {
+                                    palette: {
+                                        type: 'dark',
+                                        primary: {
+                                            main: '#fec2be',
+                                        },
+                                        secondary: {
+                                            main: '#fec2be',
+                                        },
+                                    },
+                                },
+                                light: {
+                                    palette: {
+                                        type: 'light',
+                                        primary: {
+                                            main: '#fec2be',
+                                        },
+                                        secondary: {
+                                            main: '#fec2be',
+                                        },
+                                    },
+                                },
+                            },
                             workspaceControlPanel: {
                                 enabled: false
                             },
