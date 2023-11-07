@@ -100,8 +100,9 @@ $(document).ready(function () {
         $('.modal').modal('hide');
         $('.modal').modal('dispose');
         $('.offcanvas').offcanvas('dispose');
-        $('#data-container').empty().css("min-height", "50vh");
-        $(window).scrollTop(0);
+        $('#data-container').empty().css("height", "50vh");
+        const firstScrollElm = document.scrollingElement;
+        firstScrollElm.scrollTop = 0;
         $('#data-container').html(`
         <div id="loader" class="d-flex justify-content-center align-items-center">
             <div class="spinner-border" role="status">
@@ -324,7 +325,7 @@ $(document).ready(function () {
                 });
                 $('#results').hide().text(resultsText).fadeIn();
                 $('#query').fadeIn();
-                $('#data-container').css("min-height", "none").fadeIn();
+                $('#data-container').css("height", "auto").fadeIn();
                 if (totalResults > 0) {
                     createFacets();
                     createGraphs(url);
@@ -1971,16 +1972,18 @@ $(document).ready(function () {
                                 <button class="data-download btn btn-link link-dark ms-1 text-decoration-none p-0" data-type="events-per-category-chart" aria-label="Download data as csv"><i class="fas fa-download" aria-hidden="true" title="Download data as csv"></i></button>
                                 </h3>
                                 <canvas id="events-per-category-chart" aria-label="Chart of number of events per category" role="img"></canvas>
+                                ${graphsData[0].categories.length > 100 ? '<small>*Chart is limited to first 100 categories. Download CSV for full results.</small>' : ''}
                             </div>
                             `);
                             const eventsPerCategoryChart = document.getElementById('events-per-category-chart');
+                            const limitedCategories = graphsData[0].categories.slice(0, 99);
                             eventsCategoryChart = new Chart(eventsPerCategoryChart, {
                                 type: 'pie',
                                 data: {
-                                    labels: graphsData[0].categories.map(row => row.category),
+                                    labels: limitedCategories.map(row => row.category),
                                     datasets: [{
                                         label: '# of Events',
-                                        data: graphsData[0].categories.map(row => row.count),
+                                        data: limitedCategories.map(row => row.count),
                                     }]
                                 },
                                 options: {
@@ -2001,16 +2004,18 @@ $(document).ready(function () {
                                 <button class="data-download btn btn-link link-dark ms-1 text-decoration-none p-0" data-type="events-per-name-chart" aria-label="Download data as csv"><i class="fas fa-download" aria-hidden="true" title="Download data as csv"></i></button>
                                 </h3>
                                 <canvas id="events-per-name-chart" aria-label="Chart of number of events per name" role="img"></canvas>
+                                ${graphsData[0].names.length > 100 ? '<small>*Chart is limited to first 100 names. Download CSV for full results.</small>' : ''}
                             </div>
                             `);
                             const eventsPerNameChart = document.getElementById('events-per-name-chart');
+                            const limitedNames = graphsData[0].categories.slice(0, 99);
                             eventsNameChart = new Chart(eventsPerNameChart, {
                                 type: 'pie',
                                 data: {
-                                    labels: graphsData[0].names.map(row => row.name),
+                                    labels: limitedNames.map(row => row.name),
                                     datasets: [{
                                         label: '# of Events',
-                                        data: graphsData[0].names.map(row => row.count),
+                                        data: limitedNames.map(row => row.count),
                                     }]
                                 },
                                 options: {

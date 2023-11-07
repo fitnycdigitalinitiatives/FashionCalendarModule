@@ -1,3 +1,7 @@
+html {
+    scroll-behavior: auto !important;
+}
+
 #loader {
     position: fixed;
     top: 0;
