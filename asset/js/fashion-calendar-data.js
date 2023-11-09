@@ -84,15 +84,10 @@ $(document).ready(function () {
             dateRange = null;
         }
         if (document.getElementById("advanced-search-data-form")) {
-            $("#adv_text").val("");
-            $("#adv_date_range input").val("");
-            $('#advanced-search-data-form input:radio').prop('checked', false);
-            $('#adv_name').val('');
-            $('#adv_name_list').empty();
-            $('#adv_category').val('');
-            $('#adv_category_list').empty();
-            $('#adv_name_type_any').prop('checked', true);
-            $('#adv_category_type_any').prop('checked', true);
+            let queryParams = new URLSearchParams(window.location.search);
+            if (queryParams.has('text')) {
+                $("#adv_text").val(queryParams.get('text'));
+            }
         }
         mappage = 1;
         $('.pagination-row').remove();
@@ -2256,6 +2251,7 @@ $(document).ready(function () {
                     <div class="modal-body">
                     </div>
                     <div class="modal-footer">
+                    <button id="advanced-search-reset-button" class="btn btn-dark">Clear form</button>
                         <button id="advanced-search-data-button" type="submit" class="btn btn-dark"
                             form="advanced-search-data-form">Search</button>
                     </div>
@@ -2445,6 +2441,10 @@ $(document).ready(function () {
             </div>
         </form>
         `);
+        let queryParams = new URLSearchParams(window.location.search);
+        if (queryParams.has('text')) {
+            $("#adv_text").val(queryParams.get('text'));
+        }
         // add select
         const nameTypeahead = $("#adv_name").typeahead(
             {
@@ -2637,6 +2637,18 @@ $(document).ready(function () {
             advSearchModal[0].addEventListener('hidden.bs.modal', event => {
                 listEvents(queryParams);
             }, { once: true });
+        });
+        $("#advanced-search-reset-button").on("click.fashioncalendar", function (event) {
+            event.preventDefault();
+            $("#adv_text").val("");
+            $("#adv_date_range input").val("");
+            $('#advanced-search-data-form input:radio').prop('checked', false);
+            $('#adv_name').val('');
+            $('#adv_name_list').empty();
+            $('#adv_category').val('');
+            $('#adv_category_list').empty();
+            $('#adv_name_type_any').prop('checked', true);
+            $('#adv_category_type_any').prop('checked', true);
         });
         $(".category-list-search").on("click.fashioncalendar", function (event) {
             event.preventDefault();
