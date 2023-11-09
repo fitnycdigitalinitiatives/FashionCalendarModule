@@ -5,6 +5,7 @@ return [
     'controllers' => [
         'invokables' => [
             'FashionCalendarModule\Controller\Data' => Controller\DataController::class,
+            'FashionCalendarModule\Controller\DataAtlas' => Controller\DataAtlasController::class,
         ]
     ],
     'block_layouts' => [
@@ -26,6 +27,20 @@ return [
                             'defaults' => [
                                 '__NAMESPACE__' => 'FashionCalendarModule\Controller',
                                 'controller' => 'Data',
+                                'action' => 'events',
+                            ],
+                        ],
+                        'constraints' => [
+                            'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                        ],
+                    ],
+                    'data-altas-api' => [
+                        'type' => 'Segment',
+                        'options' => [
+                            'route' => '/data-atlas-api/:action',
+                            'defaults' => [
+                                '__NAMESPACE__' => 'FashionCalendarModule\Controller',
+                                'controller' => 'DataAtlas',
                                 'action' => 'events',
                             ],
                         ],

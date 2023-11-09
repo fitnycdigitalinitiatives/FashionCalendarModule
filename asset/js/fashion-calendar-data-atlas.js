@@ -10,6 +10,7 @@ $(document).ready(function () {
     let facetData = null;
     let mapData = null;
     let graphsData = null;
+    let ngramData = null;
     let dateRange = null;
     let bigMap = null;
     let singleMap = null;
@@ -65,6 +66,9 @@ $(document).ready(function () {
         }
         if (graphsData) {
             graphsData = null;
+        }
+        if (ngramData) {
+            ngramData = null;
         }
         if (singleMap) {
             singleMap.remove();
@@ -297,7 +301,7 @@ $(document).ready(function () {
                 `);
             }
         }
-        const url = "/data-api/events?" + queryParams.toString();
+        const url = "/data-atlas-api/events?" + queryParams.toString();
         fetch(url)
             .then((response) => response.json())
             .then((data) => {
@@ -665,7 +669,7 @@ $(document).ready(function () {
                 const calendar_id = decodeURIComponent(button.getAttribute('data-calendar_id'));
                 const calendar_page = decodeURIComponent(button.getAttribute('data-calendar_page'));
                 const calendar_title = decodeURIComponent(button.getAttribute('data-displayTitle'));
-                const pageURL = `/data-api/page?id=${encodeURIComponent(calendar_id)}&page=${encodeURIComponent(calendar_page)}`;
+                const pageURL = `/data-atlas-api/page?id=${encodeURIComponent(calendar_id)}&page=${encodeURIComponent(calendar_page)}`;
                 const modalTitle = viewerModal.querySelector('.modal-title');
                 const modalBody = viewerModal.querySelector('.modal-body');
                 $(modalTitle).html(`
@@ -819,7 +823,7 @@ $(document).ready(function () {
         if (!mapData) {
             queryParams.set('map', 'true');
             queryParams.set('mappage', mappage);
-            const url = "/data-api/events?" + queryParams.toString();
+            const url = "/data-atlas-api/events?" + queryParams.toString();
             try {
                 const res = await fetch(url);
                 mapData = await res.json();
@@ -1124,7 +1128,7 @@ $(document).ready(function () {
             rangeQueryParams.delete('date_range_end');
             rangeQueryParams.delete('year');
             rangeQueryParams.delete('year_month');
-            const url = "/data-api/events?" + rangeQueryParams.toString();
+            const url = "/data-atlas-api/events?" + rangeQueryParams.toString();
             try {
                 const res = await fetch(url);
                 dateRange = await res.json();
@@ -1429,7 +1433,7 @@ $(document).ready(function () {
             rangeQueryParams.delete('date_range_end');
             rangeQueryParams.delete('year');
             rangeQueryParams.delete('year_month');
-            const url = "/data-api/events?" + rangeQueryParams.toString();
+            const url = "/data-atlas-api/events?" + rangeQueryParams.toString();
             try {
                 const res = await fetch(url);
                 dateRange = await res.json();
@@ -1531,7 +1535,7 @@ $(document).ready(function () {
         let queryParams = new URLSearchParams(window.location.search);
         queryParams.set('facet', 'true');
         queryParams.delete('sort');
-        const url = "/data-api/events?" + queryParams.toString();
+        const url = "/data-atlas-api/events?" + queryParams.toString();
         fetch(url)
             .then((response) => response.json())
             .then((data) => {
@@ -1815,7 +1819,7 @@ $(document).ready(function () {
                 let queryParams = new URLSearchParams(thisURL.search);
                 queryParams.set("graph", "true");
                 queryParams.delete("page");
-                let graphURL = "/data-api/events?" + queryParams.toString();
+                let graphURL = "/data-atlas-api/events?" + queryParams.toString();
                 fetch(graphURL)
                     .then((response) => response.json())
                     .then((data) => {
@@ -1823,51 +1827,79 @@ $(document).ready(function () {
                         graphsData = data;
                         data = null;
                         // Ngram
-                        if (queryParams.get("text") && ('ngram' in graphsData[0]) && (graphsData[0].ngram.length > 0)) {
-                            for (let index = 1941; index < 2016; index++) {
-                                if (!graphsData[0].ngram.find((element) => element.year == index.toString())) {
-                                    graphsData[0].ngram.push({ "year": index.toString(), "count": 0 });
-                                }
-                            }
-                            graphsData[0].ngram.sort((a, b) => a.year - b.year);
+                        if (queryParams.get("text")) {
+                            //ngram placeholder
                             modalBody.append(`
                             <div class="graph">
                                 <h3>
                                 <span>Ngram — "${queryParams.get("text").replace(/^"(.*)"$/, '$1')}"</span>
                                 <button class="data-download btn btn-link link-dark ms-1 text-decoration-none p-0" data-type="ngram-chart" aria-label="Download data as csv"><i class="fas fa-download" aria-hidden="true" title="Download data as csv"></i></button>
                                 </h3>
-                                <canvas id="ngram-chart" aria-label="Chart of word frequency (Ngram)" role="img"></canvas>
+                                <div id="ngram-loader" class="d-flex justify-content-center align-items-center">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Fetching data...</span>
+                                    </div>
+                                </div>
                             </div>
                             `);
-                            const ngramChart = document.getElementById('ngram-chart');
-                            thisngramChart = new Chart(ngramChart, {
-                                type: 'line',
-                                data: {
-                                    labels: graphsData[0].ngram.map(row => row.year),
-                                    datasets: [{
-                                        label: 'Occurrences',
-                                        data: graphsData[0].ngram.map(row => row.count),
-                                        borderWidth: 1
-                                    }]
-                                },
-                                options: {
-                                    elements: {
-                                        line: {
-                                            backgroundColor: "#fec2be",
-                                            borderColor: "#212529"
-                                        },
-                                        point: {
-                                            backgroundColor: "#fec2be",
-                                            borderColor: "#212529"
+                            queryParams.set("ngram", "true");
+                            queryParams.delete("graph");
+                            let ngramURL = "/data-atlas-api/events?" + queryParams.toString();
+                            fetch(ngramURL)
+                                .then((response) => response.json())
+                                .then((thisData) => {
+                                    ngramData = thisData;
+                                    thisData = null;
+                                    $('#ngram-loader').replaceWith(`<canvas id="ngram-chart" aria-label="Chart of word frequency (Ngram)" role="img"></canvas>`);
+                                    if (ngramData.length > 0) {
+                                        for (let index = 1941; index < 2016; index++) {
+                                            if (!ngramData.find((element) => element.year == index.toString())) {
+                                                ngramData.push({ "year": index.toString(), "count": 0 });
+                                            }
                                         }
-                                    },
-                                    scales: {
-                                        y: {
-                                            beginAtZero: true
-                                        }
+                                        ngramData.sort((a, b) => a.year - b.year);
+                                        const ngramChart = document.getElementById('ngram-chart');
+                                        thisngramChart = new Chart(ngramChart, {
+                                            type: 'line',
+                                            data: {
+                                                labels: ngramData.map(row => row.year),
+                                                datasets: [{
+                                                    label: 'Occurrences',
+                                                    data: ngramData.map(row => row.count),
+                                                    borderWidth: 1
+                                                }]
+                                            },
+                                            options: {
+                                                elements: {
+                                                    line: {
+                                                        backgroundColor: "#fec2be",
+                                                        borderColor: "#212529"
+                                                    },
+                                                    point: {
+                                                        backgroundColor: "#fec2be",
+                                                        borderColor: "#212529"
+                                                    }
+                                                },
+                                                scales: {
+                                                    y: {
+                                                        beginAtZero: true
+                                                    }
+                                                }
+                                            }
+                                        });
                                     }
-                                }
-                            });
+                                })
+                                .catch((error) => {
+                                    console.log(error);
+                                    modalBody.append(`
+                                        <div>
+                                        <h2>Error</h2>
+                                        <p class="lead">
+                                        Error loading ngram data. Please try again.
+                                        </p>
+                                        </div>
+                                        `);
+                                });
                         }
                         // Events per year
                         if (('years' in graphsData[0]) && (graphsData[0].years.length > 0)) {
@@ -1972,7 +2004,7 @@ $(document).ready(function () {
                                 <button class="data-download btn btn-link link-dark ms-1 text-decoration-none p-0" data-type="events-per-category-chart" aria-label="Download data as csv"><i class="fas fa-download" aria-hidden="true" title="Download data as csv"></i></button>
                                 </h3>
                                 <canvas id="events-per-category-chart" aria-label="Chart of number of events per category" role="img"></canvas>
-                                ${graphsData[0].categories.length > 100 ? '<small>*Chart is limited to first 100 categories. Download CSV for full results.</small>' : ''}
+                                ${graphsData[0].categories.length > 100 ? '<div class="mt-2 small">*Chart is limited to first 100 categories. Download CSV for full results.</div>' : ''}
                             </div>
                             `);
                             const eventsPerCategoryChart = document.getElementById('events-per-category-chart');
@@ -2004,7 +2036,7 @@ $(document).ready(function () {
                                 <button class="data-download btn btn-link link-dark ms-1 text-decoration-none p-0" data-type="events-per-name-chart" aria-label="Download data as csv"><i class="fas fa-download" aria-hidden="true" title="Download data as csv"></i></button>
                                 </h3>
                                 <canvas id="events-per-name-chart" aria-label="Chart of number of events per name" role="img"></canvas>
-                                ${graphsData[0].names.length > 100 ? '<small>*Chart is limited to first 100 names. Download CSV for full results.</small>' : ''}
+                                <div class="mt-2 small">*Data on names is limited to the first 1000 names (CSV download) and the chart visual is limited to first 100 names. Please contact <a href="mailto:fashioncalendar@fitnyc.edu">us</a> if you require additional data.</div>
                             </div>
                             `);
                             const eventsPerNameChart = document.getElementById('events-per-name-chart');
@@ -2082,7 +2114,7 @@ $(document).ready(function () {
         const type = event.currentTarget.getAttribute('data-type');
         switch (type) {
             case 'ngram-chart': {
-                const csvdata = csvmaker(graphsData[0].ngram);
+                const csvdata = csvmaker(ngramData);
                 download(csvdata, type);
                 break;
             }
@@ -2135,7 +2167,7 @@ $(document).ready(function () {
         $("#download-json").on("click.fashioncalendar", function () {
             let queryParams = new URLSearchParams(window.location.search);
             queryParams.set('download', 'true');
-            const url = "/data-api/events?" + queryParams.toString();
+            const url = "/data-atlas-api/events?" + queryParams.toString();
             window.location.href = url;
         });
     }
@@ -2340,14 +2372,14 @@ $(document).ready(function () {
             initialize: false,
             datumTokenizer: Bloodhound.tokenizers.whitespace,
             queryTokenizer: Bloodhound.tokenizers.whitespace,
-            prefetch: "/data-api/suggester?type=names"
+            prefetch: "/data-atlas-api/suggester?type=names"
         });
         const namePromise = names.initialize();
         const categories = new Bloodhound({
             initialize: false,
             datumTokenizer: Bloodhound.tokenizers.whitespace,
             queryTokenizer: Bloodhound.tokenizers.whitespace,
-            prefetch: "/data-api/suggester?type=categories"
+            prefetch: "/data-atlas-api/suggester?type=categories"
         });
         const categoryPromise = categories.initialize();
         let termSuggester = $('#data-search input').typeahead(
@@ -2698,7 +2730,7 @@ $(document).ready(function () {
         }
         page = page + 1;
         queryParams.set('page', page);
-        const url = "/data-api/events?" + queryParams.toString();
+        const url = "/data-atlas-api/events?" + queryParams.toString();
         history.pushState(null, null, "?" + queryParams.toString());
         $('.pagination-row').hide();
         $('.page-load-status').show();

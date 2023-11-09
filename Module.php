@@ -38,6 +38,7 @@ class Module extends AbstractModule
             null,
             [
                 'FashionCalendarModule\Controller\Data',
+                'FashionCalendarModule\Controller\DataAtlas',
             ]
         );
     }

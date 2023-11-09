@@ -22,6 +22,11 @@ html {
     bottom: 0;
 }
 
+#ngram-loader {
+    height: 25vh;
+    width: 100%;
+}
+
 #download .dropdown-header {
     white-space: unset;
 }
