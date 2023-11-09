@@ -87,12 +87,6 @@ $(document).ready(function () {
         if (dateRange) {
             dateRange = null;
         }
-        if (document.getElementById("advanced-search-data-form")) {
-            let queryParams = new URLSearchParams(window.location.search);
-            if (queryParams.has('text')) {
-                $("#adv_text").val(queryParams.get('text'));
-            }
-        }
         mappage = 1;
         $('.pagination-row').remove();
         $('.page-load-status').remove();
@@ -2473,10 +2467,6 @@ $(document).ready(function () {
             </div>
         </form>
         `);
-        let queryParams = new URLSearchParams(window.location.search);
-        if (queryParams.has('text')) {
-            $("#adv_text").val(queryParams.get('text'));
-        }
         // add select
         const nameTypeahead = $("#adv_name").typeahead(
             {
