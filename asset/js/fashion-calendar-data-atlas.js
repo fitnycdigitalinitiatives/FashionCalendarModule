@@ -2702,7 +2702,7 @@ $(document).ready(function () {
                 let pagination = `
                 <div class="row justify-content-center pagination-row">
                     <div class="col-auto">
-                        <button id="load-button" class="btn btn-dark floating-action" type="button" aria-controls="searchFilters" aria-label="Load more results">
+                        <button id="load-button" class="btn btn-dark floating-action" type="button" aria-controls="data-container" aria-label="Load more results">
                             <span class="action-container">
                             <i class="fas fa-plus" aria-hidden="true" title="Load more results">
                             </i>
