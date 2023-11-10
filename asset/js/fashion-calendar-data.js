@@ -2749,9 +2749,9 @@ $(document).ready(function () {
 
     function scrollFunction() {
         if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
-            mybutton.show();
+            mybutton.fadeIn();
         } else {
-            mybutton.hide();
+            mybutton.fadeOut();
         }
     }
 
