@@ -31,11 +31,42 @@ html {
     white-space: unset;
 }
 
+.round-floating-action {
+    border-radius: 50%;
+    padding: 12px;
+    line-height: 1;
+    box-shadow: 2px 2px 3px #999;
+    font-weight: bold;
+    transition: box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.round-floating-action:active,
+.round-floating-action.active {
+    box-shadow: 1px 1px 1px #999;
+}
+
+.round-floating-action:focus,
+.round-floating-action.focus {
+    box-shadow: 1px 1px 2px #999;
+}
+
+.round-floating-action .action-container {
+    height: 16px;
+    width: 16px;
+}
+
 #top-button {
     display: none;
     position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: auto;
+}
+
+#help-button {
+    position: fixed;
     bottom: 20px;
-    right: 30px;
+    right: 20px;
     width: auto;
 }
 

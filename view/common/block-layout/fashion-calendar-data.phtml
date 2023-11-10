@@ -42,7 +42,74 @@ $escape = $this->plugin('escapeHtml');
     </div>
 </div>
 <div id="modal-container" class="p-0 m-0"></div>
-<button id="top-button" type="button" class="btn btn-dark" title="Go to top">
-    <i class="fas fa-long-arrow-alt-up me-1" aria-hidden="true"></i>
-    Top
+<button id="top-button" type="button" class="btn btn-dark round-floating-action" title="Go to top">
+    <div class="action-container">
+        <i class="fas fa-arrow-up" aria-hidden="true" title="Go to top"></i>
+    </div>
 </button>
+<button id="help-button" type="button" class="btn btn-dark round-floating-action" data-bs-toggle="modal"
+    data-bs-target="#helpModal" title="Help">
+    <div class="action-container">
+        <i class="fas fa-question" aria-hidden="true" title="Help"></i>
+    </div>
+</button>
+<!-- Modal -->
+<div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="helpModalLabel">Help</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h3>Contact Us</h3>
+                <p class="lead">
+                    If you are having difficulty navigating the Fashion Calendar Research Database or have
+                    any feedback, please send us an email. We'd love to chat: <a
+                        href="mailto:fashioncalendar@fitnyc.edu">fashioncalendar@fitnyc.edu</a>
+                </p>
+                <h4>Search Help</h4>
+                <p>
+                    If you have any trouble searching, please click on "Search Tips" listed under the search bar on this
+                    page or check out
+                    our <a href="/page/how-to">How-To</a> for more detailed information. If you are still having
+                    trouble finding what you're looking for, just send us an email. We'd love to help you create a
+                    strategy
+                    to explore your research topic.
+                </p>
+                <h4>Data Access</h4>
+                <p>
+                    We have strived to make the data of the Fashion Calendar Research Database as open and accessible as
+                    possible. However, due to technological limitations, there may be cases where access is slightly
+                    limited or you want to create a dataset that isn't possible with the available search tools. For
+                    instance, while you can download search and graph results as JSON and CSV (respectively), due to
+                    processing limitations, search downloads are limited to the first 10,000 results. In such cases,
+                    accessing the full dataset in our <a
+                        href="https://github.com/fashion-calendar/fashion-calendar-data" target="_blank">Github
+                        repository</a> may be helpful. In any case, please don't hesitate to reach out by sending us an
+                    email. We'd love to help and are also interested to learn about your particular use case, which
+                    could help us improve the database.
+                </p>
+                <h4>Misattributions, Errors or Omissions</h4>
+                <p>
+                    The use of AI and machine learning technologies have expanded the ways users can use and interact
+                    with the publications in the Ruth Finley Collection. The technologies are not perfect and as a
+                    result have not captured the entirety of the data within the publications. There are a minority of
+                    pages that are unreadable, contain irregular listings or contact information. The user should
+                    consider the inherent margins of error associated with digitization and should refer to the original
+                    source when applicable.
+                </p>
+                <p>
+                    Identity attributions can bring up the challenges associated with the categorizations of
+                    individuals, however, taking an intersectional approach that expands knowledge about marginalized
+                    and minority groups helps the user understand the historical diversity of the fashion and creative
+                    industries of the twentieth and early twenty-first centuries. The project team has added identity
+                    attributions that have been researched in reliable primary and secondary sources, and apologize in
+                    advance for any misattributions, errors or omissions. Please contact the project team with any
+                    corrections or questions by sending us an email. Please excuse any computer generated or human
+                    omissions or errors.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

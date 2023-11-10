@@ -2335,13 +2335,19 @@ $(document).ready(function () {
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                    <h3>Basic Search</h3>
-                    <p>Search terms inputted into the search bar can search the entirety of the captured text in the calendars (full text) when typing the word and completing the search. This includes words or names that appear in the description category. By using “ ” quotation marks the search engine will pull up only the search terms in the quotation marks, without them the search engine will pull up all results that include the word.</p>
-                    <p>Example: search term “Eartha Kitt”</p>
-                    <p>Eartha Kitt does not show up in the drop down menu because the actress and singer did not host any events that were listed in <em>Fashion Calendar</em>. Eartha Kitt does show up as a noted guest in the descriptions of at least two fashion shows.</p>
-                    <p>The Basic Search also includes “categorized” terms and names that populate in the drop down menu. The terms are known tagged or categorized entities that appear multiple times in the material.</p>
-                    <h3>Advanced Search</h3>
-                    <p>Advanced search enables users to search the “full text” and or search tagged names, categories and set a date range. The names and categories correspond to names and their associated identity attributes.</p>
+                        <h3>Basic Search</h3>
+                        <p>Search terms typed into the search bar can search the entirety of the captured text in the calendars (full-text) when typing the word and completing the search. This includes words or names that appear in the description section in the Calendars. When searching for phrases, you can use &ldquo; &rdquo; quotation marks to search for that exact phrase; without quotation marks the database will return results with any words of the phrase. For instance, searching for <strong>&ldquo;calvin klein&rdquo;</strong> will return results where that exact phrase appears, but searching <strong>calvin klein</strong> without quotation marks will return results for <strong><em>KLEIN BROS. TEXTILE</em></strong> and <strong><em>Calvin Hathaway</em></strong>.</p>
+                        <h4>Name and Category Drop-Down</h4>
+                        <p>When you begin typing into the basic search you will notice a drop-down menu, which lists tagged names and categories that can be selected as a means of searching.</p>
+                        <h5>Names</h5>
+                        <p>The &ldquo;Names&rdquo; drop down menu is an index of the majority of the &ldquo;Given By&rdquo; column in the Calendars. The names reflect subscribers and or hosts (individuals and entities) who have listed in the publications. Note: just because a name does not appear in the drop-down does not mean that it can not be found in data. There are names that appear in the description or other fields that were not indexed but will be searchable by using the &ldquo;full-text&rdquo; search.</p>
+                        <p>Example search term: <strong>&ldquo;Eartha Kitt&rdquo;</strong></p>
+                        <p>Eartha Kitt does not show up in the drop down menu because the actress and singer did not host any events that were listed in <em>Fashion Calendar</em>. Eartha Kitt does show up as a noted guest in the descriptions of at least two fashion shows.</p>
+                        <h5>Categories</h5>
+                        <p>The &ldquo;Categories&rdquo; drop down menu is an index of the categories or &ldquo;hybrid controlled vocabulary&rdquo; the project team developed to attribute additional identifiers to names that appear in the publication. The multiple categories can be mixed and matched using the &ldquo;Refine&rdquo; sidebar.</p>
+                        <p>The language chosen for the categories list was based on concepts prevalent within Critical Cataloging discourse and feminist digital humanities and aims to highlight diversity and under-represented groups within the publications.</p>
+                        <h3>Advanced Search</h3>
+                        <p>Advanced search enables users to search the &ldquo;full text&rdquo; and or search tagged names, categories and set a date range. The tagged names and categories correspond to names and their associated identity attributes. Users can mix and match &ldquo;full-text&rdquo; and/or multiple tagged names and categories that are reflected in the drop down menus to generate search results.</p>
                     </div>
                 </div>
             </div>
