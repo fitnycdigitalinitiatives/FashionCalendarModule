@@ -3836,7 +3836,7 @@
       "name": "Designs, Lawrence and Lee Theatre Research Institute, Ohio State University",
       "address": "1858 Neil Ave, Columbus, OH 43210",
       "website": "https://library.osu.edu/tri/design-collections",
-      "video": null
+      "video": "https://www.youtube.com/watch?v=qildmiEIKrM"
     }
   },
   {
@@ -3948,7 +3948,7 @@
       "name": "Ohio State Historic Costume and Textiles Collection",
       "address": "Campbell Hall, 1787 Neil Ave, Columbus, OH 43210",
       "website": "https://costume.osu.edu/",
-      "video": null
+      "video": "https://www.youtube.com/watch?v=qildmiEIKrM"
     }
   },
   {
@@ -6780,6 +6780,22 @@
       "name": "Fashion Museum (Museu da Moda)",
       "address": "Av. Don Luiz Guanella, 1810 - São José, Canela - RS, Brazil",
       "website": "http://www.museudamodadecanela.com.br/#o-museu",
+      "video": null
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        -43.19063648465935,
+        -22.90539272152029
+      ]
+    },
+    "properties": {
+      "name": "National Archives of Brazil",
+      "address": "Praça da República, 173 - Centro, Rio de Janeiro - RJ, 20211-350, Brazil",
+      "website": "https://www.gov.br/arquivonacional/pt-br",
       "video": null
     }
   },
@@ -10508,6 +10524,22 @@
       "name": "International Textile Collection, Leeds University Library",
       "address": "Woodhouse, Leeds LS2 9JT, United Kingdom",
       "website": "https://library.leeds.ac.uk/special-collections/collection/2576",
+      "video": null
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        -1.5564717095407246,
+        53.80783646399026
+      ]
+    },
+    "properties": {
+      "name": "Yorkshire Fashion Archive - University of Leeds",
+      "address": "School of Design, University of Leeds, Leeds, LS2 9JT",
+      "website": "https://ahc.leeds.ac.uk/homepage/254/yorkshire-fashion-archive",
       "video": null
     }
   },

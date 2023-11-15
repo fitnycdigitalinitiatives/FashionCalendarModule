@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    const url = "/modules/FashionCalendarModule/asset/geojson/fashion-archives.json";
+    const url = "/modules/FashionCalendarModule/asset/geojson/fashion-archives.json?_=" + (new Date()).getTime();
     fetch(url)
         .then((response) => response.json())
         .then((geoJSON) => {
