@@ -496,4 +496,24 @@ class DataAtlasController extends AbstractActionController
         }
 
     }
+
+    public function downloadAction()
+    {
+        if ($this->currentSite()->slug() == "fashioncalendar" && ($params = $this->params()->fromQuery()) && array_key_exists('id', $params) && ($id = $params['id']) && ($api = $this->api()) && ($item = $api->read('items', $id)->getContent()) && ($allmedia = $item->media())) {
+            foreach ($allmedia as $media) {
+                if ($media->mediaType() == "application/pdf") {
+                    $presignedHelper = $this->viewHelpers()->get('s3presigned');
+                    $accessURL = $media->mediaData()['access'];
+                    $response = $this->getResponse();
+                    $response->setContent(json_encode(['url' => $presignedHelper($accessURL, true, $item->displayTitle() . '.pdf')]));
+                    $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
+                    return $response;
+                }
+            }
+        } else {
+            throw new RuntimeException("Invalid Page");
+        }
+
+
+    }
 }
