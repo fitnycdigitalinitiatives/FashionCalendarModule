@@ -701,6 +701,11 @@ $(document).ready(function () {
                                 allowClose: false,
                                 allowFullscreen: true,
                                 allowMaximize: false,
+                                sideBarPanel: 'search',
+                                panels: {
+                                    info: false,
+                                    attribution: false
+                                }
                             },
                             translations: {
                                 en: {

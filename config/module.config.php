@@ -6,6 +6,7 @@ return [
         'invokables' => [
             'FashionCalendarModule\Controller\Data' => Controller\DataController::class,
             'FashionCalendarModule\Controller\DataAtlas' => Controller\DataAtlasController::class,
+            'FashionCalendarModule\Controller\Search' => Controller\SearchController::class,
         ]
     ],
     'block_layouts' => [
@@ -46,6 +47,20 @@ return [
                         ],
                         'constraints' => [
                             'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                        ],
+                    ],
+                    'search-api' => [
+                        'type' => 'Segment',
+                        'options' => [
+                            'route' => '/search-api/:item-id/search',
+                            'defaults' => [
+                                '__NAMESPACE__' => 'FashionCalendarModule\Controller',
+                                'controller' => 'Search',
+                                'action' => 'search',
+                            ],
+                        ],
+                        'constraints' => [
+                            'item-id' => '\d+',
                         ],
                     ],
                 ],

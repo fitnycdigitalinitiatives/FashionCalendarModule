@@ -9,6 +9,8 @@ use Laminas\Mvc\MvcEvent;
 use Laminas\View\Renderer\PhpRenderer;
 use Laminas\Mvc\Controller\AbstractController;
 use Laminas\ModuleManager\ModuleManager;
+use Laminas\EventManager\Event;
+use Laminas\EventManager\SharedEventManagerInterface;
 use FashionCalendarModule\Form\ConfigForm;
 
 class Module extends AbstractModule
@@ -39,6 +41,7 @@ class Module extends AbstractModule
             [
                 'FashionCalendarModule\Controller\Data',
                 'FashionCalendarModule\Controller\DataAtlas',
+                'FashionCalendarModule\Controller\Search',
             ]
         );
     }
@@ -55,6 +58,10 @@ class Module extends AbstractModule
             'mongo_user' => $settings->get('fcm_mongo_user'),
             'mongo_password' => $settings->get('fcm_mongo_password'),
             'mongo_db' => $settings->get('fcm_mongo_db'),
+            'solr_hostname' => $settings->get('fcm_solr_hostname'),
+            'solr_port' => $settings->get('fcm_solr_port'),
+            'solr_path' => $settings->get('fcm_solr_path'),
+            'solr_connection' => $settings->get('fcm_solr_connection'),
         ]);
         return $renderer->formCollection($form);
     }
@@ -76,6 +83,41 @@ class Module extends AbstractModule
         $settings->set('fcm_mongo_user', $formData['mongo_user']);
         $settings->set('fcm_mongo_password', $formData['mongo_password']);
         $settings->set('fcm_mongo_db', $formData['mongo_db']);
+        $settings->set('fcm_solr_hostname', $formData['solr_hostname']);
+        $settings->set('fcm_solr_port', $formData['solr_port']);
+        $settings->set('fcm_solr_path', $formData['solr_path']);
+        $settings->set('fcm_solr_connection', $formData['solr_connection']);
         return true;
+    }
+
+    public function attachListeners(SharedEventManagerInterface $sharedEventManager)
+    {
+        // Update iiif presentation search
+        $sharedEventManager->attach(
+            'IiifPresentation\v3\Controller\ItemController',
+            'iiif_presentation.3.item.manifest',
+            [$this, 'updateIiif3Search']
+        );
+    }
+
+    public function updateIiif3Search(Event $event)
+    {
+        $manifest = $event->getParam('manifest');
+        $item = $event->getParam('item');
+        if ($item->sites()) {
+            foreach ($item->sites() as $site) {
+                if ($site->slug() == "fashioncalendar") {
+                    $viewHelperManager = $this->getServiceLocator()->get('ViewHelperManager');
+                    $url = $viewHelperManager->get('Url');
+                    $manifest["service"] = [
+                        "@context" => "http://iiif.io/api/search/0/context.json",
+                        "@id" => $url('site/search-api', ['item-id' => $item->id(), 'site-slug' => 'fashioncalendar']),
+                        "profile" => "http://iiif.io/api/search/0/search"
+                    ];
+                    $event->setParam('manifest', $manifest);
+                    break;
+                }
+            }
+        }
     }
 }

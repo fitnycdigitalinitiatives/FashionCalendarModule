@@ -78,5 +78,46 @@ class ConfigForm extends Form
                 'id' => 'mongo_db',
             ],
         ]);
+        $this->add([
+            'name' => 'solr_hostname',
+            'type' => 'Text',
+            'options' => [
+                'label' => 'Solr Hostname',
+            ],
+            'attributes' => [
+                'id' => 'solr_hostname',
+            ],
+        ]);
+        $this->add([
+            'name' => 'solr_port',
+            'type' => 'Text',
+            'options' => [
+                'label' => 'Solr Port',
+            ],
+            'attributes' => [
+                'id' => 'solr_port',
+            ],
+        ]);
+        $this->add([
+            'name' => 'solr_path',
+            'type' => 'Text',
+            'options' => [
+                'label' => 'Solr Path',
+            ],
+            'attributes' => [
+                'id' => 'solr_path',
+            ],
+        ]);
+        $this->add([
+            'name' => 'solr_connection',
+            'type' => Element\Checkbox::class,
+            'options' => [
+                'label' => 'Activate connection to Solr',
+                // @translate
+            ],
+            'attributes' => [
+                'id' => 'solr_connection',
+            ],
+        ]);
     }
 }
