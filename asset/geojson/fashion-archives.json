@@ -1556,6 +1556,22 @@
     "geometry": {
       "type": "Point",
       "coordinates": [
+        -70.90952797116483,
+        42.71468359993015
+      ]
+    },
+    "properties": {
+      "name": "The Phillips Library, Peabody Essex Museum",
+      "address": "306 Newburyport Turnpike, Rowley, MA 01969",
+      "website": "https://www.pem.org/library",
+      "video": null
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
         -71.11467,
         42.37825
       ]
@@ -5388,6 +5404,22 @@
       "name": "Wyoming State Museum",
       "address": "2301 Central Ave, Cheyenne, WY 82001",
       "website": "https://wyomuseum.catalogaccess.com/",
+      "video": null
+    }
+  },
+  {
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [
+        -87.54844399999999,
+        33.20865324425758
+      ]
+    },
+    "properties": {
+      "name": "The Fashion Archive",
+      "address": "The University of Alabama, 745 Colonial Dr, Tuscaloosa, AL 35487",
+      "website": "https://thefashionarchive.ches.ua.edu/",
       "video": null
     }
   },
