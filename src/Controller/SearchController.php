@@ -116,6 +116,7 @@ class SearchController extends AbstractActionController
                 }
                 $response->setContent(json_encode($doc, JSON_PRETTY_PRINT));
                 $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
+                $response->getHeaders()->addHeaderLine('Access-Control-Allow-Origin', '*');
                 return $response;
             } catch (SolrClientException $e) {
                 $error = array('error' => ["code" => $e->getCode(), "message" => $e->getMessage()]);
