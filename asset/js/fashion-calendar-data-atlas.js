@@ -1492,7 +1492,7 @@ $(document).ready(function () {
                 step: 1,
                 handleAttributes: [
                     { 'aria-label': 'Date Min' },
-                    { 'aria-label': 'Date Test' },
+                    { 'aria-label': 'Date Max' },
                 ],
                 range: {
                     'min': first_year,
