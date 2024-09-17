@@ -1181,6 +1181,10 @@ $(document).ready(function () {
             noUiSlider.create(slider, {
                 start: [date_range_start, date_range_end],
                 step: 1,
+                handleAttributes: [
+                    { 'aria-label': 'Date Min' },
+                    { 'aria-label': 'Date Test' },
+                ],
                 range: {
                     'min': first_year,
                     'max': last_year,
@@ -1486,6 +1490,10 @@ $(document).ready(function () {
             noUiSlider.create(slider, {
                 start: [date_range_start, date_range_end],
                 step: 1,
+                handleAttributes: [
+                    { 'aria-label': 'Date Min' },
+                    { 'aria-label': 'Date Test' },
+                ],
                 range: {
                     'min': first_year,
                     'max': last_year,
