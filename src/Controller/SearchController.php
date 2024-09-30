@@ -18,6 +18,8 @@ class SearchController extends AbstractActionController
                 'hostname' => $host,
                 'port' => $port,
                 'path' => $path,
+                'login' => $settings->get('fcm_solr_login') ? $settings->get('fcm_solr_login') : "",
+                'password' => $settings->get('fcm_solr_password') ? $settings->get('fcm_solr_password') : "",
                 'wt' => 'json',
             ]);
             $solrQuery = new SolrQuery;

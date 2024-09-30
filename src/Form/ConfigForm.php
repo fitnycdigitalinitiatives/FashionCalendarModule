@@ -119,5 +119,27 @@ class ConfigForm extends Form
                 'id' => 'solr_connection',
             ],
         ]);
+        $this->add([
+            'name' => 'solr_login',
+            'type' => Element\Text::class,
+            'options' => [
+                'label' => 'Solr username',
+                // @translate
+            ],
+            'attributes' => [
+                'id' => 'solr_login',
+            ],
+        ]);
+        $this->add([
+            'name' => 'solr_password',
+            'type' => Element\Text::class,
+            'options' => [
+                'label' => 'Solr password',
+                // @translate
+            ],
+            'attributes' => [
+                'id' => 'solr_password',
+            ],
+        ]);
     }
 }

@@ -62,6 +62,8 @@ class Module extends AbstractModule
             'solr_port' => $settings->get('fcm_solr_port'),
             'solr_path' => $settings->get('fcm_solr_path'),
             'solr_connection' => $settings->get('fcm_solr_connection'),
+            'solr_login' => $settings->get('fcm_solr_login'),
+            'solr_password' => $settings->get('fcm_solr_password'),
         ]);
         return $renderer->formCollection($form);
     }
@@ -87,6 +89,8 @@ class Module extends AbstractModule
         $settings->set('fcm_solr_port', $formData['solr_port']);
         $settings->set('fcm_solr_path', $formData['solr_path']);
         $settings->set('fcm_solr_connection', $formData['solr_connection']);
+        $settings->set('fcm_solr_login', $formData['solr_login']);
+        $settings->set('fcm_solr_password', $formData['solr_password']);
         return true;
     }
 
