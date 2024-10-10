@@ -66,6 +66,9 @@ class SearchController extends AbstractActionController
                 $api = $this->api();
                 $item = $api->read('items', $item_id)->getContent();
                 $media = $item->media();
+                // Get first page to get index offset
+                $thisFilename = pathinfo($media[0]->mediaData()['access'])['filename'];
+                $indexOffset = intval(substr($thisFilename, strrpos($thisFilename, '_') + 1));
                 $doc['within']['ignored'] = $ignored;
                 // HL_PAT = re.compile("<em>(.+?)</em>");
                 foreach ($hlresp['snippets'] as $supidx => $snip) {
@@ -86,7 +89,7 @@ class SearchController extends AbstractActionController
                         foreach ($hlspan as $subidx => $hlbox) {
                             $region = $snip['regions'][$hlbox['parentRegionIdx']];
                             $page = $snip['pages'][$region['pageIdx']]['id'];
-                            $pageIndex = (int) preg_replace('/[^0-9]/', '', $page);
+                            $pageIndex = intval(preg_replace('/[^0-9]/', '', $page)) - $indexOffset;
                             if (isset($media[$pageIndex])) {
                                 $x = $region['ulx'] + $hlbox['ulx'];
                                 $y = $region['uly'] + $hlbox['uly'];
@@ -127,11 +130,8 @@ class SearchController extends AbstractActionController
                 $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
                 return $response;
             }
-
         } else {
             throw new RuntimeException("Invalid Page");
         }
     }
-
-
 }
