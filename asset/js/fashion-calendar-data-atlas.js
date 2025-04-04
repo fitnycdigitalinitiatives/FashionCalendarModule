@@ -701,6 +701,9 @@ $(document).ready(function () {
                             workspaceControlPanel: {
                                 enabled: false
                             },
+                            workspace: {
+                                showZoomControls: true,
+                            },
                             window: {
                                 allowClose: false,
                                 allowFullscreen: true,
