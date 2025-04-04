@@ -748,6 +748,12 @@ $(document).ready(function () {
                                 }
                             }
                             miradorViewer.store.dispatch(Mirador.actions.updateConfig(miradorConfig));
+                        } else {
+                            const miradorConfig = {};
+                            miradorConfig['osdConfig'] = {
+                                crossOriginPolicy: 'Anonymous'
+                            }
+                            miradorViewer.store.dispatch(Mirador.actions.updateConfig(miradorConfig));
                         }
                         miradorViewer.store.dispatch(Mirador.actions.addWindow(thisWindow));
                         pageData = null;
