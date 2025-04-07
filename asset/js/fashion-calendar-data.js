@@ -714,6 +714,9 @@ $(document).ready(function () {
                                 en: {
                                     welcome: 'Fetching data...',
                                 }
+                            },
+                            osdConfig: {
+                                preserveViewport: false,
                             }
                         }
                     );
