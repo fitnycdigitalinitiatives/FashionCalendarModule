@@ -728,7 +728,7 @@ $(document).ready(function () {
                 fetch(pageURL)
                     .then((response) => response.json())
                     .then((pageData) => {
-                        let miradorData = $(pageData.html).children('#mirador-viewer');
+                        let miradorData = $(pageData.html).children('.mirador-viewer');
                         $(modalTitle).find('a').attr({ "href": pageData["item-link"], "aria-disabled": "false" }).removeClass("disabled");
                         const manifest = miradorData.data('manifest');
                         const authorization = miradorData.data('authorization');

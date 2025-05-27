@@ -185,7 +185,6 @@ class DataAtlasController extends AbstractActionController
                 $limit = ['$limit' => $map_docs_per_page];
                 if ($compound) {
                     $search['$search']['compound'] = $compound;
-
                 } else {
                     $search['$search']['facet'] = ['facets' => ['titles' => ['type' => 'string', 'path' => 'appears_in.calendar_title', 'numBuckets' => 1]]];
                 }
@@ -276,7 +275,6 @@ class DataAtlasController extends AbstractActionController
                 $response->getHeaders()->addHeaderLine('Content-Disposition', 'attachment; filename="fashion-calendar-results.json"');
                 $response->setContent($json);
                 return $response;
-
             } else {
                 if (array_key_exists('page', $params) && ($page = $params['page']) && is_numeric($page)) {
                     $skip = ['$skip' => $docs_per_page * ($page - 1)];
@@ -326,7 +324,6 @@ class DataAtlasController extends AbstractActionController
                 $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
                 return $response;
             }
-
         } else {
             throw new RuntimeException("Invalid Page");
         }
@@ -379,7 +376,6 @@ class DataAtlasController extends AbstractActionController
             $response = $this->getResponse();
             $params = $this->params()->fromQuery();
             if (array_key_exists('id', $params) && ($id = $params['id']) && array_key_exists('page', $params) && ($page = $params['page'])) {
-                $page_id = $id . '_' . sprintf('%03d', $page);
                 $api = $this->api();
                 $identifier = $api->searchOne('properties', ['term' => 'dcterms:identifier'])->getContent();
                 $item = $api->searchOne('items', [
@@ -391,48 +387,23 @@ class DataAtlasController extends AbstractActionController
                         ],
                     ],
                 ])->getContent();
-                if ($item && ($media = $item->media()) && isset($media[$page])) {
+                // Need to add one to the page to get the correct canvas number because the cover is the first canvas and page 1 is the second
+                $canvas_number = $page + 1;
+                if ($item && ($primaryMedia = $item->primaryMedia()) && (($primaryMedia->ingester() == 'remoteCompoundObject')) && (array_key_exists($page, $primaryMedia->mediaData()['components']))) {
                     $miradorViewer = $this->viewHelpers()->get('miradorViewer');
-                    $media = $item->media();
                     $response->setContent(json_encode([
-                        'html' => $miradorViewer($item, $media[$page]->id()),
+                        'html' => $miradorViewer($primaryMedia, $canvas_number),
                         'item-link' => $item->siteUrl(),
                     ]));
                     $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
                     return $response;
                 } else {
-                    $error = array('error' => ["code" => 500, "message" => "Media not found: " . $page_id]);
+                    $error = array('error' => ["code" => 500, "message" => "Unable to find canvas: " . $canvas_number]);
                     $response->setStatusCode(500);
                     $response->setContent(json_encode($error));
                     $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
                     return $response;
                 }
-
-                // If using this method be sure query is not slowed down by resource link subquery
-                // $media = $api->searchOne('media', [
-                //     'property' => [
-                //         [
-                //             'property' => $identifier->id(),
-                //             'type' => 'eq',
-                //             'text' => $page_id,
-                //         ],
-                //     ],
-                // ])->getContent();
-                // if ($media) {
-                //     $miradorViewer = $this->viewHelpers()->get('miradorViewer');
-                //     $response->setContent(json_encode([
-                //         'html' => $miradorViewer($media->item(), $media->id()),
-                //         'item-link' => $media->item()->siteUrl(),
-                //     ]));
-                //     $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
-                //     return $response;
-                // } else {
-                //     $error = array('error' => ["code" => 500, "message" => "Media not found: " . $page_id]);
-                //     $response->setStatusCode(500);
-                //     $response->setContent(json_encode($error));
-                //     $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
-                //     return $response;
-                // }
             } else {
                 $error = array('error' => ["code" => 500, "message" => "Invalid request"]);
                 $response->setStatusCode(500);
@@ -443,7 +414,6 @@ class DataAtlasController extends AbstractActionController
         } else {
             throw new RuntimeException("Invalid Page");
         }
-
     }
 
     public function browseAction()
@@ -470,8 +440,13 @@ class DataAtlasController extends AbstractActionController
                             ])->getContent();
                             if ($item) {
                                 $primaryMedia = $item->primaryMedia();
-                                if ($primaryMedia && ($primaryMedia->ingester() == 'remoteFile') && ($thumbnailURL = $primaryMedia->mediaData()['thumbnail'])) {
-                                    $data[] = ['time' => $number + $i, "thumbnail" => $thumbnailURL];
+                                if ($primaryMedia && ($primaryMedia->ingester() == 'remoteCompoundObject')) {
+                                    foreach ($primaryMedia->mediaData()['components'] as $component) {
+                                        if ($thumbnailURL = $component['thumbnail']) {
+                                            $data[] = ['time' => $number + $i, "thumbnail" => $thumbnailURL];
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -481,8 +456,6 @@ class DataAtlasController extends AbstractActionController
                     case 'year':
                         # code...
                         break;
-
-
                 }
             }
             $error = array('error' => ["code" => 500, "message" => "Invalid request"]);
@@ -490,30 +463,23 @@ class DataAtlasController extends AbstractActionController
             $response->setContent(json_encode($error));
             $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
             return $response;
-
         } else {
             throw new RuntimeException("Invalid Page");
         }
-
     }
 
     public function downloadAction()
     {
-        if ($this->currentSite()->slug() == "fashioncalendar" && ($params = $this->params()->fromQuery()) && array_key_exists('id', $params) && ($id = $params['id']) && ($api = $this->api()) && ($item = $api->read('items', $id)->getContent()) && ($allmedia = $item->media())) {
-            foreach ($allmedia as $media) {
-                if ($media->mediaType() == "application/pdf") {
-                    $presignedHelper = $this->viewHelpers()->get('s3presigned');
-                    $accessURL = $media->mediaData()['access'];
-                    $response = $this->getResponse();
-                    $response->setContent(json_encode(['url' => $presignedHelper($accessURL, true, $item->displayTitle() . '.pdf')]));
-                    $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
-                    return $response;
-                }
+        if ($this->currentSite()->slug() == "fashioncalendar" && ($params = $this->params()->fromQuery()) && array_key_exists('id', $params) && ($id = $params['id']) && ($api = $this->api()) && ($item = $api->read('items', $id)->getContent()) && ($primaryMedia = $item->primaryMedia())) {
+            if ($pdfURL = $primaryMedia->mediaData()['pdf']) {
+                $presignedHelper = $this->viewHelpers()->get('s3presigned');
+                $response = $this->getResponse();
+                $response->setContent(json_encode(['url' => $presignedHelper($pdfURL, true, $item->displayTitle() . '.pdf')]));
+                $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
+                return $response;
             }
         } else {
             throw new RuntimeException("Invalid Page");
         }
-
-
     }
 }

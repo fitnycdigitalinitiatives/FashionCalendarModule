@@ -1,7 +1,9 @@
 <?php
+
 /**
  * FashionCalendarModule
  */
+
 namespace FashionCalendarModule;
 
 use Omeka\Module\AbstractModule;
@@ -41,7 +43,6 @@ class Module extends AbstractModule
             [
                 'FashionCalendarModule\Controller\Data',
                 'FashionCalendarModule\Controller\DataAtlas',
-                'FashionCalendarModule\Controller\Search',
             ]
         );
     }
@@ -92,36 +93,5 @@ class Module extends AbstractModule
         $settings->set('fcm_solr_login', $formData['solr_login']);
         $settings->set('fcm_solr_password', $formData['solr_password']);
         return true;
-    }
-
-    public function attachListeners(SharedEventManagerInterface $sharedEventManager)
-    {
-        // Update iiif presentation search
-        $sharedEventManager->attach(
-            'IiifPresentation\v3\Controller\ItemController',
-            'iiif_presentation.3.item.manifest',
-            [$this, 'updateIiif3Search']
-        );
-    }
-
-    public function updateIiif3Search(Event $event)
-    {
-        $manifest = $event->getParam('manifest');
-        $item = $event->getParam('item');
-        if ($item->sites()) {
-            foreach ($item->sites() as $site) {
-                if ($site->slug() == "fashioncalendar") {
-                    $viewHelperManager = $this->getServiceLocator()->get('ViewHelperManager');
-                    $url = $viewHelperManager->get('Url');
-                    $manifest["service"] = [
-                        "@context" => "http://iiif.io/api/search/0/context.json",
-                        "@id" => $url('site/search-api', ['item-id' => $item->id(), 'site-slug' => 'fashioncalendar']),
-                        "profile" => "http://iiif.io/api/search/0/search"
-                    ];
-                    $event->setParam('manifest', $manifest);
-                    break;
-                }
-            }
-        }
     }
 }

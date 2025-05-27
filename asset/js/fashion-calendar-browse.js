@@ -53,7 +53,7 @@ $(document).ready(function () {
             queryParams.set("type", $(this).data("type"));
             queryParams.set("number", $(this).data("number"));
             queryParams.set("collection", collection);
-            const url = "/data-api/browse?" + queryParams.toString();
+            const url = "/data-atlas-api/browse?" + queryParams.toString();
             fetch(url)
                 .then((response) => response.json())
                 .then((data) => {
