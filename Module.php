@@ -59,12 +59,6 @@ class Module extends AbstractModule
             'mongo_user' => $settings->get('fcm_mongo_user'),
             'mongo_password' => $settings->get('fcm_mongo_password'),
             'mongo_db' => $settings->get('fcm_mongo_db'),
-            'solr_hostname' => $settings->get('fcm_solr_hostname'),
-            'solr_port' => $settings->get('fcm_solr_port'),
-            'solr_path' => $settings->get('fcm_solr_path'),
-            'solr_connection' => $settings->get('fcm_solr_connection'),
-            'solr_login' => $settings->get('fcm_solr_login'),
-            'solr_password' => $settings->get('fcm_solr_password'),
         ]);
         return $renderer->formCollection($form);
     }
@@ -86,12 +80,6 @@ class Module extends AbstractModule
         $settings->set('fcm_mongo_user', $formData['mongo_user']);
         $settings->set('fcm_mongo_password', $formData['mongo_password']);
         $settings->set('fcm_mongo_db', $formData['mongo_db']);
-        $settings->set('fcm_solr_hostname', $formData['solr_hostname']);
-        $settings->set('fcm_solr_port', $formData['solr_port']);
-        $settings->set('fcm_solr_path', $formData['solr_path']);
-        $settings->set('fcm_solr_connection', $formData['solr_connection']);
-        $settings->set('fcm_solr_login', $formData['solr_login']);
-        $settings->set('fcm_solr_password', $formData['solr_password']);
         return true;
     }
 }
