@@ -707,7 +707,10 @@ $(document).ready(function () {
                                 sideBarPanel: 'search',
                                 panels: {
                                     info: false,
-                                    attribution: false
+                                    attribution: false,
+                                    canvas: false,
+                                    annotations: false,
+                                    layers: false
                                 }
                             },
                             translations: {
