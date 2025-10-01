@@ -72,6 +72,11 @@ html {
 
 .source {
     font-family: 'Special Elite', cursive;
+    white-space: pre-line;
+}
+
+.cfda-icon {
+    height: 1rem;
 }
 
 #data-container dl a {

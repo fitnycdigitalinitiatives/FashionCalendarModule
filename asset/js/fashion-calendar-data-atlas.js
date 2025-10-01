@@ -404,19 +404,34 @@ $(document).ready(function () {
         }
         let appearsInList = [];
         event.appears_in.forEach(issue => {
-            const date = new Date(issue.calendar_date);
-            const options = {
-                year: 'numeric',
-                month: 'long',
-                timeZone: 'UTC'
-            };
-            if (issue.calendar_date.length == 10) {
-                options["day"] = 'numeric';
-            }
-            const displayTitle = `${issue.calendar_title}, ${date.toLocaleDateString('en-US', options)}`;
-            let issueHtml = `
+            if (issue.calendar_title == "CFDA Fashion Calendar") {
+                let issueHtml = `
+                <img class="cfda-icon d-block my-1" src="/modules/FashionCalendarModule/asset/img/CFDA_Short.png" alt="CFDA"/>
+                <span>This event was listed in the CFDA Fashion Calendar</span>
+                <a href="?titles=CFDA+Fashion+Calendar" class="issue-search link-dark ms-1 text-decoration-none" data-calendar_title="${encodeURIComponent(issue.calendar_title)}" aria-label="Search for this issue">
+                <i class="fas fa-search" aria-hidden="true" title="Search for this issue">
+                </i>
+                </a>
+                <a href="https://cfda.com/fashion-calendar" class="link-dark ms-1 text-decoration-none" target="_blank" aria-label="Visit the CFDA Fashion Calendar site">
+                <i class="fas fa-external-link-alt" aria-hidden="true" title="Visit the CFDA Fashion Calendar site">
+                </i>
+                </a>
+                `;
+                appearsInList.push(issueHtml);
+            } else {
+                const date = new Date(issue.calendar_date);
+                const options = {
+                    year: 'numeric',
+                    month: 'long',
+                    timeZone: 'UTC'
+                };
+                if (issue.calendar_date.length == 10) {
+                    options["day"] = 'numeric';
+                }
+                const displayTitle = `${issue.calendar_title}, ${date.toLocaleDateString('en-US', options)}`;
+                let issueHtml = `
                 <span>${displayTitle} (page ${issue.calendar_page})</span>
-                <a href="?issue=${encodeURIComponent(issue.calendar_id)}&issue_date=${encodeURIComponent(issue.calendar_date)}" class="issue-search link-dark ms-1 text-decoration-none" data-calendar_date="${encodeURIComponent(issue.calendar_date)}" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" aria-label="Search for this issue">
+                <a href="?issue=${encodeURIComponent(issue.calendar_id)}&issue_date=${encodeURIComponent(issue.calendar_date)}" class="issue-search link-dark ms-1 text-decoration-none" data-calendar_title="${encodeURIComponent(issue.calendar_title)}" data-calendar_date="${encodeURIComponent(issue.calendar_date)}" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" aria-label="Search for this issue">
                 <i class="fas fa-search" aria-hidden="true" title="Search for this issue">
                 </i>
                 </a>
@@ -425,7 +440,8 @@ $(document).ready(function () {
                 </i>
                 </button>
             `;
-            appearsInList.push(issueHtml);
+                appearsInList.push(issueHtml);
+            }
         });
         let eventHtml = `
         <div class="row py-4">
@@ -491,12 +507,17 @@ $(document).ready(function () {
         });
         $(".issue-search").on("click.fashionCalendar", function (event) {
             event.preventDefault();
+            const title = decodeURIComponent($(this).data("calendar_title"));
             const issue = decodeURIComponent($(this).data("calendar_id"));
             const calendar_date = decodeURIComponent($(this).data("calendar_date"));
             // Update URL Query.
             let queryParams = new URLSearchParams();
-            queryParams.set("issue", issue);
-            queryParams.set("issue_date", calendar_date);
+            if (title == "CFDA Fashion Calendar") {
+                queryParams.set("titles", title);
+            } else {
+                queryParams.set("issue", issue);
+                queryParams.set("issue_date", calendar_date);
+            }
             history.pushState(null, null, "?" + queryParams.toString());
             listEvents(queryParams);
         });
@@ -882,20 +903,36 @@ $(document).ready(function () {
                     if (event.appears_in) {
                         popup_content += '<dt>Appears in</dt>';
                         event.appears_in.forEach(issue => {
-                            const date = new Date(issue.calendar_date);
-                            const options = {
-                                year: 'numeric',
-                                month: 'long',
-                                timeZone: 'UTC'
-                            };
-                            if (issue.calendar_date.length == 10) {
-                                options["day"] = 'numeric';
+                            if (issue.calendar_title == "CFDA Fashion Calendar") {
+                                popup_content += `
+                                <img class="cfda-icon d-block my-1" src="/modules/FashionCalendarModule/asset/img/CFDA_Short.png" alt="CFDA"/>
+                                <span>This event was listed in the CFDA Fashion Calendar</span>
+                                <a href="?titles=CFDA+Fashion+Calendar" class="map-issue-search link-dark ms-1 text-decoration-none" data-calendar_title="${encodeURIComponent(issue.calendar_title)}" aria-label="Search for this issue">
+                                <i class="fas fa-search" aria-hidden="true" title="Search for this issue">
+                                </i>
+                                </a>
+                                <a href="https://cfda.com/fashion-calendar" class="link-dark ms-1 text-decoration-none" target="_blank" aria-label="Visit the CFDA Fashion Calendar site">
+                                <i class="fas fa-external-link-alt" aria-hidden="true" title="Visit the CFDA Fashion Calendar site">
+                                </i>
+                                </a>
+                                `;
                             }
-                            const displayTitle = `${issue.calendar_title}, ${date.toLocaleDateString('en-US', options)}`;
-                            popup_content += `
+                            else {
+                                const date = new Date(issue.calendar_date);
+
+                                const options = {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    timeZone: 'UTC'
+                                };
+                                if (issue.calendar_date.length == 10) {
+                                    options["day"] = 'numeric';
+                                }
+                                const displayTitle = `${issue.calendar_title}, ${date.toLocaleDateString('en-US', options)}`;
+                                popup_content += `
                                     <dd>
                                     <span>${displayTitle} (page ${issue.calendar_page})</span>
-                                    <a href="?issue=${encodeURIComponent(issue.calendar_id)}&issue_date=${encodeURIComponent(issue.calendar_date)}" class="map-issue-search link-dark ms-1 text-decoration-none" data-calendar_date="${encodeURIComponent(issue.calendar_date)}" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" aria-label="Search for this issue">
+                                    <a href="?issue=${encodeURIComponent(issue.calendar_id)}&issue_date=${encodeURIComponent(issue.calendar_date)}" class="map-issue-search link-dark ms-1 text-decoration-none" data-calendar_title="${encodeURIComponent(issue.calendar_title)}" data-calendar_date="${encodeURIComponent(issue.calendar_date)}" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" aria-label="Search for this issue">
                                     <i class="fas fa-search" aria-hidden="true" title="Search for this issue">
                                     </i>
                                     </a>
@@ -905,6 +942,7 @@ $(document).ready(function () {
                                     </button>
                                     </dd>
                                 `;
+                            }
                         });
                     }
                     if (event.names.length) {
@@ -1337,11 +1375,16 @@ $(document).ready(function () {
                 dateRange = null;
                 let issue = decodeURIComponent($(this).data("calendar_id"));
                 const calendar_date = decodeURIComponent($(this).data("calendar_date"));
+                const title = decodeURIComponent($(this).data("calendar_title"));
                 // Update URL Query.
                 let queryParams = new URLSearchParams();
                 mappage = 1;
-                queryParams.set("issue", issue);
-                queryParams.set("issue_date", calendar_date);
+                if (title == "CFDA Fashion Calendar") {
+                    queryParams.set("titles", title);
+                } else {
+                    queryParams.set("issue", issue);
+                    queryParams.set("issue_date", calendar_date);
+                }
                 history.pushState(null, null, "?" + queryParams.toString());
                 mapData = null;
                 bigMap.remove();
@@ -1869,7 +1912,7 @@ $(document).ready(function () {
                                     thisData = null;
                                     $('#ngram-loader').replaceWith(`<canvas id="ngram-chart" aria-label="Chart of word frequency (Ngram)" role="img"></canvas>`);
                                     if (ngramData.length > 0) {
-                                        for (let index = 1941; index < 2016; index++) {
+                                        for (let index = 1941; index < 2026; index++) {
                                             if (!ngramData.find((element) => element.year == index.toString())) {
                                                 ngramData.push({ "year": index.toString(), "count": 0 });
                                             }
@@ -1920,7 +1963,7 @@ $(document).ready(function () {
                         }
                         // Events per year
                         if (('years' in graphsData[0]) && (graphsData[0].years.length > 0)) {
-                            for (let index = 1941; index < 2016; index++) {
+                            for (let index = 1941; index < 2026; index++) {
                                 if (!graphsData[0].years.find((element) => element.year == index.toString())) {
                                     graphsData[0].years.push({ "year": index.toString(), "count": 0 });
                                 }
@@ -1967,7 +2010,7 @@ $(document).ready(function () {
                         }
                         // Hosts per year
                         if (('uniqueHostsbyYear' in graphsData[0]) && (graphsData[0].uniqueHostsbyYear.length > 0)) {
-                            for (let index = 1941; index < 2016; index++) {
+                            for (let index = 1941; index < 2026; index++) {
                                 if (!graphsData[0].uniqueHostsbyYear.find((element) => element.year == index.toString())) {
                                     graphsData[0].uniqueHostsbyYear.push({ "year": index.toString(), "numberOfHosts": 0 });
                                 }
@@ -2492,11 +2535,11 @@ $(document).ready(function () {
             <div class="col-form-label col-12 col-lg-2">Date Range</div>
             <div class="col-12 col-lg-10">
                 <div class="value input-group" id="adv_date_range">
-                    <input name="date_range_start" type="number" step="1" class="form-control" placeholder="1941" min="1941" max="2015" aria-label="Start Year">
+                    <input name="date_range_start" type="number" step="1" class="form-control" placeholder="1941" min="1941" max="2025" aria-label="Start Year">
                     <span class="input-group-text bg-dark text-white">TO</span>
-                    <input name="date_range_end" type="number" step="1" class="form-control" placeholder="2015" min="1941" max="2015" aria-label="End Year">
+                    <input name="date_range_end" type="number" step="1" class="form-control" placeholder="2025" min="1941" max="2025" aria-label="End Year">
                 </div>
-                <div class="form-text">Limit your search between a range of years. The entire Fashion Calendar ranges from 1941 to 2015.</div>
+                <div class="form-text">Limit your search between a range of years. The entire Fashion Calendar ranges from 1941 to 2025.</div>
             </div>
             </div>
         </form>
@@ -2558,7 +2601,6 @@ $(document).ready(function () {
         );
         categoryTypeahead.on('typeahead:select', function (ev, data) {
             ev.preventDefault();
-            console.log("selected");
             const thisSelection = $(`
             <li class="list-inline-item my-1">
                 <a class="remove-adv link-dark text-decoration-none">
@@ -2679,9 +2721,9 @@ $(document).ready(function () {
             }
             if (formData.has("date_range_start") && formData.has("date_range_end") && (formData.get("date_range_start") || formData.get("date_range_end"))) {
                 const date_range_start = formData.get("date_range_start") ? formData.get("date_range_start") : "1941";
-                const date_range_end = formData.get("date_range_end") ? formData.get("date_range_end") : "2015";
+                const date_range_end = formData.get("date_range_end") ? formData.get("date_range_end") : "2025";
                 if (date_range_end >= date_range_start) {
-                    if (!(date_range_start == 1941 && date_range_end == 2015)) {
+                    if (!(date_range_start == 1941 && date_range_end == 2025)) {
                         queryParams.set("date_range_start", date_range_start);
                         queryParams.set("date_range_end", date_range_end);
                     }

@@ -115,7 +115,7 @@ class DataAtlasController extends AbstractActionController
             if (array_key_exists('issue', $params) && ($issue = $params['issue'])) {
                 $compound['filter'][] = ['text' => ['query' => $issue, 'path' => 'appears_in.calendar_id']];
             }
-            if (array_key_exists('titles', $params) && ($titles = $params['titles']) && (($titles == "Fashion Calendar") || ($titles == "Home Furnishings Calendar"))) {
+            if (array_key_exists('titles', $params) && ($titles = $params['titles']) && (($titles == "Fashion Calendar") || ($titles == "Home Furnishings Calendar") || ($titles == "CFDA Fashion Calendar"))) {
                 $compound['filter'][] = ['text' => ['query' => $titles, 'path' => 'appears_in.calendar_title']];
             }
             if (array_key_exists('year', $params) && ($year = $params['year']) && (strlen($year) == 4) && is_numeric($year)) {
@@ -146,7 +146,7 @@ class DataAtlasController extends AbstractActionController
             // Check if graph data is all that is needed
             if (array_key_exists('graph', $params) && ($params['graph'] == 'true')) {
                 $yearBoundaries = [];
-                for ($i = 1941; $i < 2017; $i++) {
+                for ($i = 1941; $i < 2027; $i++) {
                     $yearBoundaries[] = new UTCDateTime(strtotime($i . '-01-01') * 1000);
                 }
                 $searchMeta = [
@@ -210,7 +210,7 @@ class DataAtlasController extends AbstractActionController
                 $aggregation[] = ['$project' => ['results' => 1, 'count' => '$count.count.count.total']];
             } elseif (array_key_exists('facet', $params) && ($params['facet'] == 'true')) {
                 $yearBoundaries = [];
-                for ($i = 1941; $i < 2017; $i++) {
+                for ($i = 1941; $i < 2027; $i++) {
                     $yearBoundaries[] = new UTCDateTime(strtotime($i . '-01-01') * 1000);
                 }
                 $searchMeta = [
@@ -220,7 +220,7 @@ class DataAtlasController extends AbstractActionController
                             'facets' => [
                                 'names' => ['type' => 'string', 'path' => 'names.label', 'numBuckets' => 25],
                                 'categories' => ['type' => 'string', 'path' => 'names.categories.label', 'numBuckets' => 25],
-                                'titles' => ['type' => 'string', 'path' => 'appears_in.calendar_title', 'numBuckets' => 2],
+                                'titles' => ['type' => 'string', 'path' => 'appears_in.calendar_title', 'numBuckets' => 3],
                                 'years' => ['type' => 'date', 'path' => 'start_date_iso', 'boundaries' => $yearBoundaries]
                             ]
                         ]
@@ -234,7 +234,7 @@ class DataAtlasController extends AbstractActionController
                 $aggregation[] = ['$project' => ['names' => 1, 'categories' => 1, 'titles' => 1, 'years' => ['$filter' => ['input' => '$years', 'as' => 'year', 'cond' => ['$gt' => ['$$year.count', 0]]]]]];
             } elseif (array_key_exists('date_range', $params) && ($params['date_range'] == 'true')) {
                 $yearBoundaries = [];
-                for ($i = 1941; $i < 2017; $i++) {
+                for ($i = 1941; $i < 2027; $i++) {
                     $yearBoundaries[] = new UTCDateTime(strtotime($i . '-01-01') * 1000);
                 }
                 $searchMeta = [
