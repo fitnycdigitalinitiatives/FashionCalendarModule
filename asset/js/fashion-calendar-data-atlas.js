@@ -2439,14 +2439,20 @@ $(document).ready(function () {
             initialize: false,
             datumTokenizer: Bloodhound.tokenizers.whitespace,
             queryTokenizer: Bloodhound.tokenizers.whitespace,
-            prefetch: "/data-atlas-api/suggester?type=names"
+            prefetch: {
+                url: "/data-atlas-api/suggester?type=names",
+                thumbprint: "cfda-2025"
+            }
         });
         const namePromise = names.initialize();
         const categories = new Bloodhound({
             initialize: false,
             datumTokenizer: Bloodhound.tokenizers.whitespace,
             queryTokenizer: Bloodhound.tokenizers.whitespace,
-            prefetch: "/data-atlas-api/suggester?type=categories"
+            prefetch: {
+                url: "/data-atlas-api/suggester?type=categories",
+                thumbprint: "cfda-2025"
+            }
         });
         const categoryPromise = categories.initialize();
         let termSuggester = $('#data-search input').typeahead(
