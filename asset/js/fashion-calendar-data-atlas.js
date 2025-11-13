@@ -406,7 +406,7 @@ $(document).ready(function () {
         event.appears_in.forEach(issue => {
             if (issue.calendar_title == "CFDA Fashion Calendar") {
                 let issueHtml = `
-                <img class="cfda-icon d-block my-1" src="/modules/FashionCalendarModule/asset/img/CFDA_Short.png" alt="CFDA"/>
+                <img class="cfda-icon d-block my-1" src="/modules/FashionCalendarModule/asset/img/CFDA_Logo_Black.png" alt="CFDA"/>
                 <span>This event was listed in the CFDA Fashion Calendar</span>
                 <a href="?titles=CFDA+Fashion+Calendar" class="issue-search link-dark ms-1 text-decoration-none" data-calendar_title="${encodeURIComponent(issue.calendar_title)}" aria-label="Search for this issue">
                 <i class="fas fa-search" aria-hidden="true" title="Search for this issue">
@@ -905,7 +905,7 @@ $(document).ready(function () {
                         event.appears_in.forEach(issue => {
                             if (issue.calendar_title == "CFDA Fashion Calendar") {
                                 popup_content += `
-                                <img class="cfda-icon d-block my-1" src="/modules/FashionCalendarModule/asset/img/CFDA_Short.png" alt="CFDA"/>
+                                <img class="cfda-icon d-block my-1" src="/modules/FashionCalendarModule/asset/img/CFDA_Logo_Black.png" alt="CFDA"/>
                                 <span>This event was listed in the CFDA Fashion Calendar</span>
                                 <a href="?titles=CFDA+Fashion+Calendar" class="map-issue-search link-dark ms-1 text-decoration-none" data-calendar_title="${encodeURIComponent(issue.calendar_title)}" aria-label="Search for this issue">
                                 <i class="fas fa-search" aria-hidden="true" title="Search for this issue">
