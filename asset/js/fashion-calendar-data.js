@@ -355,7 +355,7 @@ $(document).ready(function () {
             <dt>Year-Month</dt>
             <dd>
             <span>${event.start_date}</span>
-            <a href="?year_month=${encodeURIComponent(event.start_date.substring(0, 7))}" class="year-month-search link-dark ms-1 text-decoration-none" data-year-month="${encodeURIComponent(event.start_date.substring(0, 7))}" aria-label="Search for this year and month">
+            <a href="?year_month=${encodeURIComponent(event.start_date.substring(0, 7))}" class="year_month-search link-dark ms-1 text-decoration-none" data-year_month="${encodeURIComponent(event.start_date.substring(0, 7))}" aria-label="Search for this year and month">
                 <i class="fas fa-search" aria-hidden="true" title="Search for this year and month">
                 </i>
             </a>
@@ -473,7 +473,7 @@ $(document).ready(function () {
         $(".issue-search").off("click.fashionCalendar");
         $(".category-search").off("click.fashionCalendar");
         $(".location-search").off("click.fashionCalendar");
-        $(".year-month-search").off("click.fashionCalendar");
+        $(".year_month-search").off("click.fashionCalendar");
         $(".remove-query").off("click.fashionCalendar");
         // Attach listeners to new content
         $(".name-search").on("click.fashionCalendar", function (event) {
@@ -518,9 +518,9 @@ $(document).ready(function () {
             history.pushState(null, null, "?" + queryParams.toString());
             listEvents(queryParams);
         });
-        $(".year-month-search").on("click.fashionCalendar", function (event) {
+        $(".year_month-search").on("click.fashionCalendar", function (event) {
             event.preventDefault();
-            let year_month = decodeURIComponent($(this).data("year-month"));
+            let year_month = decodeURIComponent($(this).data("year_month"));
             // Update URL Query.
             let queryParams = new URLSearchParams();
             queryParams.set("year_month", year_month);
