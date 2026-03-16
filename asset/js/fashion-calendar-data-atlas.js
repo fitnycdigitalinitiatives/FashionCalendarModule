@@ -736,6 +736,11 @@ $(document).ready(function () {
                                     canvas: false,
                                     annotations: false,
                                     layers: false
+                                },
+                                textOverlay: {
+                                    enabled: true,
+                                    selectable: true,
+                                    visible: false,
                                 }
                             },
                             translations: {
@@ -746,7 +751,8 @@ $(document).ready(function () {
                             osdConfig: {
                                 preserveViewport: false,
                             }
-                        }
+                        },
+                        [...textOverlayPlugin]
                     );
                 }
                 fetch(pageURL)
