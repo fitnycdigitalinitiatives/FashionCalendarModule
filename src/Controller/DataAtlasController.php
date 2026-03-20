@@ -4,6 +4,9 @@ namespace FashionCalendarModule\Controller;
 
 use Laminas\Mvc\Controller\AbstractActionController;
 use Omeka\Mvc\Exception\RuntimeException;
+use Laminas\View\Model\ViewModel;
+use Laminas\Session\Container;
+use Laminas\Authentication\AuthenticationService;
 use MongoDB\Client;
 use MongoDB\Driver\ServerApi;
 use MongoDB\BSON\UTCDateTime;
@@ -11,9 +14,49 @@ use MongoDB\BSON\Regex;
 
 class DataAtlasController extends AbstractActionController
 {
+    /**
+     * @var AuthenticationService
+     */
+    protected $auth;
+
+    /**
+     * @param AuthenticationService $auth
+     */
+
+    public function __construct(AuthenticationService $auth)
+    {
+        $this->auth = $auth;
+    }
+    public function indexAction()
+    {
+        $site = $this->currentSite();
+        $site_slug = $site->slug();
+        if ($site_slug == "fashioncalendar") {
+            $sessionManager = Container::getDefaultManager();
+            $session = $sessionManager->getStorage();
+
+            $turnstileAuth = $session->offsetGet($site_slug . '_turnstile_authorization');
+            if ($this->settings()->get('search_module_activate_turnstile', false) && !$this->auth->hasIdentity() && !$turnstileAuth) {
+                return $this->redirect()->toRoute('site/challenge', ['site-slug' => $site_slug], ['query' => ['redirect_url' => $this->getRequest()->getUriString()]]);
+            }
+            $view = new ViewModel;
+            return $view;
+        } else {
+            throw new RuntimeException("Invalid Page");
+        }
+    }
     public function eventsAction()
     {
-        if ($this->currentSite()->slug() == "fashioncalendar") {
+        $site = $this->currentSite();
+        $site_slug = $site->slug();
+        if ($site_slug == "fashioncalendar") {
+            $sessionManager = Container::getDefaultManager();
+            $session = $sessionManager->getStorage();
+
+            $turnstileAuth = $session->offsetGet($site_slug . '_turnstile_authorization');
+            if ($this->settings()->get('search_module_activate_turnstile', false) && !$this->auth->hasIdentity() && !$turnstileAuth) {
+                return $this->redirect()->toRoute('site/challenge', ['site-slug' => $site_slug], ['query' => ['redirect_url' => $this->getRequest()->getUriString()]]);
+            }
             $response = $this->getResponse();
             $settings = $this->settings();
             $connectionFormat = "mongodb+srv";
@@ -331,7 +374,16 @@ class DataAtlasController extends AbstractActionController
 
     public function suggesterAction()
     {
-        if ($this->currentSite()->slug() == "fashioncalendar") {
+        $site = $this->currentSite();
+        $site_slug = $site->slug();
+        if ($site_slug == "fashioncalendar") {
+            $sessionManager = Container::getDefaultManager();
+            $session = $sessionManager->getStorage();
+
+            $turnstileAuth = $session->offsetGet($site_slug . '_turnstile_authorization');
+            if ($this->settings()->get('search_module_activate_turnstile', false) && !$this->auth->hasIdentity() && !$turnstileAuth) {
+                return $this->redirect()->toRoute('site/challenge', ['site-slug' => $site_slug], ['query' => ['redirect_url' => $this->getRequest()->getUriString()]]);
+            }
             $response = $this->getResponse();
             $params = $this->params()->fromQuery();
             if (array_key_exists('type', $params) && ($type = $params['type']) && (($type == 'names') || ($type == 'categories'))) {
@@ -372,7 +424,16 @@ class DataAtlasController extends AbstractActionController
 
     public function pageAction()
     {
-        if ($this->currentSite()->slug() == "fashioncalendar") {
+        $site = $this->currentSite();
+        $site_slug = $site->slug();
+        if ($site_slug == "fashioncalendar") {
+            $sessionManager = Container::getDefaultManager();
+            $session = $sessionManager->getStorage();
+
+            $turnstileAuth = $session->offsetGet($site_slug . '_turnstile_authorization');
+            if ($this->settings()->get('search_module_activate_turnstile', false) && !$this->auth->hasIdentity() && !$turnstileAuth) {
+                return $this->redirect()->toRoute('site/challenge', ['site-slug' => $site_slug], ['query' => ['redirect_url' => $this->getRequest()->getUriString()]]);
+            }
             $response = $this->getResponse();
             $params = $this->params()->fromQuery();
             if (array_key_exists('id', $params) && ($id = $params['id']) && array_key_exists('page', $params) && ($page = $params['page'])) {

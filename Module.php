@@ -41,7 +41,6 @@ class Module extends AbstractModule
         $acl->allow(
             null,
             [
-                'FashionCalendarModule\Controller\Data',
                 'FashionCalendarModule\Controller\DataAtlas',
             ]
         );

@@ -4,10 +4,9 @@ namespace FashionCalendarModule;
 
 return [
     'controllers' => [
-        'invokables' => [
-            'FashionCalendarModule\Controller\Data' => Controller\DataController::class,
-            'FashionCalendarModule\Controller\DataAtlas' => Controller\DataAtlasController::class,
-        ]
+        'factories' => [
+            'FashionCalendarModule\Controller\DataAtlas' => Service\Controller\DataAtlasControllerFactory::class,
+        ],
     ],
     'block_layouts' => [
         'invokables' => [
@@ -21,20 +20,20 @@ return [
         'routes' => [
             'site' => [
                 'child_routes' => [
-                    'data-api' => [
-                        'type' => 'Segment',
-                        'options' => [
-                            'route' => '/data-api/:action',
-                            'defaults' => [
-                                '__NAMESPACE__' => 'FashionCalendarModule\Controller',
-                                'controller' => 'Data',
-                                'action' => 'events',
-                            ],
-                        ],
-                        'constraints' => [
-                            'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
-                        ],
-                    ],
+                    // 'data-api' => [
+                    //     'type' => 'Segment',
+                    //     'options' => [
+                    //         'route' => '/data-api/:action',
+                    //         'defaults' => [
+                    //             '__NAMESPACE__' => 'FashionCalendarModule\Controller',
+                    //             'controller' => 'Data',
+                    //             'action' => 'events',
+                    //         ],
+                    //     ],
+                    //     'constraints' => [
+                    //         'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                    //     ],
+                    // ],
                     'data-altas-api' => [
                         'type' => 'Segment',
                         'options' => [
@@ -47,6 +46,17 @@ return [
                         ],
                         'constraints' => [
                             'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                        ],
+                    ],
+                    'data-page' => [
+                        'type' => 'Segment',
+                        'options' => [
+                            'route' => '/page/data',
+                            'defaults' => [
+                                '__NAMESPACE__' => 'FashionCalendarModule\Controller',
+                                'controller' => 'DataAtlas',
+                                'action' => 'index',
+                            ],
                         ],
                     ],
                 ],
