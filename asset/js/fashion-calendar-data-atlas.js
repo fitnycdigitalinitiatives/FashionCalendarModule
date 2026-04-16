@@ -2235,9 +2235,9 @@ $(document).ready(function () {
                             <h3>Cite Visualizations</h3>
                                 <div id="graphcitation">
                                     <div class="input-group my-3">
-                                    <div class="form-control font-monospace text-break bg-white" id="thisCitation">
+                                    <div class="form-control font-monospace text-break bg-white" id="thisGraphCitation">
                                     </div>
-                                    <button class="btn btn-dark clip-button" type="button" data-clipboard-target="#thisCitation" aria-label="Copy citation to clipboard">
+                                    <button class="btn btn-dark clip-button" type="button" data-clipboard-target="#thisGraphCitation" aria-label="Copy citation to clipboard">
                                         <i class="fas fa-copy" title="Copy citation to clipboard" aria-hidden="true"></i>
                                     </button>
                                     </div>
@@ -2394,7 +2394,7 @@ $(document).ready(function () {
                     <div class="input-group mb-3">
                     <div class="form-control font-monospace text-break bg-white" id="thisSearchCitation">
                     </div>
-                    <button class="btn btn-dark clip-button" type="button" data-clipboard-target="#thisCitation" aria-label="Copy citation to clipboard">
+                    <button class="btn btn-dark clip-button" type="button" data-clipboard-target="#thisSearchCitation" aria-label="Copy citation to clipboard">
                         <i class="fas fa-copy" title="Copy citation to clipboard" aria-hidden="true"></i>
                     </button>
                     </div>
