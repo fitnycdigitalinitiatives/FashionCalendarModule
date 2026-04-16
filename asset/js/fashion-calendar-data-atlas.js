@@ -1530,7 +1530,7 @@ $(document).ready(function () {
                 const displayTitle = decodeURIComponent(button.getAttribute('data-displayTitle'));
                 if (displayTitle.includes("CFDA Fashion Calendar")) {
                     const issue_search_url = decodeURIComponent(button.getAttribute('data-issue_search_url'));
-                    $(citationBox).html(`"${displayTitle}," Fashion Calendar Research Database, ${issue_search_url}. Courtesy of the  Council of Fashion Designers of America.`);
+                    $(citationBox).html(`"${displayTitle}," Fashion Calendar Research Database, <a href="${issue_search_url}">${issue_search_url}</a>. Courtesy of the  Council of Fashion Designers of America.`);
                     $(disclaimer).html(`
                         <div class="small px-2 pb-2">
                         Data from the CFDA Fashion Calendar has been made available strictly for research and educational purposes. It cannot be reused, shared or adapted for any commercial purposes.
