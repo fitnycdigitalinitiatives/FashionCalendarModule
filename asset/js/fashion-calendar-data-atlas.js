@@ -111,6 +111,7 @@ $(document).ready(function () {
         $('#graph').empty().hide();
         $('#map').empty().hide();
         $('#download').empty().hide();
+        $('#cite').empty().hide();
         $('#sort').empty().hide();
         $('#data-search input').val("");
         if (queryParams.toString()) {
@@ -327,16 +328,20 @@ $(document).ready(function () {
                     if (window.matchMedia("(min-width: 768px)").matches && window.matchMedia("(min-height: 768px)").matches) {
                         createDownload();
                     };
+                    createCite();
                     $('#facet').fadeIn();
                     $('#graph').fadeIn();
                     $('#map').fadeIn();
                     $('#download').fadeIn();
+                    $('#cite').fadeIn();
                     $('#sort').fadeIn();
                     $('#modal-container').append(createViewerModal());
                     $('#modal-container').append(createSingleMapModal());
+                    $('#modal-container').append(createCitationModal());
                     attachClicks();
                     initiateViewer();
                     initiateSingleMap();
+                    initiateCitation();
                     initiateScroll();
                 }
             })
@@ -405,6 +410,18 @@ $(document).ready(function () {
         let appearsInList = [];
         event.appears_in.forEach(issue => {
             if (issue.calendar_title == "CFDA Fashion Calendar") {
+                const date = new Date(event.start_date);
+                const options = {
+                    year: 'numeric',
+                    month: 'long',
+                    timeZone: 'UTC'
+                };
+                if (event.start_date.length == 10) {
+                    options["day"] = 'numeric';
+                }
+                const displayTitle = `${issue.calendar_title}, ${date.toLocaleDateString('en-US', options)}`;
+                const issueSearchUrl = new URL(window.location.href);
+                issueSearchUrl.search = `?year_month=${event.start_date.substring(0, 7)}`;
                 let issueHtml = `
                 <img class="cfda-icon d-block my-1" src="/modules/FashionCalendarModule/asset/img/CFDA_Logo_Black.png" alt="CFDA"/>
                 <span>This event was listed in the CFDA Fashion Calendar</span>
@@ -412,6 +429,10 @@ $(document).ready(function () {
                 <i class="fas fa-search" aria-hidden="true" title="Search for this issue">
                 </i>
                 </a>
+                <button class="text-dark citation border-0 bg-transparent p-0 ms-1" data-bs-toggle="modal" data-bs-target="#citationModal" data-displayTitle="${encodeURIComponent(displayTitle)}" data-issue_search_url="${issueSearchUrl.toString()}" aria-label="Cite this data">
+                <i class="fas fa-quote-right" aria-hidden="true" title="Cite this data">
+                </i>
+                </button>
                 <a href="https://cfda.com/fashion-calendar" class="link-dark ms-1 text-decoration-none" target="_blank" aria-label="Visit the CFDA Fashion Calendar site">
                 <i class="fas fa-external-link-alt" aria-hidden="true" title="Visit the CFDA Fashion Calendar site">
                 </i>
@@ -429,14 +450,20 @@ $(document).ready(function () {
                     options["day"] = 'numeric';
                 }
                 const displayTitle = `${issue.calendar_title}, ${date.toLocaleDateString('en-US', options)}`;
+                const issueSearchUrl = new URL(window.location.href);
+                issueSearchUrl.search = `?issue=${issue.calendar_id}&issue_date=${issue.calendar_date}`;
                 let issueHtml = `
                 <span>${displayTitle} (page ${issue.calendar_page})</span>
-                <a href="?issue=${encodeURIComponent(issue.calendar_id)}&issue_date=${encodeURIComponent(issue.calendar_date)}" class="issue-search link-dark ms-1 text-decoration-none" data-calendar_title="${encodeURIComponent(issue.calendar_title)}" data-calendar_date="${encodeURIComponent(issue.calendar_date)}" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" aria-label="Search for this issue">
+                <a href="${issueSearchUrl.toString()}" class="issue-search link-dark ms-1 text-decoration-none" data-calendar_title="${encodeURIComponent(issue.calendar_title)}" data-calendar_date="${encodeURIComponent(issue.calendar_date)}" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" aria-label="Search for this issue">
                 <i class="fas fa-search" aria-hidden="true" title="Search for this issue">
                 </i>
                 </a>
                 <button class="text-dark page-view border-0 bg-transparent p-0 ms-1" data-bs-toggle="modal" data-bs-target="#viewerModal" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" data-displayTitle="${encodeURIComponent(displayTitle)}" aria-label="See this page">
                 <i class="fas fa-file" aria-hidden="true" title="See this page">
+                </i>
+                </button>
+                <button class="text-dark citation border-0 bg-transparent p-0 ms-1" data-bs-toggle="modal" data-bs-target="#citationModal" data-calendar_id="${encodeURIComponent(issue.calendar_id)}" data-calendar_page="${encodeURIComponent(issue.calendar_page)}" data-displayTitle="${encodeURIComponent(displayTitle)}" data-issue_search_url="${issueSearchUrl.toString()}" aria-label="Cite this data">
+                <i class="fas fa-quote-right" aria-hidden="true" title="Cite this data">
                 </i>
                 </button>
             `;
@@ -1452,6 +1479,82 @@ $(document).ready(function () {
         }
     }
 
+    function createCitationModal() {
+        let citationModal = `
+        <!-- Modal -->
+        <div class="modal fade" id="citationModal" tabindex="-1" aria-labelledby="citationLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h2 class="modal-title fs-5" id="citationLabel">Cite this Data/Issue</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div id="citation">
+                    <div class="input-group mb-3">
+                    <div class="form-control font-monospace text-break bg-white" id="thisCitation">
+                    </div>
+                    <button class="btn btn-dark clip-button" type="button" data-clipboard-target="#thisCitation" aria-label="Copy citation to clipboard">
+                        <i class="fas fa-copy" title="Copy citation to clipboard" aria-hidden="true"></i>
+                    </button>
+                    </div>
+                </div>
+                <div id="disclaimer"></div>
+                <div class="small px-2 pb-2" id="rights">For more information about citing, sharing and adapting this data, please see our page on <a target="_blank" href="/page/rights">Rights and Reuse</a>.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        `;
+        return citationModal;
+    }
+    function initiateCitation() {
+        const citationModal = document.getElementById('citationModal');
+        if (citationModal) {
+            const citationBox = citationModal.querySelector('.form-control');
+            const clipButton = citationModal.querySelector('.clip-button');
+            const disclaimer = citationModal.querySelector('#disclaimer');
+            new ClipboardJS(clipButton);
+            citationModal.addEventListener('show.bs.modal', event => {
+                $(citationBox).html(`
+                    <p class="card-text placeholder-glow">
+                    <span class="placeholder col-7"></span>
+                    <span class="placeholder col-4"></span>
+                    <span class="placeholder col-4"></span>
+                    <span class="placeholder col-6"></span>
+                    <span class="placeholder col-8"></span>
+                    </p>                
+                `);
+                $(disclaimer).empty();
+                const button = event.relatedTarget;
+                const displayTitle = decodeURIComponent(button.getAttribute('data-displayTitle'));
+                if (displayTitle.includes("CFDA Fashion Calendar")) {
+                    const issue_search_url = decodeURIComponent(button.getAttribute('data-issue_search_url'));
+                    $(citationBox).html(`"${displayTitle}," Fashion Calendar Research Database, ${issue_search_url}. Courtesy of the  Council of Fashion Designers of America.`);
+                    $(disclaimer).html(`
+                        <div class="small px-2 pb-2">
+                        Data from the CFDA Fashion Calendar has been made available strictly for research and educational purposes. It cannot be reused, shared or adapted for any commercial purposes.
+                        </div>
+                        `);
+                } else {
+                    const page = decodeURIComponent(button.getAttribute('data-calendar_page'));
+                    const calendar_id = decodeURIComponent(button.getAttribute('data-calendar_id'));
+                    const issue_search_url = decodeURIComponent(button.getAttribute('data-issue_search_url'));
+                    const pageURL = `/data-atlas-api/page?id=${encodeURIComponent(calendar_id)}&page=${encodeURIComponent(page)}`;
+                    fetch(pageURL)
+                        .then((response) => response.json())
+                        .then((pageData) => {
+                            $(citationBox).html(`Finley, Ruth. "${displayTitle}," p. ${page}, Fashion Calendar Research Database, <a href="${pageData["item-link"]}">${pageData["item-link"]}</a>. Courtesy of the Fashion Institute of Technology-SUNY, Gladys Marcus Library unit of Special Collections and FIT Archive under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.`);
+                            pageData = null;
+                        })
+                        .catch((error) => {
+                            $(citationBox).html(`Finley, Ruth. "${displayTitle}," p. ${page}, Fashion Calendar Research Database, <a href="${issue_search_url}">${issue_search_url}</a>. Courtesy of the Fashion Institute of Technology-SUNY, Gladys Marcus Library unit of Special Collections and FIT Archive under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.`);
+                        });
+                }
+            });
+        }
+    }
+
     async function createFacets() {
         $('#facet').html(`
             <button id="facet-button" class="btn btn-dark floating-action" type="button" data-bs-toggle="offcanvas"
@@ -2126,6 +2229,38 @@ $(document).ready(function () {
                             });
                         }
                         $(".data-download").on("click", graphDownload);
+                        // Citation 
+                        modalBody.append(`
+                            <div class="graph">
+                            <h3>Cite Visualizations</h3>
+                                <div id="graphcitation">
+                                    <div class="input-group my-3">
+                                    <div class="form-control font-monospace text-break bg-white" id="thisCitation">
+                                    </div>
+                                    <button class="btn btn-dark clip-button" type="button" data-clipboard-target="#thisCitation" aria-label="Copy citation to clipboard">
+                                        <i class="fas fa-copy" title="Copy citation to clipboard" aria-hidden="true"></i>
+                                    </button>
+                                    </div>
+                                </div>
+                                <div class="small px-2 pb-2" id="rights">For more information about citing, sharing and adapting this data, please see our page on <a target="_blank" href="/page/rights">Rights and Reuse</a>. Please note that data from the CFDA Fashion Calendar cannot be reused, shared or adapted for any commercial purposes.</div>
+                            </div>
+                            `);
+                        const citationBox = modalBody.find('.form-control');
+                        const clipButton = modalBody.find('.clip-button');
+                        new ClipboardJS(clipButton[0]);
+                        let title = "Fashion Calendar Data Visualization";
+                        if ($('#query').children().length > 0) {
+                            title += ":";
+                            $('#query').children().each(function () {
+                                title += ' ';
+                                title += $(this).text().split('Remove facet:').at(-1).trim();
+                                title += ','
+                            });
+                        }
+                        else {
+                            title += ",";
+                        }
+                        $(citationBox).html(`"${title}" Fashion Calendar Research Database, <a href="${window.location.href}">${window.location.href}</a>. Courtesy of the Fashion Institute of Technology-SUNY, Gladys Marcus Library unit of Special Collections and FIT Archive, and the Council of Fashion Designers of America.`);
                     })
                     .catch((error) => {
                         console.log(error);
@@ -2219,7 +2354,7 @@ $(document).ready(function () {
         </button>
         <ul class="dropdown-menu dropdown-menu-dark">
             <li>
-            <span class="dropdown-header fw-bold">*JSON of search results is currently limited to the first 10,000 results. The entire dataset is also available in our Gihub repo.</span>
+            <span class="dropdown-header fw-bold">*JSON of search results is currently limited to the first 10,000 results. The entire dataset is also available in our Gihub repo. For information about citing, sharing and adapting this data, please see our page on <a class="link-light" target="_blank" href="/page/rights">Rights and Reuse</a>.</span>
             </li>
             <li><button id="download-json" class="dropdown-item"><i class="fas fa-download me-1" aria-hidden="true" title="Download results as JSON file">
             </i>Search Results as JSON</button></li>
@@ -2236,6 +2371,62 @@ $(document).ready(function () {
             const url = "/data-atlas-api/events?" + queryParams.toString();
             window.location.href = url;
         });
+    }
+    function createCite() {
+        $('#cite').html(`
+        <button id="cite-button" class="btn btn-dark floating-action d-none d-md-inline-block" type="button" data-bs-toggle="modal" data-bs-target="#citeModal">
+            <span class="action-container">
+            <i class="fas fa-quote-right" aria-hidden="true" title="Cite these results">
+            </i>
+            Cite
+            </span>
+        </button>
+        <!-- Modal -->
+        <div class="modal fade" id="citeModal" tabindex="-1" aria-labelledby="citeLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h2 class="modal-title fs-5" id="citeLabel">Cite this Data/Search Results</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div id="searchCitation">
+                    <div class="input-group mb-3">
+                    <div class="form-control font-monospace text-break bg-white" id="thisSearchCitation">
+                    </div>
+                    <button class="btn btn-dark clip-button" type="button" data-clipboard-target="#thisCitation" aria-label="Copy citation to clipboard">
+                        <i class="fas fa-copy" title="Copy citation to clipboard" aria-hidden="true"></i>
+                    </button>
+                    </div>
+                </div>
+                <div class="small px-2 pb-2" id="rights">Citations for individual events/listings can be found under the 'Issue' heading by clicking on the <i aria-hidden="true" class="fas fa-quote-right mx-1" title="Citation icon"><span class="sr-only">citation icon</span></i> symbol.</div>
+                <div class="small px-2 pb-2" id="rights">For more information about citing, sharing and adapting this data, please see our page on <a target="_blank" href="/page/rights">Rights and Reuse</a>. Please note that data from the CFDA Fashion Calendar cannot be reused, shared or adapted for any commercial purposes.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        `);
+        const citeModal = document.getElementById('citeModal');
+        if (citeModal) {
+            const citationBox = citeModal.querySelector('.form-control');
+            const clipButton = citeModal.querySelector('.clip-button');
+            new ClipboardJS(clipButton);
+            citeModal.addEventListener('show.bs.modal', event => {
+                let title = "Fashion Calendar Data";
+                if ($('#query').children().length > 0) {
+                    title += ":";
+                    $('#query').children().each(function () {
+                        title += ' ';
+                        title += $(this).text().split('Remove facet:').at(-1).trim();
+                        title += ','
+                    });
+                }
+                else {
+                    title += ",";
+                }
+                $(citationBox).html(`"${title}" Fashion Calendar Research Database, <a href="${window.location.href}">${window.location.href}</a>. Courtesy of the Fashion Institute of Technology-SUNY, Gladys Marcus Library unit of Special Collections and FIT Archive, and the Council of Fashion Designers of America.`);
+            });
+        }
     }
     function createSort() {
         let queryParams = new URLSearchParams(window.location.search);

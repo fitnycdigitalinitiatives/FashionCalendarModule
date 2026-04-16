@@ -143,6 +143,20 @@ html {
     }
 }
 
+/* citation */
+
+#citationModal .form-control,
+#citeModal .form-control,
+#graphcitation .form-control {
+    font-size: .75rem;
+}
+
+#citationModal .form-control a,
+#citeModal .form-control a,
+#graphcitation .form-control a {
+    color: #212529;
+}
+
 /* viewerMap */
 #big-map {
     height: 75%;
