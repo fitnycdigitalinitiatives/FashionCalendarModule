@@ -1544,11 +1544,11 @@ $(document).ready(function () {
                     fetch(pageURL)
                         .then((response) => response.json())
                         .then((pageData) => {
-                            $(citationBox).html(`Finley, Ruth. "${displayTitle}," p. ${page}, Fashion Calendar Research Database, <a href="${pageData["item-link"]}">${pageData["item-link"]}</a>. Courtesy of the Fashion Institute of Technology-SUNY, Gladys Marcus Library unit of Special Collections and FIT Archive under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.`);
+                            $(citationBox).html(`Finley, Ruth. "${displayTitle}," p. ${page}, Fashion Calendar Research Database, <a href="${pageData["item-link"]}">${pageData["item-link"]}</a>. Courtesy of the Fashion Institute of Technology Library, Department of Special Collections and FIT Archive under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.`);
                             pageData = null;
                         })
                         .catch((error) => {
-                            $(citationBox).html(`Finley, Ruth. "${displayTitle}," p. ${page}, Fashion Calendar Research Database, <a href="${issue_search_url}">${issue_search_url}</a>. Courtesy of the Fashion Institute of Technology-SUNY, Gladys Marcus Library unit of Special Collections and FIT Archive under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.`);
+                            $(citationBox).html(`Finley, Ruth. "${displayTitle}," p. ${page}, Fashion Calendar Research Database, <a href="${issue_search_url}">${issue_search_url}</a>. Courtesy of the Fashion Institute of Technology Library, Department of Special Collections and FIT Archive under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.`);
                         });
                 }
             });
@@ -2260,7 +2260,7 @@ $(document).ready(function () {
                         else {
                             title += ",";
                         }
-                        $(citationBox).html(`"${title}" Fashion Calendar Research Database, <a href="${window.location.href}">${window.location.href}</a>. Courtesy of the Fashion Institute of Technology-SUNY, Gladys Marcus Library unit of Special Collections and FIT Archive, and the Council of Fashion Designers of America.`);
+                        $(citationBox).html(`"${title}" Fashion Calendar Research Database, <a href="${window.location.href}">${window.location.href}</a>. Courtesy of the Fashion Institute of Technology Library, Department of Special Collections and FIT Archive, and the Council of Fashion Designers of America.`);
                     })
                     .catch((error) => {
                         console.log(error);
@@ -2424,7 +2424,7 @@ $(document).ready(function () {
                 else {
                     title += ",";
                 }
-                $(citationBox).html(`"${title}" Fashion Calendar Research Database, <a href="${window.location.href}">${window.location.href}</a>. Courtesy of the Fashion Institute of Technology-SUNY, Gladys Marcus Library unit of Special Collections and FIT Archive, and the Council of Fashion Designers of America.`);
+                $(citationBox).html(`"${title}" Fashion Calendar Research Database, <a href="${window.location.href}">${window.location.href}</a>. Courtesy of the Fashion Institute of Technology Library, Department of Special Collections and FIT Archive, and the Council of Fashion Designers of America.`);
             });
         }
     }
