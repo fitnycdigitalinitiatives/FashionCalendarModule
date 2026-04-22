@@ -2374,7 +2374,7 @@ $(document).ready(function () {
     }
     function createCite() {
         $('#cite').html(`
-        <button id="cite-button" class="btn btn-dark floating-action d-none d-md-inline-block" type="button" data-bs-toggle="modal" data-bs-target="#citeModal">
+        <button id="cite-button" class="btn btn-dark floating-action" type="button" data-bs-toggle="modal" data-bs-target="#citeModal">
             <span class="action-container">
             <i class="fas fa-quote-right" aria-hidden="true" title="Cite these results">
             </i>
