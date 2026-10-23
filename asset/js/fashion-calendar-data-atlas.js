@@ -2638,7 +2638,7 @@ $(document).ready(function () {
             queryTokenizer: Bloodhound.tokenizers.whitespace,
             prefetch: {
                 url: "/data-atlas-api/suggester?type=names",
-                thumbprint: "cfda-2025"
+                thumbprint: "cfda-2026"
             }
         });
         const namePromise = names.initialize();
@@ -2648,7 +2648,7 @@ $(document).ready(function () {
             queryTokenizer: Bloodhound.tokenizers.whitespace,
             prefetch: {
                 url: "/data-atlas-api/suggester?type=categories",
-                thumbprint: "cfda-2025"
+                thumbprint: "cfda-2026"
             }
         });
         const categoryPromise = categories.initialize();
@@ -2738,11 +2738,11 @@ $(document).ready(function () {
             <div class="col-form-label col-12 col-lg-2">Date Range</div>
             <div class="col-12 col-lg-10">
                 <div class="value input-group" id="adv_date_range">
-                    <input name="date_range_start" type="number" step="1" class="form-control" placeholder="1941" min="1941" max="2025" aria-label="Start Year">
+                    <input name="date_range_start" type="number" step="1" class="form-control" placeholder="1941" min="1941" max="2026" aria-label="Start Year">
                     <span class="input-group-text bg-dark text-white">TO</span>
-                    <input name="date_range_end" type="number" step="1" class="form-control" placeholder="2025" min="1941" max="2025" aria-label="End Year">
+                    <input name="date_range_end" type="number" step="1" class="form-control" placeholder="2026" min="1941" max="2026" aria-label="End Year">
                 </div>
-                <div class="form-text">Limit your search between a range of years. The entire Fashion Calendar ranges from 1941 to 2025.</div>
+                <div class="form-text">Limit your search between a range of years. The entire Fashion Calendar ranges from 1941 to 2026.</div>
             </div>
             </div>
         </form>
@@ -2924,9 +2924,9 @@ $(document).ready(function () {
             }
             if (formData.has("date_range_start") && formData.has("date_range_end") && (formData.get("date_range_start") || formData.get("date_range_end"))) {
                 const date_range_start = formData.get("date_range_start") ? formData.get("date_range_start") : "1941";
-                const date_range_end = formData.get("date_range_end") ? formData.get("date_range_end") : "2025";
+                const date_range_end = formData.get("date_range_end") ? formData.get("date_range_end") : "2026";
                 if (date_range_end >= date_range_start) {
-                    if (!(date_range_start == 1941 && date_range_end == 2025)) {
+                    if (!(date_range_start == 1941 && date_range_end == 2026)) {
                         queryParams.set("date_range_start", date_range_start);
                         queryParams.set("date_range_end", date_range_end);
                     }
