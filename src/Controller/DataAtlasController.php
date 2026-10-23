@@ -189,7 +189,7 @@ class DataAtlasController extends AbstractActionController
             // Check if graph data is all that is needed
             if (array_key_exists('graph', $params) && ($params['graph'] == 'true')) {
                 $yearBoundaries = [];
-                for ($i = 1941; $i < 2027; $i++) {
+                for ($i = 1941; $i < 2028; $i++) {
                     $yearBoundaries[] = new UTCDateTime(strtotime($i . '-01-01') * 1000);
                 }
                 $searchMeta = [
@@ -253,7 +253,7 @@ class DataAtlasController extends AbstractActionController
                 $aggregation[] = ['$project' => ['results' => 1, 'count' => '$count.count.count.total']];
             } elseif (array_key_exists('facet', $params) && ($params['facet'] == 'true')) {
                 $yearBoundaries = [];
-                for ($i = 1941; $i < 2027; $i++) {
+                for ($i = 1941; $i < 2028; $i++) {
                     $yearBoundaries[] = new UTCDateTime(strtotime($i . '-01-01') * 1000);
                 }
                 $searchMeta = [
@@ -277,7 +277,7 @@ class DataAtlasController extends AbstractActionController
                 $aggregation[] = ['$project' => ['names' => 1, 'categories' => 1, 'titles' => 1, 'years' => ['$filter' => ['input' => '$years', 'as' => 'year', 'cond' => ['$gt' => ['$$year.count', 0]]]]]];
             } elseif (array_key_exists('date_range', $params) && ($params['date_range'] == 'true')) {
                 $yearBoundaries = [];
-                for ($i = 1941; $i < 2027; $i++) {
+                for ($i = 1941; $i < 2028; $i++) {
                     $yearBoundaries[] = new UTCDateTime(strtotime($i . '-01-01') * 1000);
                 }
                 $searchMeta = [
