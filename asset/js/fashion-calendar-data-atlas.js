@@ -2021,7 +2021,7 @@ $(document).ready(function () {
                                     thisData = null;
                                     $('#ngram-loader').replaceWith(`<canvas id="ngram-chart" aria-label="Chart of word frequency (Ngram)" role="img"></canvas>`);
                                     if (ngramData.length > 0) {
-                                        for (let index = 1941; index < 2026; index++) {
+                                        for (let index = 1941; index < 2027; index++) {
                                             if (!ngramData.find((element) => element.year == index.toString())) {
                                                 ngramData.push({ "year": index.toString(), "count": 0 });
                                             }
@@ -2072,7 +2072,7 @@ $(document).ready(function () {
                         }
                         // Events per year
                         if (('years' in graphsData[0]) && (graphsData[0].years.length > 0)) {
-                            for (let index = 1941; index < 2026; index++) {
+                            for (let index = 1941; index < 2027; index++) {
                                 if (!graphsData[0].years.find((element) => element.year == index.toString())) {
                                     graphsData[0].years.push({ "year": index.toString(), "count": 0 });
                                 }
@@ -2119,7 +2119,7 @@ $(document).ready(function () {
                         }
                         // Hosts per year
                         if (('uniqueHostsbyYear' in graphsData[0]) && (graphsData[0].uniqueHostsbyYear.length > 0)) {
-                            for (let index = 1941; index < 2026; index++) {
+                            for (let index = 1941; index < 2027; index++) {
                                 if (!graphsData[0].uniqueHostsbyYear.find((element) => element.year == index.toString())) {
                                     graphsData[0].uniqueHostsbyYear.push({ "year": index.toString(), "numberOfHosts": 0 });
                                 }
